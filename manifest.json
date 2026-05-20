@@ -1,0 +1,24 @@
+{
+    "name": "GoldHub",
+    "short_name": "GoldHub",
+    "description": "Live gold, silver, and currency market updates with real-time charts.",
+    "start_url": "index.html",
+    "display": "standalone",
+    "background_color": "#090f1c",
+    "theme_color": "#090f1c",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "icon.webp",
+            "sizes": "192x192",
+            "type": "image/webp",
+            "purpose": "any"
+        },
+        {
+            "src": "icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}
