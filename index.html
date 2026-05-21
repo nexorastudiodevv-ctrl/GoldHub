@@ -7,7 +7,7 @@
     
     <!-- تحسينات محركات البحث SEO -->
     <!-- كود التحقق من Google Search Console -->
-    <meta name="google-site-verification" content="ضع_كود_التحقق_الخاص_بك_هنا" />
+    <meta name="google-site-verification" content="google3e36844db44fbe60" />
 
     <meta name="description" content="أدق موقع لمتابعة أسعار الذهب والفضة والعملات اليوم. تحديث لحظي لعيار 21، 18، 24، وسعر أوقية الذهب والفضة عالمياً مع محول عملات ورسوم بيانية حية.">
     <meta name="keywords" content="أسعار الذهب، أسعار الفضة، سعر الذهب اليوم، سعر الفضة اليوم، أسعار العملات، سعر الدولار، عيار 21، بورصة الذهب، تحويل عملات، Gold prices, Silver prices, Gold rate today">
@@ -23,7 +23,7 @@
     <!-- وسائل التواصل الاجتماعي (Open Graph) -->
     <meta property="og:title" content="أسعار الذهب والفضة والعملات لحظة بلحظة | GoldHub">
     <meta property="og:description" content="تابع تغيرات أسعار الذهب والفضة والعملات عالمياً ومحلياً. رسوم بيانية حية وتنبيهات ذكية للمستثمرين.">
-    <meta property="og:image" content="icon.png">
+    <meta property="og:image" content="https://gold-hub.com/icon.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:type" content="image/png">
@@ -38,7 +38,7 @@
     <meta name="twitter:creator" content="@GoldHub">
     <meta name="twitter:title" content="أسعار الذهب والعملات في مصر والعالم">
     <meta name="twitter:description" content="تحديثات فورية لأسعار الذهب والعملات. أدق منصة لمتابعة السوق المصري والعالمي.">
-    <meta name="twitter:image" content="icon.png">
+    <meta name="twitter:image" content="https://gold-hub.com/icon.png">
     <meta name="twitter:image:alt" content="شعار GoldHub - أسعار الذهب والعملات الحية">
 
     <link rel="manifest" href="manifest.json">
@@ -111,6 +111,23 @@
             0% { background-color: rgba(239, 68, 68, 0.3); } /* Tailwind red-500/30 */
             100% { background-color: transparent; }
         }
+        
+        /* تحسينات إضافية للهواتف الصغيرة جداً */
+        @media (max-width: 380px) {
+            .mobile-nav-text { display: none; }
+            .mobile-nav-icon { font-size: 1.25rem; }
+            .glass-panel { padding-left: 1rem; padding-right: 1rem; }
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* شريط تمرير احترافي لقائمة العملات */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.1); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { 
+            background: rgba(6, 182, 212, 0.2); 
+            border-radius: 10px; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(6, 182, 212, 0.4); }
 
         /* تحسين وضوح اللوجو على الشاشات عالية الدقة (High DPI) */
         .high-res-logo {
@@ -126,6 +143,46 @@
     <!-- تحميل FontAwesome CSS بشكل غير متزامن -->
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+
+    <!-- وسم WebSite لتمكين ظهور اسم الموقع ومربع البحث في جوجل -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "GoldHub",
+      "alternateName": ["جولد هوب", "Gold & Currency Hub"],
+      "url": "https://gold-hub.com/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://gold-hub.com/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- وسم BreadcrumbList لتحسين مظهر الروابط (Breadcrumbs) في نتائج بحث الموبايل -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "الرئيسية",
+        "item": "https://gold-hub.com/"
+      },{
+        "@type": "ListItem",
+        "position": 2,
+        "name": "أسواق الذهب",
+        "item": "https://gold-hub.com/#goldMarkets"
+      },{
+        "@type": "ListItem",
+        "position": 3,
+        "name": "أسعار العملات",
+        "item": "https://gold-hub.com/#currencyMarkets"
+      }]
+    }
+    </script>
 
     <!-- البيانات المنظمة (Structured Data) لمساعدة جوجل في فهم محتوى الموقع -->
     <script type="application/ld+json">
@@ -143,7 +200,11 @@
       "operatingSystem": "All",
       "author": {
         "@type": "Organization",
-        "name": "GoldHub"
+        "name": "GoldHub",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://gold-hub.com/icon.png"
+        }
       }
     }
     </script>
@@ -179,6 +240,36 @@
           "url": "https://gold-hub.com/icon.png"
         }
       }
+    }
+    </script>
+
+    <!-- بيانات مهيكلة FAQPage لتحسين الظهور في نتائج البحث -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "كم مرة يتم تحديث أسعار الذهب في GoldHub؟",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "يتم تحديث أسعار الذهب عالمياً كل 5 ثوانٍ لضمان الدقة، بينما يتم تحديث أسعار العملات لحظياً بناءً على بيانات البورصات العالمية."
+        }
+      }, {
+        "@type": "Question",
+        "name": "هل يوفر الموقع أسعار الذهب بالمصنعية؟",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "نعم، يعرض GoldHub أسعار الذهب عيار 21 و18 بالجنيه المصري شاملة المصنعية التقريبية في السوق المحلي."
+        }
+      }, {
+        "@type": "Question",
+        "name": "كيف يمكنني استخدام محول العملات السريع؟",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "يمكنك إدخال المبلغ واختيار العملة الأساسية ثم العملة المستهدفة، وسيقوم النظام بحساب النتيجة فوراً باستخدام أحدث أسعار الصرف."
+        }
+      }]
     }
     </script>
 </head>
@@ -220,6 +311,10 @@
                 <a href="#" id="articlesLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group">
                     <i class="fa-solid fa-newspaper text-lg shrink-0"></i>
                     <span class="text-sm font-medium sidebar-text">المقالات المالية</span>
+                </a>
+                <a href="#" id="faqLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group">
+                    <i class="fa-solid fa-circle-question text-lg shrink-0"></i>
+                    <span class="text-sm font-medium sidebar-text">الأسئلة الشائعة</span>
                 </a>
                 <!-- زر فتح لوحة التحكم -->
                 <button id="openAdminBtn" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-amber-400 hover:bg-amber-400/10 transition group">
@@ -295,7 +390,8 @@
     </aside>
 
     <!-- 2. منطقة المحتوى الرئيسية (Main Content) -->
-    <main class="flex-1 p-4 md:p-6 lg:p-8 space-y-6 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto hide-scrollbar">
+        <div class="max-w-screen-2xl mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         
         <!-- بنر طلب إذن الإشعارات (يظهر فقط إذا لم يتم تفعيل الإشعارات) -->
         <div id="notificationPrompt" class="hidden glass-panel border-cyan-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
@@ -521,7 +617,7 @@
                 <div class="glass-panel rounded-2xl p-5 space-y-4">
                     <h3 class="text-sm font-bold text-white tracking-wide border-b border-slate-800 pb-3">أسعار العملات الرئيسية</h3>
                     
-                    <div id="currencyList" class="space-y-3">
+                    <div id="currencyList" class="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                         <!-- زوج عملات 1 -->
                         <div class="flex justify-between items-center p-2 rounded-xl hover:bg-slate-800/30 transition">
                             <div class="flex items-center gap-3">
@@ -765,6 +861,38 @@
                     </div>
                 </div>
             </div>
+
+            <!-- قسم الأسئلة الشائعة (FAQ Section) -->
+            <div id="faqSection" class="hidden lg:col-span-3 space-y-6">
+                <div class="glass-panel rounded-3xl p-8 md:p-12 space-y-8 border border-cyan-500/10 section-fade-in">
+                    <div class="border-b border-slate-800 pb-6">
+                        <h3 class="text-2xl font-bold text-white flex items-center gap-3">
+                            <i class="fa-solid fa-circle-question text-cyan-400"></i> الأسئلة الشائعة
+                        </h3>
+                        <p class="text-slate-400 mt-2 text-sm">كل ما تحتاج معرفته حول خدماتنا</p>
+                    </div>
+                    <div class="space-y-4">
+                        <details class="group bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden transition-all hover:border-cyan-500/30">
+                            <summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+                                <span class="font-bold text-slate-100">كم مرة يتم تحديث أسعار الذهب في GoldHub؟</span>
+                                <i class="fa-solid fa-chevron-down text-slate-500 group-open:rotate-180 transition-transform"></i>
+                            </summary>
+                            <div class="px-6 pb-6 text-sm text-slate-400 leading-relaxed">
+                                يتم تحديث أسعار الذهب عالمياً كل 5 ثوانٍ لضمان الدقة، بينما يتم تحديث أسعار العملات لحظياً بناءً على بيانات البورصات العالمية.
+                            </div>
+                        </details>
+                        <details class="group bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden transition-all hover:border-cyan-500/30">
+                            <summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+                                <span class="font-bold text-slate-100">هل يوفر الموقع أسعار الذهب بالمصنعية؟</span>
+                                <i class="fa-solid fa-chevron-down text-slate-500 group-open:rotate-180 transition-transform"></i>
+                            </summary>
+                            <div class="px-6 pb-6 text-sm text-slate-400 leading-relaxed">
+                                نعم، يعرض GoldHub أسعار الذهب عيار 21 و18 بالجنيه المصري شاملة المصنعية التقريبية في السوق المحلي (يمكن للمدير تعديل هذه القيم من لوحة التحكم).
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- تذييل الصفحة الرئيسي (Main Footer) -->
@@ -785,38 +913,39 @@
                 <p class="text-[10px] text-slate-600 tracking-wider">&copy; 2026 جميع الحقوق محفوظة</p>
             </div>
         </footer>
+        </div>
     </main>
 
     <!-- 3. شريط التنقل السفلي للهواتف (Mobile Bottom Nav) -->
     <!-- يظهر فقط في الشاشات الصغيرة لضمان سهولة الوصول للروابط -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-800 z-50 flex justify-around items-center py-3 px-2 shadow-2xl">
-        <a href="#" id="mobileHomeLink" class="flex flex-col items-center gap-1 text-cyan-400">
-            <i class="fa-solid fa-house text-lg"></i>
-            <span class="text-[10px] font-medium">الرئيسية</span>
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-800 z-50 flex justify-around items-center py-2 px-1 shadow-2xl overflow-x-auto hide-scrollbar">
+        <a href="#" id="mobileHomeLink" class="flex flex-col items-center gap-1 text-cyan-400 shrink-0 px-2">
+            <i class="fa-solid fa-house text-lg mobile-nav-icon"></i>
+            <span class="text-[9px] font-medium mobile-nav-text">الرئيسية</span>
         </a>
-        <a href="#" id="mobileGoldLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition">
-            <i class="fa-solid fa-chart-line text-lg"></i>
-            <span class="text-[10px] font-medium">الذهب</span>
+        <a href="#" id="mobileGoldLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+            <i class="fa-solid fa-chart-line text-lg mobile-nav-icon"></i>
+            <span class="text-[9px] font-medium mobile-nav-text">الذهب</span>
         </a>
-        <a href="#" id="mobileCurrencyLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition">
-            <i class="fa-solid fa-dollar-sign text-lg"></i>
-            <span class="text-[10px] font-medium">العملات</span>
+        <a href="#" id="mobileCurrencyLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+            <i class="fa-solid fa-dollar-sign text-lg mobile-nav-icon"></i>
+            <span class="text-[9px] font-medium mobile-nav-text">العملات</span>
         </a>
-        <a href="#" id="mobileArticlesLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition">
-            <i class="fa-solid fa-newspaper text-lg"></i>
-            <span class="text-[10px] font-medium">المقالات</span>
+        <a href="#" id="mobileArticlesLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+            <i class="fa-solid fa-newspaper text-lg mobile-nav-icon"></i>
+            <span class="text-[9px] font-medium mobile-nav-text">المقالات</span>
         </a>
-        <a href="#" id="mobileWalletLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition">
-            <i class="fa-solid fa-wallet text-lg"></i>
-            <span class="text-[10px] font-medium">المحفظة</span>
+        <a href="#" id="mobileWalletLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+            <i class="fa-solid fa-wallet text-lg mobile-nav-icon"></i>
+            <span class="text-[9px] font-medium mobile-nav-text">المحفظة</span>
         </a>
-        <a href="#" id="mobileAboutLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition">
-            <i class="fa-solid fa-circle-info text-lg"></i>
-            <span class="text-[10px] font-medium">من نحن</span>
+        <a href="#" id="mobileAboutLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+            <i class="fa-solid fa-circle-info text-lg mobile-nav-icon"></i>
+            <span class="text-[9px] font-medium mobile-nav-text">من نحن</span>
         </a>
-        <a href="#" id="mobileContactLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition">
-            <i class="fa-solid fa-envelope text-lg"></i>
-            <span class="text-[10px] font-medium">اتصل بنا</span>
+        <a href="#" id="mobileContactLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+            <i class="fa-solid fa-envelope text-lg mobile-nav-icon"></i>
+            <span class="text-[9px] font-medium mobile-nav-text">اتصل بنا</span>
         </a>
     </nav>
 
@@ -982,7 +1111,7 @@
     </div>
 
     <!-- نافذة التنبيه المنبثقة (Toast Notification) -->
-    <div id="alertToast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-32 opacity-0 transition-all duration-500 pointer-events-none">
+    <div id="alertToast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-32 opacity-0 transition-all duration-500 pointer-events-none w-[90%] max-w-sm">
         <div class="glass-panel border-cyan-500/40 p-4 rounded-2xl flex items-center gap-4 shadow-[0_0_50px_rgba(6,182,212,0.15)]">
             <div class="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center text-cyan-400 glow-cyan">
                 <i class="fa-solid fa-triangle-exclamation animate-pulse"></i>
@@ -996,15 +1125,15 @@
 
     <!-- 6. نافذة عرض المقال كاملاً (Article Modal) -->
     <div id="articleModal" class="fixed inset-0 z-[250] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-3xl h-[90vh] p-8 rounded-3xl space-y-6 flex flex-col overflow-hidden">
+        <div class="glass-panel w-full max-w-3xl h-[90vh] p-4 md:p-8 rounded-3xl space-y-6 flex flex-col overflow-hidden">
             <div class="flex justify-between items-center border-b border-slate-800 pb-4">
                 <h2 id="articleModalTitle" class="text-2xl font-bold text-white">عنوان المقال</h2>
                 <button id="closeArticleModalBtn" class="text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-xmark text-2xl"></i>
                 </button>
             </div>
-            <div class="flex-1 overflow-y-auto pr-2 space-y-6">
-                <img id="articleModalImage" src="" alt="صورة المقال" class="w-full h-64 object-cover rounded-2xl">
+            <div class="flex-1 overflow-y-auto px-2 space-y-6">
+                <img id="articleModalImage" src="" alt="صورة المقال" class="w-full h-48 md:h-64 object-cover rounded-2xl">
                 <p id="articleModalDate" class="text-xs text-cyan-400 font-bold uppercase tracking-widest"></p>
                 <div id="articleModalContent" class="text-sm text-slate-300 leading-relaxed quill-content">
                     <!-- محتوى المقال هنا -->
@@ -1012,5 +1141,12 @@
             </div>
         </div>
     </div>
+
+    <!-- زر التنقل السريع للأعلى والأسفل (Smart Scroll FAB) -->
+    <button id="scrollToTopBottomBtn" class="fixed bottom-24 md:bottom-8 left-6 md:left-8 w-14 h-14 bg-cyan-500/10 backdrop-blur-xl border border-cyan-500/40 text-cyan-400 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.15)] flex items-center justify-center z-[150] transition-all transform hover:scale-110 active:scale-95 hidden group overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <i id="scrollIcon" class="fa-solid fa-arrow-down text-xl glow-cyan relative z-10 group-hover:animate-bounce"></i>
+    </button>
+
     <script type="module" src="app.js"></script>
 </body>

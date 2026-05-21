@@ -295,11 +295,11 @@ function renderCurrencies() {
         const starIconClass = isFavorite ? 'fa-solid fa-star text-yellow-400' : 'fa-regular fa-star text-slate-500 group-hover:text-yellow-400';
 
         return `
-            <div class="flex items-center justify-between p-4 bg-slate-900/40 border border-slate-800 rounded-xl hover:border-cyan-500/30 transition-all group">
-                <div class="flex items-center gap-3">
+            <div class="flex items-center justify-between p-3 bg-slate-900/40 border border-slate-800 rounded-xl hover:border-cyan-500/30 transition-all group">
+                <div class="flex items-center gap-2.5">
                     <img src="${flagUrl}" class="w-8 h-6 rounded object-cover shadow-sm" alt="${code}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/272/272525.png'">
                     <div>
-                        <div class="font-bold text-slate-100">${code}</div>
+                        <div class="text-xs font-bold text-slate-100">${code}</div>
                         <div class="flex items-center gap-1.5 text-[9px] text-emerald-500/90 font-bold uppercase tracking-wider">
                             <span class="relative flex h-1.5 w-1.5">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -309,13 +309,11 @@ function renderCurrencies() {
                         </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
                     <button class="text-lg p-1 focus:outline-none" onclick="toggleFavoriteCurrency('${code}')">
                         <i class="${starIconClass}"></i>
                     </button>
-                    <div class="text-right">
-                        <div class="text-lg font-mono font-bold text-cyan-400 group-hover:scale-105 transition-transform">${rate.toFixed(2)}</div>
-                    </div>
+                    <div class="text-sm font-mono font-bold text-cyan-400 group-hover:scale-105 transition-transform">${rate.toFixed(2)}</div>
                 </div>
             </div>
         `;
@@ -631,7 +629,10 @@ window.showToast = (msg) => {
 
 // التنقل بين الأقسام
 window.showSection = (sectionName) => {
-    const sections = ['goldSection', 'currencySection', 'walletSection', 'articlesSection', 'aboutSection', 'contactSection', 'privacySection'];
+    // العودة للأعلى تلقائياً عند تغيير القسم
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+     const sections = ['goldSection', 'currencySection', 'walletSection', 'articlesSection', 'aboutSection', 'contactSection', 'privacySection', 'faqSection'];
     sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
     
     if (sectionName === 'home') {
@@ -642,6 +643,18 @@ window.showSection = (sectionName) => {
         document.getElementById(sectionName + 'Section')?.classList.remove('hidden');
         document.getElementById('latestArticlesHome')?.classList.add('hidden');
     }
+
+    // تحديث الحالة النشطة في أزرار التنقل للهواتف
+    const mobileLinks = ['mobileHomeLink', 'mobileGoldLink', 'mobileCurrencyLink', 'mobileArticlesLink', 'mobileWalletLink', 'mobileAboutLink', 'mobileContactLink'];
+    mobileLinks.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.remove('text-cyan-400');
+            el.classList.add('text-slate-500');
+        }
+    });
+    const activeId = 'mobile' + sectionName.charAt(0).toUpperCase() + sectionName.slice(1) + 'Link';
+    document.getElementById(activeId)?.classList.add('text-cyan-400');
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -808,6 +821,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'goldMarketsLink', section: 'gold' }, { id: 'mobileGoldLink', section: 'gold' },
         { id: 'currencyMarketsLink', section: 'currency' }, { id: 'mobileCurrencyLink', section: 'currency' },
         { id: 'articlesLink', section: 'articles' }, { id: 'mobileArticlesLink', section: 'articles' },
+        { id: 'faqLink', section: 'faq' },
         { id: 'walletLink', section: 'wallet' }, { id: 'mobileWalletLink', section: 'wallet' },
         { id: 'aboutLink', section: 'about' }, { id: 'mobileAboutLink', section: 'about' },
         { id: 'contactLink', section: 'contact' }, { id: 'mobileContactLink', section: 'contact' },
@@ -880,9 +894,11 @@ function handleScrollToTopBottom() {
 
     // تغيير الأيقونة بناءً على موقع التمرير
     if (scrollTop + clientHeight >= scrollHeight - scrollThreshold) { // إذا كان المستخدم قريباً من الأسفل
-        domElements.scrollIcon.className = 'fa-solid fa-arrow-up text-xl';
+        domElements.scrollIcon.classList.remove('fa-arrow-down');
+        domElements.scrollIcon.classList.add('fa-arrow-up');
     } else { // إذا كان المستخدم في أي مكان آخر
-        domElements.scrollIcon.className = 'fa-solid fa-arrow-down text-xl';
+        domElements.scrollIcon.classList.remove('fa-arrow-up');
+        domElements.scrollIcon.classList.add('fa-arrow-down');
     }
 }
 
@@ -925,6 +941,14 @@ function updateArticleSchema(article) {
         "author": {
             "@type": "Organization",
             "name": "GoldHub"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "GoldHub",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://gold-hub.com/icon.png"
+            }
         },
         "description": article.summary || article.title
     };
