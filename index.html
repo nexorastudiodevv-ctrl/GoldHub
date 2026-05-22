@@ -81,7 +81,13 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
+        .glass-panel:hover {
+            border-color: rgba(6, 182, 212, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
         /* تأثير التوهج للنيون الأخضر والأحمر والأزرق */
         .glow-green { filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.5)); }
         .glow-red { filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.5)); }
@@ -128,6 +134,35 @@
         @keyframes flashRed {
             0% { background-color: rgba(239, 68, 68, 0.3); } /* Tailwind red-500/30 */
             100% { background-color: transparent; }
+        }
+
+        /* فقاعات الخلفية المتحركة */
+        .bg-blob {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(6, 182, 212, 0) 70%);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(80px);
+            pointer-events: none;
+            animation: blob-float 20s infinite alternate;
+        }
+        @keyframes blob-float {
+            0% { transform: translate(-10%, -10%) scale(1); }
+            100% { transform: translate(20%, 20%) scale(1.2); }
+        }
+
+        /* تأثير الكتابة اللامعة (Shimmer) العناوين */
+        .shimmer-text {
+            background: linear-gradient(90deg, #fff, #64748b, #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+        }
+        @keyframes shine {
+            to { background-position: 200% center; }
         }
         
         /* تحسينات إضافية للهواتف الصغيرة جداً */
@@ -293,6 +328,10 @@
 </head>
 <body class="text-slate-200 min-h-screen flex overflow-x-hidden">
 
+    <!-- خلفية حيوية متغيرة -->
+    <div class="bg-blob" style="top: -100px; left: -100px;"></div>
+    <div class="bg-blob" style="bottom: -100px; right: -100px; animation-delay: -10s; background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0) 70%);"></div>
+
     <!-- 1. شريط التنقل الجانبي (Sidebar) -->
     <aside id="sidebar" class="w-72 glass-panel border-e border-slate-800 flex flex-col justify-between p-6 hidden md:flex transition-all duration-300 relative">
         <!-- زر الطي (Toggle Button) -->
@@ -304,7 +343,7 @@
             <!-- شعار الموقع -->
             <div class="flex items-center gap-3 mb-10 pb-4 border-b border-slate-800">
                 <div class="w-10 h-10 shrink-0 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/30 text-cyan-400 text-xl glow-cyan">
-                    <img src="icon.webp" alt="GoldHub Logo" class="w-6 h-6 object-contain high-res-logo" width="24" height="24">
+                    <img src="icon.webp" alt="GoldHub Logo" class="w-6 h-6 object-contain high-res-logo" width="24" height="24" decoding="async">
                 </div>
                 <div class="sidebar-text overflow-hidden transition-opacity duration-300">
                     <h1 class="text-sm font-bold tracking-wider text-white">GoldHub</h1>
@@ -527,7 +566,7 @@
                     <div class="flex justify-between items-start mb-6">
                         <div>
                             <span class="text-xs font-semibold tracking-wider text-cyan-400 uppercase bg-cyan-500/10 px-2.5 py-1 rounded-md border border-cyan-500/20">مؤشر الذهب العالمي</span>
-                            <h3 class="text-xl font-bold text-white mt-2">GOLD (XAU / USD)</h3>
+                            <h3 class="text-xl font-bold text-white mt-2 shimmer-text">GOLD (XAU / USD)</h3>
                         </div>
                         <div class="flex flex-col items-end gap-2">
                             <div class="flex items-center gap-2 text-[11px] font-bold text-emerald-400 bg-emerald-500/15 px-3 py-1.5 rounded-xl border border-emerald-500/30 glow-green live-indicator-pulse shadow-[0_0_15px_rgba(16,185,129,0.1)]">
@@ -545,6 +584,10 @@
                     </div>
 
                     <!-- السعر الكبير والمؤشر -->
+                <p class="text-xs text-slate-400 mb-1 flex items-center">
+                    <span data-i18n="gold_oz">سعر أونصة الذهب بالدولار</span>
+                    <span id="lastUpdateTime" class="ms-2 text-[10px] text-slate-500 font-mono opacity-80"></span>
+                </p>
                     <div class="flex items-baseline gap-4 mb-6">
                         <span id="mainGoldPrice" class="text-4xl font-extrabold text-white tracking-tight transition-all duration-500">$2,350.75</span>
                         <span class="text-sm font-semibold text-emerald-400 flex items-center gap-1">
@@ -1235,7 +1278,7 @@
                 </button>
             </div>
             <div class="flex-1 overflow-y-auto px-2 space-y-6">
-                <img id="articleModalImage" src="" alt="صورة المقال" class="w-full h-48 md:h-64 object-cover rounded-2xl" width="600" height="300">
+                <img id="articleModalImage" src="" alt="صورة المقال" class="w-full h-48 md:h-64 object-cover rounded-2xl" width="600" height="300" loading="lazy" decoding="async">
                 <p id="articleModalDate" class="text-xs text-cyan-400 font-bold uppercase tracking-widest"></p>
                 <div id="articleModalContent" class="text-sm text-slate-300 leading-relaxed quill-content">
                     <!-- محتوى المقال هنا -->

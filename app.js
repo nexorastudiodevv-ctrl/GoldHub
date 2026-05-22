@@ -53,7 +53,7 @@ const currencyToCountryCode = {
 // نظام الترجمة
 const translations = {
     ar: {
-        gold_oz: "أوقية ذهب", silver_oz: "أوقية فضة", platinum_oz: "أوقية بلاتين",
+        gold_oz: "سعر أونصة الذهب بالدولار", silver_oz: "أوقية فضة", platinum_oz: "أوقية بلاتين",
         home: "الرئيسية", gold_markets: "أسواق الذهب", currency_markets: "أسعار العملات",
         admin_panel: "لوحة التحكم", wallet: "المحفظة الشخصية", about: "من نحن", contact: "اتصل بنا",
         privacy: "سياسة الخصوصية", live_market: "سوق المال المباشر", sub_heading: "تحديثات فورية لأسعار الذهب العالمية والمعادن",
@@ -61,7 +61,7 @@ const translations = {
         converter: "محول العملات السريع", result: "النتيجة التقريبية", search: "ابحث عن عملة أو عيار..."
     },
     en: {
-        gold_oz: "Gold Ounce", silver_oz: "Silver Ounce", platinum_oz: "Platinum Ounce",
+        gold_oz: "Gold Price per Ounce (USD)", silver_oz: "Silver Ounce", platinum_oz: "Platinum Ounce",
         home: "Home", gold_markets: "Gold Markets", currency_markets: "Currencies",
         admin_panel: "Admin Panel", wallet: "My Wallet", about: "About Us", contact: "Contact Us",
         privacy: "Privacy Policy", live_market: "Live Market Hub", sub_heading: "Real-time updates for global gold and metal prices",
@@ -116,6 +116,7 @@ const domElements = {
     notificationsDropdown: document.getElementById('notificationsDropdown'),
     notificationsList: document.getElementById('notificationsList'),
     bellDot: document.getElementById('bellDot'),
+    lastUpdateTime: document.getElementById('lastUpdateTime'),
     converterSearch: document.getElementById('converterSearch'),
     alertThreshold: document.getElementById('alertThreshold'),
     setAlertBtn: document.getElementById('setAlertBtn'),
@@ -132,6 +133,23 @@ const formatters = {
     metal: new Intl.NumberFormat('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 }),
     crypto: new Intl.NumberFormat('en-US', { minimumFractionDigits: 6 })
 };
+
+// وظيفة تحريك الأرقام (Number Ticker) لإعطاء إحساس بالحيوية
+function animateNumber(element, start, end, formatter) {
+    if (!element) return;
+    const duration = 1000;
+    const startTime = performance.now();
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOutQuad = t => t * (2 - t);
+        const current = start + (end - start) * easeOutQuad(progress);
+        element.textContent = formatter.format(current);
+        if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+}
 
 // نظام التبويبات (Tabs) لتنظيم الواجهة
 let activeMarketTab = 'gold';
@@ -559,16 +577,44 @@ function initChart() {
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: { x: { display: false }, y: { ticks: { color: '#64748b', font: { size: 10 } } } }
-        }
+        },
+        plugins: [{
+            id: 'glow',
+            beforeDatasetsDraw: (chart) => {
+                const { ctx } = chart;
+                ctx.save();
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = chart.data.datasets[0].borderColor;
+            },
+            afterDatasetsDraw: (chart) => {
+                chart.ctx.restore();
+            }
+        }]
     });
 }
 
 function updateChart(newPrice) {
     if (!goldChart) return;
+
+    // تحديد لون التوهج بناءً على الاتجاه (أخضر للصعود، أحمر للهبوط)
+    const isUp = newPrice >= previousGoldPrice;
+    const color = isUp ? '#10b981' : '#ef4444'; // Emerald-500 أو Red-500
+    const rgba = isUp ? '16, 185, 129' : '239, 68, 68';
+
+    const dataset = goldChart.data.datasets[0];
+    dataset.borderColor = color;
+
+    // تحديث التدرج اللوني للحقن (Fill) ليتناسب مع الاتجاه الجديد
+    const ctx = goldChart.ctx;
+    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+    gradient.addColorStop(0, `rgba(${rgba}, 0.3)`);
+    gradient.addColorStop(1, `rgba(${rgba}, 0)`);
+    dataset.backgroundColor = gradient;
+
     priceHistory.push(newPrice);
     timeLabels.push(new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }));
     if (priceHistory.length > 20) { priceHistory.shift(); timeLabels.shift(); }
-    goldChart.update('none');
+    goldChart.update();
 }
 
 onValue(pricesRef, (snapshot) => {
@@ -677,12 +723,26 @@ function updateUI() {
     const displayRate = exchangeRates[selectedDisplayCurrency] || 1;
     const currencySymbol = selectedDisplayCurrency;
 
-    // تحديث الرسم البياني فقط عند استدعاء تحديث الواجهة ببيانات جديدة
-    updateChart(goldPrice);
+    // تحديث وقت آخر تحديث للسعر في الواجهة
+    if (domElements.lastUpdateTime) {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString(currentLang === 'ar' ? 'ar-EG' : 'en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit' 
+        });
+        domElements.lastUpdateTime.textContent = `(${timeStr})`;
+    }
+
+    // تحسين الأداء: تحديث الرسم البياني فقط إذا كان تبويب الذهب نشطاً ومرئياً
+    const isGoldVisible = !document.getElementById('goldMainCard').classList.contains('hidden');
+    if (isGoldVisible && goldPrice !== previousGoldPrice) {
+        updateChart(goldPrice);
+    }
     
     // تحديث السعر الرئيسي بالدولار
     if (domElements.mainGoldPrice) {
-        domElements.mainGoldPrice.textContent = formatters.usd.format(goldPrice);
+        animateNumber(domElements.mainGoldPrice, previousGoldPrice, goldPrice, formatters.usd);
     }
     
     const baseK24 = caratPrices.k24 || (goldPrice / OUNCE_TO_GRAM);
@@ -690,9 +750,9 @@ function updateUI() {
     const baseK18 = caratPrices.k18 || (baseK24 * 0.75);
 
     // تحديث أسعار الذهب بالعملة المختارة (ديناميكي)
-    if (domElements.price24k) domElements.price24k.textContent = `${formatters.egp.format(baseK24 * displayRate + (makingCharges.k24 || 0))} ${currencySymbol}`;
-    if (domElements.price21k) domElements.price21k.textContent = `${formatters.egp.format(baseK21 * displayRate + (makingCharges.k21 || 0))} ${currencySymbol}`;
-    if (domElements.price18k) domElements.price18k.textContent = `${formatters.egp.format(baseK18 * displayRate + (makingCharges.k18 || 0))} ${currencySymbol}`;
+    if (domElements.price24k) animateNumber(domElements.price24k, previousCaratPrices.k24 * displayRate, baseK24 * displayRate, formatters.egp);
+    if (domElements.price21k) animateNumber(domElements.price21k, previousCaratPrices.k21 * displayRate, baseK21 * displayRate, formatters.egp);
+    if (domElements.price18k) animateNumber(domElements.price18k, previousCaratPrices.k18 * displayRate, baseK18 * displayRate, formatters.egp);
     
     // تحديث أسعار المعادن الأخرى
     if (domElements.silverPrice) domElements.silverPrice.textContent = formatters.usd.format(silverPrice);
@@ -703,10 +763,14 @@ function updateUI() {
     const silverElements = {
         'silver-999': 0.999, 'silver-925': 0.925, 'silver-900': 0.900, 'silver-800': 0.800
     };
-    Object.entries(silverElements).forEach(([id, multiplier]) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = `${formatters.egp.format(silverGramDisplay * multiplier)} ${currencySymbol}`;
-    });
+    
+    // تحسين الأداء: تحديث الفضة فقط إذا كان تبويب المعادن نشطاً
+    if (!document.getElementById('metalsGrid').classList.contains('hidden')) {
+        Object.entries(silverElements).forEach(([id, multiplier]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = `${formatters.egp.format(silverGramDisplay * multiplier)} ${currencySymbol}`;
+        });
+    }
 
     // تحديث مؤشرات التغيير
     const updateTrend = (el, current, previous) => {
@@ -1044,6 +1108,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. تحديث واجهة المستخدم والحسابات
         updateUI(); 
         handleScrollToTopBottom();
+
+        // إضافة تأثير Parallax بسيط عند تحريك الماوس
+        document.addEventListener('mousemove', (e) => {
+            const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
+            const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
+            const blobs = document.querySelectorAll('.bg-blob');
+            blobs.forEach((blob, index) => {
+                const factor = (index + 1) * 0.5;
+                blob.style.transform = `translate(${moveX * factor}px, ${moveY * factor}px)`;
+            });
+        });
     } catch (err) {
         console.error("⚠️ فشل في تهيئة بعض الخصائص البصرية:", err);
     }
