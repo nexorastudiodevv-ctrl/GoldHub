@@ -48,6 +48,12 @@
     <meta name="theme-color" content="#090f1c">
     <link rel="apple-touch-icon" href="icon.png">
     <!-- تضمين مكتبة Tailwind CSS للتصميم السريع -->
+    <!-- تحسينات الأداء: Preconnect للموارد الخارجية -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://basemaps.cartocdn.com">
+    <link rel="preconnect" href="https://cdn.quilljs.com">
     <script src="https://cdn.tailwindcss.com" defer></script>
     <!-- تضمين مكتبة أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -56,6 +62,9 @@
 
     <!-- تضمين مكتبة Chart.js للرسوم البيانية -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <!-- تضمين مكتبة Leaflet للخرائط -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- تضمين مكتبة Quill.js لمحرر النصوص الغني -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js" defer></script>
@@ -278,7 +287,7 @@
     <!-- 1. شريط التنقل الجانبي (Sidebar) -->
     <aside id="sidebar" class="w-72 glass-panel border-e border-slate-800 flex flex-col justify-between p-6 hidden md:flex transition-all duration-300 relative">
         <!-- زر الطي (Toggle Button) -->
-        <button id="toggleSidebar" class="absolute -left-3 top-10 w-6 h-6 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white z-50 transition-transform">
+        <button id="toggleSidebar" class="absolute -left-3 top-10 w-6 h-6 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white z-50 transition-transform" aria-label="طي الشريط الجانبي">
             <i id="toggleIcon" class="fa-solid fa-chevron-right text-[10px]"></i>
         </button>
 
@@ -286,7 +295,7 @@
             <!-- شعار الموقع -->
             <div class="flex items-center gap-3 mb-10 pb-4 border-b border-slate-800">
                 <div class="w-10 h-10 shrink-0 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/30 text-cyan-400 text-xl glow-cyan">
-                    <img src="icon.webp" alt="GoldHub" class="w-6 h-6 object-contain high-res-logo">
+                    <img src="icon.webp" alt="GoldHub Logo" class="w-6 h-6 object-contain high-res-logo" width="24" height="24">
                 </div>
                 <div class="sidebar-text overflow-hidden transition-opacity duration-300">
                     <h1 class="text-sm font-bold tracking-wider text-white">GoldHub</h1>
@@ -296,32 +305,36 @@
 
             <!-- القائمة البرمجية -->
             <nav class="space-y-2">
-                <a href="#" id="homeLink" class="flex items-center gap-4 px-4 py-3 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 transition group">
+                <a href="#" id="homeLink" class="flex items-center gap-4 px-4 py-3 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 transition group" aria-label="الرئيسية">
                     <i class="fa-solid fa-house text-lg shrink-0"></i>
                     <span class="text-sm font-medium sidebar-text">الرئيسية</span>
                 </a>
-                <a href="#" id="goldMarketsLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group">
+                <a href="#" id="goldMarketsLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group" aria-label="أسواق الذهب">
                     <i class="fa-solid fa-chart-line text-lg shrink-0"></i>
                     <span class="text-sm font-medium sidebar-text">أسواق الذهب</span>
                 </a>
-                <a href="#" id="currencyMarketsLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group">
+                <a href="#" id="currencyMarketsLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group" aria-label="أسعار العملات">
                     <i class="fa-solid fa-dollar-sign text-lg shrink-0"></i>
                     <span class="text-sm font-medium sidebar-text">أسعار العملات</span>
                 </a>
-                <a href="#" id="articlesLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group">
+                <a href="#" id="nearbyLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group" aria-label="مكاتب صرافة قريبة">
+                    <i class="fa-solid fa-map-location-dot text-lg shrink-0"></i>
+                    <span class="text-sm font-medium sidebar-text">صرافة قريبة</span>
+                </a>
+                <a href="#" id="articlesLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group" aria-label="المقالات المالية">
                     <i class="fa-solid fa-newspaper text-lg shrink-0"></i>
                     <span class="text-sm font-medium sidebar-text">المقالات المالية</span>
                 </a>
-                <a href="#" id="faqLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group">
+                <a href="#" id="faqLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group" aria-label="الأسئلة الشائعة">
                     <i class="fa-solid fa-circle-question text-lg shrink-0"></i>
                     <span class="text-sm font-medium sidebar-text">الأسئلة الشائعة</span>
                 </a>
                 <!-- زر فتح لوحة التحكم -->
-                <button id="openAdminBtn" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-amber-400 hover:bg-amber-400/10 transition group">
+                <button id="openAdminBtn" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-amber-400 hover:bg-amber-400/10 transition group" aria-label="فتح لوحة التحكم">
                     <i class="fa-solid fa-user-shield text-lg shrink-0"></i>
                     <span class="text-sm font-medium sidebar-text">لوحة التحكم</span>
                 </button>
-                <a href="#" id="walletLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group">
+                <a href="#" id="walletLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group" aria-label="المحفظة الشخصية">
                     <i class="fa-solid fa-wallet text-lg shrink-0"></i>
                     <span class="text-sm font-medium sidebar-text">المحفظة الشخصية</span>
                 </a>
@@ -331,43 +344,49 @@
             <div class="mt-8 sidebar-text">
                 <div class="glass-panel rounded-xl p-2 border-dashed border-cyan-500/30 text-center">
                     <p class="text-[9px] text-slate-500 mb-2 uppercase tracking-widest">إعلان</p>
-                    <div class="bg-slate-900/50 h-40 flex items-center justify-center rounded-lg border border-slate-800">
+                    <div class="bg-slate-900/50 h-40 flex items-center justify-center rounded-lg border border-slate-800" role="img" aria-label="مساحة إعلانية عمودية">
                         <span class="text-[10px] text-slate-600">مساحة إعلانية عمودية</span>
                     </div>
                 </div>
             </div>
 
         </div>
-
         <!-- أسفل القائمة الجانبية -->
         <div class="pt-4 border-t border-slate-800">
-            <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group">
+            <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group" aria-label="الإعدادات">
                 <i class="fa-solid fa-gear text-lg shrink-0"></i>
                 <span class="text-sm font-medium sidebar-text">الإعدادات</span>
             </a>
-            <a href="#" id="aboutLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group">
+            <a href="#" id="aboutLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group" aria-label="من نحن">
                 <i class="fa-solid fa-circle-info text-lg shrink-0"></i>
                 <span class="text-sm font-medium sidebar-text">من نحن</span>
             </a>
-            <a href="#" id="contactLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group">
+            <a href="#" id="contactLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group" aria-label="اتصل بنا">
                 <i class="fa-solid fa-envelope text-lg shrink-0"></i>
                 <span class="text-sm font-medium sidebar-text">اتصل بنا</span>
             </a>
-            <a href="#" id="privacyLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group">
+            <a href="#" id="privacyLink" class="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition group" aria-label="سياسة الخصوصية">
                 <i class="fa-solid fa-user-lock text-lg shrink-0"></i>
                 <span class="text-sm font-medium sidebar-text">سياسة الخصوصية</span>
             </a>
             <!-- واجهة ضبط التنبيه -->
             <div class="sidebar-text mt-4 space-y-2 px-2 border-t border-slate-800/50 pt-4">
-                <label class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">تنبيه السعر ($)</label>
+                <label for="alertThreshold" class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">تنبيه السعر ($)</label>
                 <div class="flex gap-2">
-                    <input type="number" id="alertThreshold" placeholder="مثلاً 2355" class="w-full bg-slate-900/80 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white focus:outline-none focus:border-cyan-500/40">
-                    <button id="setAlertBtn" class="bg-cyan-500/10 text-cyan-400 p-2 rounded-lg border border-cyan-500/20 hover:bg-cyan-500/30 transition">
+                    <input type="number" id="alertThreshold" placeholder="مثلاً 2355" class="w-full bg-slate-900/80 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white focus:outline-none focus:border-cyan-500/40" aria-label="قيمة تنبيه السعر">
+                    <button id="setAlertBtn" class="bg-cyan-500/10 text-cyan-400 p-2 rounded-lg border border-cyan-500/20 hover:bg-cyan-500/30 transition" aria-label="ضبط تنبيه السعر">
                         <i class="fa-solid fa-bell text-xs"></i>
                     </button>
                 </div>
+                <!-- قائمة اختيار اتجاه التنبيه -->
+                <label for="alertDirection" class="sr-only">اتجاه التنبيه</label>
+                <select id="alertDirection" class="w-full mt-2 bg-slate-900/80 border border-slate-800 rounded-lg py-1.5 px-3 text-[10px] text-slate-300 focus:outline-none focus:border-cyan-500/40 cursor-pointer" aria-label="اختر اتجاه التنبيه">
+                    <option value="above">عندما يصبح السعر أعلى من</option>
+                    <option value="below">عندما يصبح السعر أقل من</option>
+                </select>
                 <!-- قائمة اختيار نغمة التنبيه -->
-                <select id="soundSelect" class="w-full mt-2 bg-slate-900/80 border border-slate-800 rounded-lg py-1.5 px-3 text-[10px] text-slate-300 focus:outline-none focus:border-cyan-500/40 cursor-pointer">
+                <label for="soundSelect" class="sr-only">اختر نغمة التنبيه</label>
+                <select id="soundSelect" class="w-full mt-2 bg-slate-900/80 border border-slate-800 rounded-lg py-1.5 px-3 text-[10px] text-slate-300 focus:outline-none focus:border-cyan-500/40 cursor-pointer" aria-label="اختر نغمة التنبيه">
                     <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">جرس رقمي 1</option>
                     <option value="https://assets.mixkit.co/active_storage/sfx/2868/2868-preview.mp3">جرس رقمي 2</option>
                     <option value="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3">تنبيه كلاسيكي</option>
@@ -376,13 +395,13 @@
 
             <!-- أيقونات التواصل الاجتماعي (نسخة الشريط الجانبي) -->
             <div class="sidebar-text flex justify-center gap-6 mt-6 pt-6 border-t border-slate-800/50">
-                <a href="https://facebook.com/yourpage" target="_blank" title="فيسبوك" class="text-slate-500 hover:text-cyan-400 transition-all transform hover:scale-110">
+                <a href="https://facebook.com/yourpage" target="_blank" title="فيسبوك" class="text-slate-500 hover:text-cyan-400 transition-all transform hover:scale-110" aria-label="صفحتنا على فيسبوك">
                     <i class="fa-brands fa-facebook-f text-lg"></i>
                 </a>
-                <a href="https://twitter.com/yourprofile" target="_blank" title="تويتر" class="text-slate-500 hover:text-cyan-400 transition-all transform hover:scale-110">
+                <a href="https://twitter.com/yourprofile" target="_blank" title="تويتر" class="text-slate-500 hover:text-cyan-400 transition-all transform hover:scale-110" aria-label="حسابنا على تويتر">
                     <i class="fa-brands fa-x-twitter text-lg"></i>
                 </a>
-                <a href="https://t.me/yourchannel" target="_blank" title="تيليجرام" class="text-slate-500 hover:text-cyan-400 transition-all transform hover:scale-110">
+                <a href="https://t.me/yourchannel" target="_blank" title="تيليجرام" class="text-slate-500 hover:text-cyan-400 transition-all transform hover:scale-110" aria-label="قناتنا على تيليجرام">
                     <i class="fa-brands fa-telegram text-lg"></i>
                 </a>
             </div>
@@ -396,7 +415,7 @@
         <!-- بنر طلب إذن الإشعارات (يظهر فقط إذا لم يتم تفعيل الإشعارات) -->
         <div id="notificationPrompt" class="hidden glass-panel border-cyan-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 shrink-0 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xl shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+                <div class="w-12 h-12 shrink-0 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xl shadow-[0_0_15px_rgba(6,182,212,0.2)]" role="img" aria-label="أيقونة جرس التنبيهات">
                     <i class="fa-solid fa-bell-ring animate-bounce"></i>
                 </div>
                 <div>
@@ -404,7 +423,7 @@
                     <p class="text-xs text-slate-400">هل تود استلام تنبيهات فورية عند تغير أسعار الذهب والعملات العالمية؟</p>
                 </div>
             </div>
-            <button id="enableNotificationsBtn" class="w-full sm:w-auto px-6 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-95">
+            <button id="enableNotificationsBtn" class="w-full sm:w-auto px-6 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-95" aria-label="تفعيل التنبيهات المباشرة">
                 تفعيل التنبيهات المباشرة
             </button>
         </div>
@@ -419,22 +438,24 @@
                 <!-- اختيار عملة العرض والتحديد التلقائي -->
                 <div class="flex items-center gap-2">
                     <!-- زر تبديل اللغة -->
-                    <button id="langToggle" class="bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3 text-xs text-cyan-400 font-bold hover:bg-slate-800 transition">
+                    <button id="langToggle" class="bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3 text-xs text-cyan-400 font-bold hover:bg-slate-800 transition" aria-label="تبديل اللغة">
                         <span id="langBtnText">English</span>
                     </button>
 
-                    <select id="displayCurrency" class="bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3 text-xs text-cyan-400 focus:outline-none focus:border-cyan-500/50 appearance-none cursor-pointer">
+                    <label for="displayCurrency" class="sr-only">عرض العملة</label>
+                    <select id="displayCurrency" class="bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3 text-xs text-cyan-400 focus:outline-none focus:border-cyan-500/50 appearance-none cursor-pointer" aria-label="اختر عملة العرض">
                         <option value="EGP" selected>عرض بالجنيه (EGP)</option>
                         <option value="USD">عرض بالدولار ($)</option>
                         <option value="EUR">عرض باليورو (EUR)</option>
                     </select>
-                    <button id="autoDetectBtn" title="تحديد تلقائي حسب بلدك" class="p-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-cyan-400 hover:text-white transition group">
+                    <button id="autoDetectBtn" title="تحديد تلقائي حسب بلدك" class="p-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-cyan-400 hover:text-white transition group" aria-label="تحديد العملة تلقائياً حسب الموقع">
                         <i class="fa-solid fa-location-crosshairs text-sm group-hover:scale-110"></i>
                     </button>
                 </div>
 
                 <!-- شريط بحث مالي -->
                 <div class="relative w-full sm:w-64">
+                    <label for="searchInput" class="sr-only">ابحث عن عملة أو عيار</label>
                     <span class="absolute inset-y-0 start-0 flex items-center ps-3 text-slate-500">
                         <i class="fa-solid fa-magnifying-glass text-sm"></i>
                     </span>
@@ -442,7 +463,7 @@
                 </div>
                 <!-- جرس التنبيهات المضيء -->
                 <div class="relative">
-                    <button id="notificationsBell" class="p-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition relative">
+                    <button id="notificationsBell" class="p-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition relative" aria-label="الإشعارات">
                         <i class="fa-regular fa-bell text-lg"></i>
                         <span id="bellDot" class="absolute top-2 start-2.5 w-2 h-2 bg-red-500 rounded-full glow-red hidden"></span>
                     </button>
@@ -450,7 +471,7 @@
                     <div id="notificationsDropdown" class="hidden absolute top-full left-0 mt-3 w-80 glass-panel border border-slate-800 rounded-2xl shadow-2xl z-[300] overflow-hidden text-right">
                         <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/40">
                             <span class="text-xs font-bold text-white">مركز الإشعارات</span>
-                            <button id="clearNotifications" class="text-[10px] text-slate-500 hover:text-cyan-400 transition">مسح الكل</button>
+                            <button id="clearNotifications" class="text-[10px] text-slate-500 hover:text-cyan-400 transition" aria-label="مسح جميع الإشعارات">مسح الكل</button>
                         </div>
                         <div id="notificationsList" class="max-h-96 overflow-y-auto p-2 space-y-2">
                             <p class="text-[10px] text-slate-500 text-center py-6 italic">لا توجد إشعارات جديدة حالياً</p>
@@ -469,7 +490,7 @@
                 <!-- إعلان علوي عريض للموبايل والديسكطوب -->
                 <div class="glass-panel rounded-2xl p-2 text-center border-dashed border-cyan-500/20">
                     <p class="text-[8px] text-slate-500 mb-1">إعلان</p>
-                    <div class="w-full bg-slate-900/40 h-20 sm:h-24 flex items-center justify-center rounded-xl border border-slate-800">
+                    <div class="w-full bg-slate-900/40 h-20 sm:h-24 flex items-center justify-center rounded-xl border border-slate-800" role="img" aria-label="إعلان مستجيب">
                         <span class="text-xs text-slate-600">إعلان مستجيب (Responsive Ad)</span>
                     </div>
                 </div>
@@ -477,7 +498,7 @@
                 <!-- بطاقة الذهب الرئيسية -->
                 <div class="glass-panel rounded-2xl p-6 relative overflow-hidden">
                     <div class="absolute top-0 end-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                    
+                    <div class="absolute top-0 end-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
                     <div class="flex justify-between items-start mb-6">
                         <div>
                             <span class="text-xs font-semibold tracking-wider text-cyan-400 uppercase bg-cyan-500/10 px-2.5 py-1 rounded-md border border-cyan-500/20">مؤشر الذهب العالمي</span>
@@ -491,7 +512,7 @@
                                 </span>
                                 <span data-i18n="live_update">تحديث مباشر</span>
                             </div>
-                            <button id="shareWhatsAppBtn" class="flex items-center gap-2 text-[10px] text-white bg-green-600/20 border border-green-500/30 px-3 py-1.5 rounded-xl hover:bg-green-600/40 transition active:scale-95">
+                            <button id="shareWhatsAppBtn" class="flex items-center gap-2 text-[10px] text-white bg-green-600/20 border border-green-500/30 px-3 py-1.5 rounded-xl hover:bg-green-600/40 transition active:scale-95" aria-label="مشاركة سعر الذهب عبر واتساب">
                                 <i class="fa-brands fa-whatsapp text-green-400 text-sm"></i>
                                 مشاركة السعر
                             </button>
@@ -508,7 +529,7 @@
 
                     <!-- مساحة الرسم البياني الفوري المباشر -->
                     <div class="w-full h-48 mt-4 relative">
-                        <canvas id="goldChart"></canvas>
+                        <canvas id="goldChart" role="img" aria-label="رسم بياني لسعر الذهب"></canvas>
                     </div>
                 </div>
 
@@ -549,7 +570,7 @@
                     <!-- إعلان إضافي تحت أسعار العيارات -->
                     <div class="sm:col-span-3 glass-panel rounded-xl p-2 text-center border-dashed border-cyan-500/10">
                         <p class="text-[8px] text-slate-500">إعلان</p>
-                        <div class="bg-slate-900/30 h-16 flex items-center justify-center rounded-lg border border-slate-800">
+                        <div class="w-full bg-slate-900/30 h-16 flex items-center justify-center rounded-lg border border-slate-800" role="img" aria-label="إعلان نصي أو صوري">
                             <span class="text-[10px] text-slate-600">إعلان نصي أو صوري</span>
                         </div>
                     </div>
@@ -602,7 +623,7 @@
                     <!-- إعلان إضافي تحت أسعار الفضة والبلاتين -->
                     <div class="sm:col-span-2 glass-panel rounded-xl p-2 text-center border-dashed border-cyan-500/10">
                         <p class="text-[8px] text-slate-500">إعلان</p>
-                        <div class="w-full bg-slate-900/30 h-16 flex items-center justify-center rounded-lg border border-slate-800">
+                        <div class="w-full bg-slate-900/30 h-16 flex items-center justify-center rounded-lg border border-slate-800" role="img" aria-label="إعلان نصي أو صوري">
                             <span class="text-[10px] text-slate-600">إعلان نصي أو صوري</span>
                         </div>
                     </div>
@@ -654,14 +675,14 @@
                     <div class="space-y-3">
                         <!-- خانة إدخال المبلغ -->
                         <div>
-                            <label class="text-[11px] text-slate-400 block mb-1">المبلغ المراد تحويله ($)</label>
-                            <input type="number" id="amountInput" value="1000" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl py-2 px-3 text-sm text-white font-mono focus:outline-none focus:border-cyan-500/40">
+                            <label for="amountInput" class="text-[11px] text-slate-400 block mb-1">المبلغ المراد تحويله ($)</label>
+                            <input type="number" id="amountInput" value="1000" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl py-2 px-3 text-sm text-white font-mono focus:outline-none focus:border-cyan-500/40" aria-label="المبلغ المراد تحويله">
                         </div>
                         
                         <!-- قائمة اختيار العملة المستهدفة -->
                         <div>
-                            <label class="text-[11px] text-slate-400 block mb-1">إلى عملة</label>
-                            <select id="targetCurrency" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl py-2 px-3 text-sm text-slate-300 focus:outline-none focus:border-cyan-500/40">
+                            <label for="targetCurrency" class="text-[11px] text-slate-400 block mb-1">إلى عملة</label>
+                            <select id="targetCurrency" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl py-2 px-3 text-sm text-slate-300 focus:outline-none focus:border-cyan-500/40" aria-label="العملة المستهدفة للتحويل">
                                 <option value="USD">USD (الدولار الأمريكي)</option>
                                 <option value="EUR">EUR (اليورو)</option>
                                 <option value="EGP">EGP (الجنيه المصري)</option>
@@ -694,7 +715,7 @@
                             </h3>
                             <p class="text-slate-400 mt-2 text-sm">أحدث فيديوهات التحليل والتوقعات من خبراء السوق</p>
                         </div>
-                        <button id="refreshNewsBtn" class="p-3 bg-slate-900/60 border border-slate-800 rounded-xl text-cyan-400 hover:text-white transition">
+                        <button id="refreshNewsBtn" class="p-3 bg-slate-900/60 border border-slate-800 rounded-xl text-cyan-400 hover:text-white transition" aria-label="تحديث توقعات أسعار الذهب">
                             <i class="fa-solid fa-rotate"></i>
                         </button>
                     </div>
@@ -729,7 +750,7 @@
                         </h3>
                         <p class="text-[10px] text-slate-500 mt-1">تابع أحدث التقارير المالية لخبراء GoldHub</p>
                     </div>
-                    <button onclick="showSection('articles')" class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-cyan-400 text-xs font-bold hover:bg-slate-800 hover:text-white transition flex items-center gap-2">
+                    <button onclick="showSection('articles')" class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-cyan-400 text-xs font-bold hover:bg-slate-800 hover:text-white transition flex items-center gap-2" aria-label="عرض كافة المقالات">
                         كافة المقالات <i class="fa-solid fa-arrow-left"></i>
                     </button>
                 </div>
@@ -738,17 +759,46 @@
                 </div>
             </div>
 
+            <!-- قسم الخريطة (Nearby Exchanges) -->
+            <div id="nearbySection" class="hidden lg:col-span-3">
+                <div class="glass-panel rounded-3xl p-8 md:p-12 space-y-6 border border-cyan-500/10 section-fade-in">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                        <h3 class="text-2xl font-bold text-white flex items-center gap-3">
+                            <i class="fa-solid fa-map-location-dot text-cyan-400"></i> مكاتب الصرافة القريبة
+                        </h3>
+                        <div class="flex gap-2">
+                            <button id="searchNewAreaBtn" class="p-3 bg-slate-900/60 border border-slate-800 rounded-xl text-cyan-400 hover:bg-slate-800/50 hover:text-white transition flex items-center gap-2 text-[10px] font-bold">
+                                <i class="fa-solid fa-crosshairs"></i> <span id="searchNewAreaText">بحث في منطقة أخرى</span>
+                            </button>
+                            <button id="refreshMapBtn" class="p-3 bg-slate-900/60 border border-slate-800 rounded-xl text-cyan-400 hover:text-white transition" aria-label="تحديث الموقع">
+                            <i class="fa-solid fa-location-crosshairs"></i>
+                        </button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col lg:flex-row gap-6">
+                        <div id="map" class="w-full lg:w-2/3 h-[450px] rounded-2xl border border-slate-800 z-0"></div>
+                        <div class="w-full lg:w-1/3 flex flex-col gap-4">
+                            <h4 class="text-sm font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">قائمة المكاتب القريبة</h4>
+                            <div id="nearbyExchangesList" class="flex-1 overflow-y-auto max-h-[400px] space-y-3 pr-2 custom-scrollbar text-right">
+                                <p class="text-xs text-slate-500 italic text-center py-10">جاري البحث عن مكاتب...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 italic">ملاحظة: يتم جلب البيانات من OpenStreetMap بناءً على موقعك الجغرافي الحالي.</p>
+                </div>
+            </div>
+
             <!-- قسم المحفظة (قيد التطوير) -->
             <div id="walletSection" class="hidden lg:col-span-3">
                 <div class="glass-panel rounded-3xl p-12 text-center space-y-6 border border-cyan-500/10">
-                    <div class="w-24 h-24 bg-cyan-500/10 rounded-full flex items-center justify-center text-cyan-400 text-4xl mx-auto glow-cyan">
+                    <div class="w-24 h-24 bg-cyan-500/10 rounded-full flex items-center justify-center text-cyan-400 text-4xl mx-auto glow-cyan" role="img" aria-label="أيقونة أدوات">
                         <i class="fa-solid fa-screwdriver-wrench animate-bounce"></i>
                     </div>
                     <div>
                         <h3 class="text-2xl font-bold text-white">المحفظة الشخصية</h3>
                         <p class="text-slate-400 mt-2">هذه الميزة قيد التطوير حالياً وستكون متاحة قريباً جداً.</p>
                     </div>
-                    <div class="flex justify-center gap-2">
+                    <div class="flex justify-center gap-2" aria-hidden="true">
                          <span class="w-2 h-2 bg-cyan-500 rounded-full animate-ping"></span>
                          <span class="w-2 h-2 bg-cyan-500 rounded-full animate-ping [animation-delay:0.2s]"></span>
                          <span class="w-2 h-2 bg-cyan-500 rounded-full animate-ping [animation-delay:0.4s]"></span>
@@ -811,14 +861,14 @@
                         </p>
                         <div class="space-y-4">
                             <div class="flex items-center gap-4">
-                                <i class="fa-solid fa-at text-cyan-400 text-xl shrink-0"></i>
+                                <i class="fa-solid fa-at text-cyan-400 text-xl shrink-0" aria-hidden="true"></i>
                                 <div>
                                     <p class="font-bold text-white">البريد الإلكتروني</p>
                                     <a href="mailto:info@goldcurrencyhub.com" class="text-cyan-300 hover:underline">info@goldcurrencyhub.com</a>
                                 </div>
                             </div>
                             <div class="flex items-center gap-4">
-                                <i class="fa-solid fa-phone text-cyan-400 text-xl shrink-0"></i>
+                                <i class="fa-solid fa-phone text-cyan-400 text-xl shrink-0" aria-hidden="true"></i>
                                 <div>
                                     <p class="font-bold text-white">الهاتف</p>
                                     <a href="tel:+201000000000" class="text-cyan-300 hover:underline">+20 100 000 0000</a> (متاح خلال ساعات العمل)
@@ -898,13 +948,13 @@
         <!-- تذييل الصفحة الرئيسي (Main Footer) -->
         <footer class="mt-12 pt-12 pb-8 border-t border-slate-800 text-center space-y-6">
             <div class="flex justify-center gap-4">
-                <a href="#" target="_blank" class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10">
+                <a href="#" target="_blank" class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10" aria-label="صفحتنا على فيسبوك">
                     <i class="fa-brands fa-facebook-f text-xl"></i>
                 </a>
-                <a href="#" target="_blank" class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10">
+                <a href="#" target="_blank" class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10" aria-label="حسابنا على تويتر">
                     <i class="fa-brands fa-x-twitter text-xl"></i>
                 </a>
-                <a href="#" target="_blank" class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10">
+                <a href="#" target="_blank" class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10" aria-label="قناتنا على تيليجرام">
                     <i class="fa-brands fa-telegram text-xl"></i>
                 </a>
             </div>
@@ -919,46 +969,54 @@
     <!-- 3. شريط التنقل السفلي للهواتف (Mobile Bottom Nav) -->
     <!-- يظهر فقط في الشاشات الصغيرة لضمان سهولة الوصول للروابط -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-800 z-50 flex justify-around items-center py-2 px-1 shadow-2xl overflow-x-auto hide-scrollbar">
-        <a href="#" id="mobileHomeLink" class="flex flex-col items-center gap-1 text-cyan-400 shrink-0 px-2">
+        <a href="#" id="mobileHomeLink" class="flex flex-col items-center gap-1 text-cyan-400 shrink-0 px-2" aria-label="الرئيسية">
             <i class="fa-solid fa-house text-lg mobile-nav-icon"></i>
             <span class="text-[9px] font-medium mobile-nav-text">الرئيسية</span>
         </a>
-        <a href="#" id="mobileGoldLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+        <a href="#" id="mobileGoldLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2" aria-label="أسعار الذهب">
             <i class="fa-solid fa-chart-line text-lg mobile-nav-icon"></i>
             <span class="text-[9px] font-medium mobile-nav-text">الذهب</span>
         </a>
-        <a href="#" id="mobileCurrencyLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+        <a href="#" id="mobileCurrencyLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2" aria-label="أسعار العملات">
             <i class="fa-solid fa-dollar-sign text-lg mobile-nav-icon"></i>
             <span class="text-[9px] font-medium mobile-nav-text">العملات</span>
         </a>
-        <a href="#" id="mobileArticlesLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+        <a href="#" id="mobileNearbyLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2" aria-label="صرافة قريبة">
+            <i class="fa-solid fa-map-location-dot text-lg mobile-nav-icon"></i>
+            <span class="text-[9px] font-medium mobile-nav-text">الخريطة</span>
+        </a>
+        <a href="#" id="mobileArticlesLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2" aria-label="المقالات">
             <i class="fa-solid fa-newspaper text-lg mobile-nav-icon"></i>
             <span class="text-[9px] font-medium mobile-nav-text">المقالات</span>
         </a>
-        <a href="#" id="mobileWalletLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+        <a href="#" id="mobileAdminBtn" class="flex flex-col items-center gap-1 text-amber-400 shrink-0 px-2" aria-label="لوحة التحكم">
+            <i class="fa-solid fa-user-shield text-lg mobile-nav-icon"></i>
+            <span class="text-[9px] font-medium mobile-nav-text">التحكم</span>
+        </a>
+        <a href="#" id="mobileWalletLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2" aria-label="المحفظة">
             <i class="fa-solid fa-wallet text-lg mobile-nav-icon"></i>
             <span class="text-[9px] font-medium mobile-nav-text">المحفظة</span>
         </a>
-        <a href="#" id="mobileAboutLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+        <a href="#" id="mobileAboutLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2" aria-label="من نحن">
             <i class="fa-solid fa-circle-info text-lg mobile-nav-icon"></i>
             <span class="text-[9px] font-medium mobile-nav-text">من نحن</span>
         </a>
-        <a href="#" id="mobileContactLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2">
+        <a href="#" id="mobileContactLink" class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2" aria-label="اتصل بنا">
             <i class="fa-solid fa-envelope text-lg mobile-nav-icon"></i>
             <span class="text-[9px] font-medium mobile-nav-text">اتصل بنا</span>
         </a>
     </nav>
 
     <!-- 4. لوحة التحكم الإدارية (Admin Control Panel) -->
-    <div id="adminPanel" class="fixed inset-0 z-[200] bg-slate-950/95 backdrop-blur-xl hidden p-6 overflow-y-auto">
+    <div id="adminPanel" class="fixed inset-0 z-[200] bg-slate-950/95 backdrop-blur-xl hidden p-6 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="adminPanelTitle">
         <div class="max-w-2xl mx-auto space-y-8">
             <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-                <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                <h2 id="adminPanelTitle" class="text-2xl font-bold text-white flex items-center gap-3">
                     <i class="fa-solid fa-gears text-amber-400"></i> تحديث الأسعار يدوياً
                 </h2>
                 <div class="flex items-center gap-4">
-                    <button id="logoutBtn" class="text-xs text-red-400 border border-red-500/20 bg-red-500/10 px-3 py-1.5 rounded-lg hover:bg-red-500/20 transition">تسجيل الخروج</button>
-                    <button id="closeAdminBtn" class="text-slate-400 hover:text-white transition">
+                    <button id="logoutBtn" class="text-xs text-red-400 border border-red-500/20 bg-red-500/10 px-3 py-1.5 rounded-lg hover:bg-red-500/20 transition" aria-label="تسجيل الخروج من لوحة التحكم">تسجيل الخروج</button>
+                    <button id="closeAdminBtn" class="text-slate-400 hover:text-white transition" aria-label="إغلاق لوحة التحكم">
                         <i class="fa-solid fa-xmark text-2xl"></i>
                     </button>
                 </div>
@@ -967,58 +1025,72 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="glass-panel p-5 rounded-2xl space-y-4">
                     <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-widest">أسعار الذهب ($)</h3>
+                    <label for="manualGoldPrice" class="sr-only">سعر الأوقية</label>
                     <input type="number" id="manualGoldPrice" step="0.01" placeholder="سعر الأوقية" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-cyan-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4">
                     <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">أسعار الفضة ($)</h3>
+                    <label for="manualSilverPrice" class="sr-only">سعر أوقية الفضة</label>
                     <input type="number" id="manualSilverPrice" step="0.01" placeholder="سعر أوقية الفضة" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-cyan-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4">
                     <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-widest">USD / EGP (الجنيه)</h3>
+                    <label for="manualEGP" class="sr-only">سعر الدولار مقابل الجنيه المصري</label>
                     <input type="number" id="manualEGP" step="0.01" placeholder="USD / EGP" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-emerald-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4">
                     <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-widest">USD / SAR (الريال)</h3>
+                    <label for="manualSAR" class="sr-only">سعر الدولار مقابل الريال السعودي</label>
                     <input type="number" id="manualSAR" step="0.01" placeholder="USD / SAR" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-emerald-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4">
                     <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-widest">USD / EUR (اليورو)</h3>
+                    <label for="manualEUR" class="sr-only">سعر الدولار مقابل اليورو</label>
                     <input type="number" id="manualEUR" step="0.0001" placeholder="USD / EUR" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-emerald-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4">
                     <h3 class="text-sm font-bold text-amber-400 uppercase tracking-widest">ذهب عيار 24 ($)</h3>
+                    <label for="manual24k" class="sr-only">سعر عيار 24 بالدولار</label>
                     <input type="number" id="manual24k" step="0.01" placeholder="سعر عيار 24" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-amber-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4">
                     <h3 class="text-sm font-bold text-amber-400 uppercase tracking-widest">ذهب عيار 21 ($)</h3>
+                    <label for="manual21k" class="sr-only">سعر عيار 21 بالدولار</label>
                     <input type="number" id="manual21k" step="0.01" placeholder="سعر عيار 21" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-amber-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4">
                     <h3 class="text-sm font-bold text-amber-400 uppercase tracking-widest">ذهب عيار 18 ($)</h3>
+                    <label for="manual18k" class="sr-only">سعر عيار 18 بالدولار</label>
                     <input type="number" id="manual18k" step="0.01" placeholder="سعر عيار 18" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-amber-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4 border border-emerald-500/20">
                     <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-widest">ذهب عيار 24 (EGP)</h3>
+                    <label for="manual24kEGP" class="sr-only">سعر عيار 24 بالجنيه المصري</label>
                     <input type="number" id="manual24kEGP" step="0.01" placeholder="سعر عيار 24 بالمصري" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-emerald-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4 border border-emerald-500/20">
                     <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-widest">ذهب عيار 21 (EGP)</h3>
+                    <label for="manual21kEGP" class="sr-only">سعر عيار 21 بالجنيه المصري</label>
                     <input type="number" id="manual21kEGP" step="0.01" placeholder="سعر عيار 21 بالمصري" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-emerald-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4 border border-emerald-500/20">
                     <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-widest">ذهب عيار 18 (EGP)</h3>
+                    <label for="manual18kEGP" class="sr-only">سعر عيار 18 بالجنيه المصري</label>
                     <input type="number" id="manual18kEGP" step="0.01" placeholder="سعر عيار 18 بالمصري" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-emerald-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4 border border-cyan-500/20">
                     <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-widest">مصنعية عيار 24 (EGP)</h3>
+                    <label for="making24k" class="sr-only">مصنعية عيار 24 للجرام</label>
                     <input type="number" id="making24k" step="0.01" placeholder="المصنعية للجرام" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-cyan-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4 border border-cyan-500/20">
                     <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-widest">مصنعية عيار 21 (EGP)</h3>
+                    <label for="making21k" class="sr-only">مصنعية عيار 21 للجرام</label>
                     <input type="number" id="making21k" step="0.01" placeholder="المصنعية للجرام" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-cyan-500/50">
                 </div>
                 <div class="glass-panel p-5 rounded-2xl space-y-4 border border-cyan-500/20">
                     <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-widest">مصنعية عيار 18 (EGP)</h3>
+                    <label for="making18k" class="sr-only">مصنعية عيار 18 للجرام</label>
                     <input type="number" id="making18k" step="0.01" placeholder="المصنعية للجرام" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-cyan-500/50">
                 </div>
             </div>
@@ -1028,12 +1100,14 @@
                 <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
                     <i class="fa-solid fa-pen-to-square"></i> إضافة مقال جديد
                 </h3>
+                <label for="articleTitle" class="sr-only">عنوان المقال</label>
                 <input type="text" id="articleTitle" placeholder="عنوان المقال" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white outline-none focus:border-cyan-500/50">
+                <label for="articleImage" class="sr-only">رابط صورة المقال (URL)</label>
                 <input type="text" id="articleImage" placeholder="رابط صورة المقال (URL)" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white outline-none focus:border-cyan-500/50">
-                <div id="editor-container" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white outline-none focus-within:border-cyan-500/50 min-h-[150px]"></div>
+                <div id="editor-container" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white outline-none focus-within:border-cyan-500/50 min-h-[150px]" aria-label="محرر محتوى المقال"></div>
                 <div class="flex gap-4">
-                    <button id="addArticleBtn" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3 px-6 rounded-xl transition-all w-full">نشر المقال الآن</button>
-                    <button id="cancelEditBtn" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl transition-all w-full hidden">إلغاء التعديل</button>
+                    <button id="addArticleBtn" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3 px-6 rounded-xl transition-all w-full" aria-label="نشر المقال الآن">نشر المقال الآن</button>
+                    <button id="cancelEditBtn" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl transition-all w-full hidden" aria-label="إلغاء التعديل">إلغاء التعديل</button>
                 </div>
             </div>
 
@@ -1042,7 +1116,7 @@
                 <h4 class="text-lg font-bold text-cyan-400 flex items-center gap-2">
                     <i class="fa-solid fa-eye"></i> معاينة المقال المباشرة
                 </h4>
-                <div id="articlePreviewContainer" class="grid grid-cols-1">
+                <div id="articlePreviewContainer" class="grid grid-cols-1" aria-live="polite">
                     <!-- معاينة المقال ستظهر هنا -->
                 </div>
             </div>
@@ -1054,7 +1128,8 @@
                 </h3>
                 <!-- حقل البحث المضاف داخل لوحة التحكم -->
                 <div class="relative">
-                    <span class="absolute inset-y-0 start-0 flex items-center ps-3 text-slate-500">
+                    <label for="adminArticleSearch" class="sr-only">بحث عن مقال بالاسم</label>
+                    <span class="absolute inset-y-0 start-0 flex items-center ps-3 text-slate-500" aria-hidden="true">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i>
                     </span>
                     <input type="text" id="adminArticleSearch" placeholder="بحث عن مقال بالاسم..." class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 ps-10 pe-4 text-xs text-slate-200 focus:outline-none focus:border-red-500/50 transition">
@@ -1065,9 +1140,9 @@
                 </div>
             </div>
 
-            <button id="saveManualPrices" class="w-full py-4 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-cyan-500/20">تحديث البيانات للجميع</button>
+            <button id="saveManualPrices" class="w-full py-4 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-cyan-500/20" aria-label="تحديث البيانات للجميع">تحديث البيانات للجميع</button>
             <!-- زر إعادة تشغيل المحاكاة التلقائية -->
-            <button id="resetToAutoBtn" class="w-full py-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold rounded-2xl border border-red-500/20 transition-all flex items-center justify-center gap-3 mt-4">
+            <button id="resetToAutoBtn" class="w-full py-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold rounded-2xl border border-red-500/20 transition-all flex items-center justify-center gap-3 mt-4" aria-label="إعادة تشغيل المحاكاة وحذف البيانات السحابية">
                 <i class="fa-solid fa-rotate-left"></i>
                 إعادة تشغيل المحاكاة (حذف البيانات السحابية)
             </button>
@@ -1077,7 +1152,7 @@
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <i class="fa-solid fa-terminal text-cyan-400"></i> سجل عمليات الـ API
                 </h3>
-                <div id="apiLogs" class="max-h-32 overflow-y-auto space-y-2 font-mono text-[10px] text-slate-500">
+                <div id="apiLogs" class="max-h-32 overflow-y-auto space-y-2 font-mono text-[10px] text-slate-500" aria-live="polite">
                     <p class="italic text-center py-2">لا توجد سجلات حالياً...</p>
                 </div>
             </div>
@@ -1085,35 +1160,37 @@
     </div>
 
     <!-- 5. نافذة تسجيل الدخول (Login Modal) -->
-    <div id="loginModal" class="fixed inset-0 z-[250] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div id="loginModal" class="fixed inset-0 z-[250] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
         <div class="glass-panel w-full max-w-md p-8 rounded-3xl space-y-6">
             <div class="text-center">
-                <h2 class="text-xl font-bold text-white">دخول المدير</h2>
+                <h2 id="loginModalTitle" class="text-xl font-bold text-white">دخول المدير</h2>
                 <p class="text-xs text-slate-400 mt-2">يرجى تسجيل الدخول لتعديل الأسعار</p>
             </div>
             <form id="loginForm" class="space-y-4">
+                <label for="loginEmail" class="sr-only">البريد الإلكتروني</label>
                 <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" required class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white outline-none focus:border-cyan-500/50">
+                <label for="loginPassword" class="sr-only">كلمة المرور</label>
                 <input type="password" id="loginPassword" placeholder="كلمة المرور" required class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white outline-none focus:border-cyan-500/50">
                 <div class="text-right">
                     <label class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="rememberMeCheckbox" class="form-checkbox h-4 w-4 text-cyan-500 rounded border-slate-700 bg-slate-800 focus:ring-cyan-500">
                         <span class="ms-2 text-xs text-slate-400">تذكرني</span>
                     </label>
-                    <button type="button" id="forgotPasswordBtn" class="text-[10px] text-cyan-400 hover:underline transition">نسيت كلمة المرور؟</button>
+                    <button type="button" id="forgotPasswordBtn" class="text-[10px] text-cyan-400 hover:underline transition" aria-label="نسيت كلمة المرور؟">نسيت كلمة المرور؟</button>
                 </div>
-                <button type="submit" id="loginSubmitBtn" class="w-full py-3 bg-cyan-500 text-white font-bold rounded-xl hover:bg-cyan-600 transition flex items-center justify-center gap-2">
+                <button type="submit" id="loginSubmitBtn" class="w-full py-3 bg-cyan-500 text-white font-bold rounded-xl hover:bg-cyan-600 transition flex items-center justify-center gap-2" aria-label="تسجيل الدخول">
                     <span id="loginSpinner" class="hidden animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
                     <span>دخول</span>
                 </button>
             </form>
-            <button id="closeLoginBtn" class="w-full text-xs text-slate-500 hover:text-white transition">إلغاء</button>
+            <button id="closeLoginBtn" class="w-full text-xs text-slate-500 hover:text-white transition" aria-label="إلغاء تسجيل الدخول">إلغاء</button>
         </div>
     </div>
 
     <!-- نافذة التنبيه المنبثقة (Toast Notification) -->
-    <div id="alertToast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-32 opacity-0 transition-all duration-500 pointer-events-none w-[90%] max-w-sm">
+    <div id="alertToast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-32 opacity-0 transition-all duration-500 pointer-events-none w-[90%] max-w-sm" role="status" aria-live="polite">
         <div class="glass-panel border-cyan-500/40 p-4 rounded-2xl flex items-center gap-4 shadow-[0_0_50px_rgba(6,182,212,0.15)]">
-            <div class="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center text-cyan-400 glow-cyan">
+            <div class="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center text-cyan-400 glow-cyan" role="img" aria-label="أيقونة تنبيه">
                 <i class="fa-solid fa-triangle-exclamation animate-pulse"></i>
             </div>
             <div>
@@ -1124,16 +1201,16 @@
     </div>
 
     <!-- 6. نافذة عرض المقال كاملاً (Article Modal) -->
-    <div id="articleModal" class="fixed inset-0 z-[250] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div id="articleModal" class="fixed inset-0 z-[250] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="articleModalTitle">
         <div class="glass-panel w-full max-w-3xl h-[90vh] p-4 md:p-8 rounded-3xl space-y-6 flex flex-col overflow-hidden">
             <div class="flex justify-between items-center border-b border-slate-800 pb-4">
                 <h2 id="articleModalTitle" class="text-2xl font-bold text-white">عنوان المقال</h2>
-                <button id="closeArticleModalBtn" class="text-slate-400 hover:text-white transition">
+                <button id="closeArticleModalBtn" class="text-slate-400 hover:text-white transition" aria-label="إغلاق نافذة المقال">
                     <i class="fa-solid fa-xmark text-2xl"></i>
                 </button>
             </div>
             <div class="flex-1 overflow-y-auto px-2 space-y-6">
-                <img id="articleModalImage" src="" alt="صورة المقال" class="w-full h-48 md:h-64 object-cover rounded-2xl">
+                <img id="articleModalImage" src="" alt="صورة المقال" class="w-full h-48 md:h-64 object-cover rounded-2xl" width="600" height="300">
                 <p id="articleModalDate" class="text-xs text-cyan-400 font-bold uppercase tracking-widest"></p>
                 <div id="articleModalContent" class="text-sm text-slate-300 leading-relaxed quill-content">
                     <!-- محتوى المقال هنا -->
@@ -1143,8 +1220,8 @@
     </div>
 
     <!-- زر التنقل السريع للأعلى والأسفل (Smart Scroll FAB) -->
-    <button id="scrollToTopBottomBtn" class="fixed bottom-24 md:bottom-8 left-6 md:left-8 w-14 h-14 bg-cyan-500/10 backdrop-blur-xl border border-cyan-500/40 text-cyan-400 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.15)] flex items-center justify-center z-[150] transition-all transform hover:scale-110 active:scale-95 hidden group overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+    <button id="scrollToTopBottomBtn" class="fixed bottom-24 md:bottom-8 left-6 md:left-8 w-14 h-14 bg-cyan-500/10 backdrop-blur-xl border border-cyan-500/40 text-cyan-400 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.15)] flex items-center justify-center z-[150] transition-all transform hover:scale-110 active:scale-95 hidden group overflow-hidden" aria-label="التنقل لأعلى أو لأسفل الصفحة">
+        <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true"></div>
         <i id="scrollIcon" class="fa-solid fa-arrow-down text-xl glow-cyan relative z-10 group-hover:animate-bounce"></i>
     </button>
 

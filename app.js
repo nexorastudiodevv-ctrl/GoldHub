@@ -87,9 +87,14 @@ const domElements = {
     silverTrend: document.getElementById('silverTrend'),
     platinumTrend: document.getElementById('platinumTrend'),
     currencyList: document.getElementById('currencyList'),
+    nearbySection: document.getElementById('nearbySection'),
+    nearbyExchangesList: document.getElementById('nearbyExchangesList'),
     conversionResult: document.getElementById('conversionResult'),
     amountInput: document.getElementById('amountInput'),
+    searchNewAreaBtn: document.getElementById('searchNewAreaBtn'),
+    searchNewAreaText: document.getElementById('searchNewAreaText'),
     baseCurrency: document.getElementById('baseCurrency'),
+    displayCurrency: document.getElementById('displayCurrency'),
     targetCurrency: document.getElementById('targetCurrency'),
     conversionResultDisplay: document.getElementById('conversionResultDisplay'),
     baseFlagImg: document.getElementById('baseFlagImg'),
@@ -111,9 +116,32 @@ const domElements = {
     notificationsList: document.getElementById('notificationsList'),
     bellDot: document.getElementById('bellDot'),
     converterSearch: document.getElementById('converterSearch'),
+    alertThreshold: document.getElementById('alertThreshold'),
+    setAlertBtn: document.getElementById('setAlertBtn'),
+    soundSelect: document.getElementById('soundSelect'),
+    alertDirection: document.getElementById('alertDirection'), // إضافة عنصر اتجاه التنبيه
     editorContainer: document.getElementById('editor-container'),
     articlePreviewContainer: document.getElementById('articlePreviewContainer')
 };
+
+// تحسين الأداء: إنشاء كائنات تنسيق الأرقام مرة واحدة وإعادة استخدامها
+const formatters = {
+    usd: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }),
+    egp: new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    metal: new Intl.NumberFormat('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 }),
+    crypto: new Intl.NumberFormat('en-US', { minimumFractionDigits: 6 })
+};
+
+// دالة Debounce لتحسين أداء البحث والمدخلات
+function debounce(func, timeout = 300) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            func.apply(this, args);
+        }, timeout);
+    };
+}
 
 // وظيفة لإضافة إشعار جديد إلى القائمة
 window.addInternalNotification = (title, id, type = 'article') => {
@@ -509,45 +537,37 @@ onValue(articlesRef, (snapshot) => {
 });
 
 function calculateConversion() {
-    const amountInput = document.getElementById('amountInput');
-    const baseCurrency = document.getElementById('baseCurrency');
-    const targetCurrency = document.getElementById('targetCurrency');
-    const resultDisplay = document.getElementById('conversionResultDisplay');
-    const resultText = document.getElementById('conversionResult');
-
-    if (!amountInput || !baseCurrency || !targetCurrency) return;
-
-    const amount = parseFloat(amountInput.value) || 0;
-    const fromCurrency = baseCurrency.value;
-    const toCurrency = targetCurrency.value;
+    // استخدام العناصر المخزنة في domElements لتحسين الأداء
+    const amount = parseFloat(domElements.amountInput?.value) || 0;
+    // إذا لم يوجد عنصر baseCurrency في القالب، نفترض USD كعملة أساسية
+    const fromCurrency = domElements.baseCurrency ? domElements.baseCurrency.value : "USD";
+    const toCurrency = domElements.targetCurrency?.value || "EGP";
 
     // مزامنة أسعار المعادن الحالية قبل إجراء عملية التحويل
     if (goldPrice > 0) exchangeRates["XAU"] = 1 / goldPrice;
     if (silverPrice > 0) exchangeRates["XAG"] = 1 / silverPrice;
     if (platinumPrice > 0) exchangeRates["XPT"] = 1 / platinumPrice;
     
-    // تأكيد وجود الدولار لتجنب القسمة على صفر
+    // تأكيد وجود العملات المرجعية لتجنب الأخطاء الحسابية
     exchangeRates["USD"] = 1;
 
     const fromRate = exchangeRates[fromCurrency] || 0;
     const toRate = exchangeRates[toCurrency] || 0;
 
     if (fromRate === 0 || toRate === 0) {
-        if (resultText) resultText.textContent = "---";
+        if (domElements.conversionResult) domElements.conversionResult.textContent = "---";
         return;
     }
 
+    // العملية الحسابية الأساسية: تحويل المبلغ للعملة الأساسية (الدولار) ثم للعملة المستهدفة
     const result = amount * (toRate / fromRate);
     const isMetal = ['XAU', 'XAG', 'XPT'].includes(toCurrency);
-    const precision = isMetal ? 4 : 2;
     
-    const formatted = result.toLocaleString('en-US', {
-        minimumFractionDigits: precision,
-        maximumFractionDigits: precision
-    });
+    // استخدام الفورمات المجهز مسبقاً حسب نوع العملة
+    const formatted = isMetal ? formatters.metal.format(result) : formatters.egp.format(result);
 
-    if (resultDisplay) resultDisplay.textContent = formatted;
-    if (resultText) resultText.textContent = `${formatted} ${toCurrency}`;
+    if (domElements.conversionResultDisplay) domElements.conversionResultDisplay.textContent = formatted;
+    if (domElements.conversionResult) domElements.conversionResult.textContent = `${formatted} ${toCurrency}`;
 
     // تحديث الأعلام الصورية في الواجهة
     if (domElements.baseFlagImg) {
@@ -559,37 +579,40 @@ function calculateConversion() {
 }
 
 function updateUI() {
-    const egpRate = exchangeRates["EGP"] || 1;
+    // جلب العملة المختارة للعرض (EGP, USD, SAR, etc.)
+    const selectedDisplayCurrency = domElements.displayCurrency?.value || "EGP";
+    const displayRate = exchangeRates[selectedDisplayCurrency] || 1;
+    const currencySymbol = selectedDisplayCurrency;
 
     // تحديث الرسم البياني فقط عند استدعاء تحديث الواجهة ببيانات جديدة
     updateChart(goldPrice);
     
     // تحديث السعر الرئيسي بالدولار
     if (domElements.mainGoldPrice) {
-        domElements.mainGoldPrice.textContent = `$${goldPrice.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        domElements.mainGoldPrice.textContent = formatters.usd.format(goldPrice);
     }
     
     const baseK24 = caratPrices.k24 || (goldPrice / OUNCE_TO_GRAM);
     const baseK21 = caratPrices.k21 || (baseK24 * 0.875);
     const baseK18 = caratPrices.k18 || (baseK24 * 0.75);
 
-    // تحديث أسعار الذهب بالجنيه المصري
-    if (domElements.price24k) domElements.price24k.textContent = `${(baseK24 * egpRate + (makingCharges.k24 || 0)).toLocaleString(undefined, {minimumFractionDigits: 2})} EGP`;
-    if (domElements.price21k) domElements.price21k.textContent = `${(baseK21 * egpRate + (makingCharges.k21 || 0)).toLocaleString(undefined, {minimumFractionDigits: 2})} EGP`;
-    if (domElements.price18k) domElements.price18k.textContent = `${(baseK18 * egpRate + (makingCharges.k18 || 0)).toLocaleString(undefined, {minimumFractionDigits: 2})} EGP`;
+    // تحديث أسعار الذهب بالعملة المختارة (ديناميكي)
+    if (domElements.price24k) domElements.price24k.textContent = `${formatters.egp.format(baseK24 * displayRate + (makingCharges.k24 || 0))} ${currencySymbol}`;
+    if (domElements.price21k) domElements.price21k.textContent = `${formatters.egp.format(baseK21 * displayRate + (makingCharges.k21 || 0))} ${currencySymbol}`;
+    if (domElements.price18k) domElements.price18k.textContent = `${formatters.egp.format(baseK18 * displayRate + (makingCharges.k18 || 0))} ${currencySymbol}`;
     
     // تحديث أسعار المعادن الأخرى
-    if (domElements.silverPrice) domElements.silverPrice.textContent = `$${silverPrice.toFixed(2)}`;
-    if (domElements.platinumPrice) domElements.platinumPrice.textContent = `$${platinumPrice.toFixed(2)}`;
+    if (domElements.silverPrice) domElements.silverPrice.textContent = formatters.usd.format(silverPrice);
+    if (domElements.platinumPrice) domElements.platinumPrice.textContent = formatters.usd.format(platinumPrice);
     
-    // تحديث عيارات الفضة بالجنيه
-    const silverGramEGP = (silverPrice / OUNCE_TO_GRAM) * egpRate;
+    // تحديث عيارات الفضة بالعملة المختارة
+    const silverGramDisplay = (silverPrice / OUNCE_TO_GRAM) * displayRate;
     const silverElements = {
         'silver-999': 0.999, 'silver-925': 0.925, 'silver-900': 0.900, 'silver-800': 0.800
     };
     Object.entries(silverElements).forEach(([id, multiplier]) => {
         const el = document.getElementById(id);
-        if (el) el.textContent = `${(silverGramEGP * multiplier).toFixed(2)} EGP`;
+        if (el) el.textContent = `${formatters.egp.format(silverGramDisplay * multiplier)} ${currencySymbol}`;
     });
 
     // تحديث مؤشرات التغيير
@@ -612,10 +635,40 @@ function updateUI() {
 
 function simulateMarket() {
     let alertThreshold = localStorage.getItem('goldPriceAlert') ? parseFloat(localStorage.getItem('goldPriceAlert')) : null;
-    if (alertThreshold && goldPrice >= alertThreshold) {
-        if (Notification.permission === "granted") new Notification("تنبيه الذهب", { body: `وصل السعر إلى $${goldPrice}` });
-        showToast(`وصل السعر إلى $${goldPrice}`);
+    let alertSound = localStorage.getItem('selectedNotificationSound');
+    let alertDirection = localStorage.getItem('alertDirection') || 'above'; // 'above' or 'below'
+
+    // التحقق من شرط التنبيه بناءً على الاتجاه
+    if (alertThreshold !== null && ((alertDirection === 'above' && goldPrice >= alertThreshold) || (alertDirection === 'below' && goldPrice <= alertThreshold))) {
+        // 1. تشغيل نغمة التنبيه المختارة
+        if (alertSound) {
+            const audio = new Audio(alertSound);
+            audio.play().catch(e => console.warn("Audio playback failed:", e));
+        }
+
+        // 2. إرسال إشعار النظام
+        if (Notification.permission === "granted") {
+            new Notification("تنبيه الذهب | GoldHub", { 
+                body: `وصل سعر الذهب الآن إلى $${goldPrice}`,
+                icon: 'icon.png'
+            });
+        }
+        
+        // إضافة الاهتزاز للهواتف لتعزيز التنبيه "الحقيقي"
+        if ("vibrate" in navigator) {
+            navigator.vibrate([200, 100, 200]);
+        }
+
+        // 3. عرض رسالة Toast وتصفير التنبيه بعد إطلاقه
+        showToast(`تم الوصول للسعر المستهدف: $${goldPrice}`);
+        addApiLog(`🔔 تنبيه: وصل السعر للهدف $${alertThreshold}`);
         localStorage.removeItem('goldPriceAlert');
+        
+        // مسح قيمة المدخل في الواجهة
+        if (domElements.alertThreshold) domElements.alertThreshold.value = '';
+        // إعادة شكل الزر للوضع الافتراضي (أزرق)
+        domElements.setAlertBtn?.classList.remove('bg-amber-500/20', 'text-amber-400', 'border-amber-500/40');
+        domElements.setAlertBtn?.classList.add('bg-cyan-500/10', 'text-cyan-400', 'border-cyan-500/20');
     }
 }
 
@@ -632,7 +685,7 @@ window.showSection = (sectionName) => {
     // العودة للأعلى تلقائياً عند تغيير القسم
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-     const sections = ['goldSection', 'currencySection', 'walletSection', 'articlesSection', 'aboutSection', 'contactSection', 'privacySection', 'faqSection'];
+     const sections = ['goldSection', 'currencySection', 'walletSection', 'articlesSection', 'aboutSection', 'contactSection', 'privacySection', 'faqSection', 'nearbySection'];
     sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
     
     if (sectionName === 'home') {
@@ -642,6 +695,10 @@ window.showSection = (sectionName) => {
     } else {
         document.getElementById(sectionName + 'Section')?.classList.remove('hidden');
         document.getElementById('latestArticlesHome')?.classList.add('hidden');
+    }
+
+    if (sectionName === 'nearby') {
+        initMap();
     }
 
     // تحديث الحالة النشطة في أزرار التنقل للهواتف
@@ -655,6 +712,232 @@ window.showSection = (sectionName) => {
     });
     const activeId = 'mobile' + sectionName.charAt(0).toUpperCase() + sectionName.slice(1) + 'Link';
     document.getElementById(activeId)?.classList.add('text-cyan-400');
+};
+
+// دالة حساب المسافة بين نقطتين (صيغة هافرسين)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // نصف قطر الأرض بالكيلومتر
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // المسافة بالكيلومتر
+}
+
+// تعريف أيقونة مخصصة لمكاتب الصرافة
+const exchangeIcon = L.divIcon({
+    className: 'custom-exchange-icon', // يمكن استخدام هذه الفئة لتخصيص إضافي في CSS
+    html: '<div class="bg-cyan-500/80 border border-cyan-500 rounded-full w-8 h-8 flex items-center justify-center text-white text-sm shadow-lg"><i class="fa-solid fa-money-bill-transfer"></i></div>',
+    iconSize: [32, 32], // حجم الأيقونة
+    iconAnchor: [16, 32], // نقطة ارتكاز الأيقونة (أسفل المنتصف)
+    popupAnchor: [0, -32] // نقطة ظهور النافذة المنبثقة بالنسبة لنقطة الارتكاز
+});
+// --- منطق الخريطة ---
+let initialUserLat = 0; // لتخزين خط العرض الأولي للمستخدم/مصر
+let initialUserLon = 0; // لتخزين خط الطول الأولي للمستخدم/مصر
+let isSelectingNewArea = false; // لتحديد ما إذا كان المستخدم في وضع اختيار منطقة جديدة
+let currentSearchCenterMarker = null; // العلامة التي تشير إلى مركز البحث الحالي
+
+// كائنات الخريطة والعلامات
+let leafletMap = null;
+let mapMarkers = [];
+
+async function initMap() {
+    if (!document.getElementById('map')) return;
+    
+    // إذا كانت الخريطة موجودة بالفعل، لا ننشئها من جديد
+    if (leafletMap) return;
+
+    addApiLog("🗺️ جاري تهيئة الخريطة...");
+    
+    // إحداثيات وسط جمهورية مصر العربية للعرض الشامل
+    const egyptLat = 26.8206;
+    const egyptLon = 30.8025;
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        initialUserLat = lat;
+        initialUserLon = lon;
+        setupMap(lat, lon, 14); // تقريب عالي لموقع المستخدم
+    }, () => {
+        showToast("يتم الآن عرض خريطة جمهورية مصر العربية.");
+        initialUserLat = egyptLat;
+        initialUserLon = egyptLon;
+        setupMap(egyptLat, egyptLon, 6); // تقريب منخفض لعرض خريطة مصر بالكامل
+    });
+}
+
+function setupMap(lat, lon, zoom = 14) {
+    leafletMap = L.map('map').setView([lat, lon], zoom);
+    // إنشاء pane مخصص لطبقة التسميات لضمان ظهورها فوق كل شيء آخر (بما في ذلك العلامات)
+    leafletMap.createPane('labelsPane');
+    leafletMap.getPane('labelsPane').style.zIndex = 650; // أعلى من العلامات (600)
+    leafletMap.getPane('labelsPane').style.pointerEvents = 'none'; // السماح بالنقرات بالمرور من خلالها
+    
+    // تعريف طبقات الخريطة
+    const layers = {
+        osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }),
+        satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar'
+        }),
+        labels: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+            attribution: '© CartoDB',
+            pane: 'labelsPane' // استخدام الـ pane المخصص
+        })
+    };
+
+    // البدء بخريطة القمر الصناعي مع طبقة التسميات افتراضياً
+    layers.satellite.addTo(leafletMap);
+    layers.labels.addTo(leafletMap);
+    let activeLayerKey = 'satellite';
+
+    // منطق تبديل الطبقات عند النقر على الزر
+    const toggleBtn = document.getElementById('toggleMapLayerBtn');
+    const toggleText = document.getElementById('mapLayerText');
+    if (toggleText) toggleText.textContent = "خريطة عادية"; // النص الأولي للزر
+
+    if (toggleBtn) {
+        toggleBtn.onclick = () => {
+            if (activeLayerKey === 'satellite') {
+                // التبديل إلى خريطة عادية (OSM)
+                leafletMap.removeLayer(layers.satellite);
+                leafletMap.removeLayer(layers.labels);
+                layers.osm.addTo(leafletMap);
+                activeLayerKey = 'osm';
+                if (toggleText) toggleText.textContent = "قمر صناعي";
+            } else {
+                // التبديل إلى قمر صناعي + تسميات
+                leafletMap.removeLayer(layers.osm);
+                layers.satellite.addTo(leafletMap);
+                layers.labels.addTo(leafletMap); // إضافة التسميات مرة أخرى
+                activeLayerKey = 'satellite';
+                if (toggleText) toggleText.textContent = "خريطة عادية";
+            }
+        };
+    }
+
+    // إضافة مستمع لحدث النقر على الخريطة
+    leafletMap.on('click', handleMapClick);
+    // إضافة مستمع لحدث حركة الماوس لتغيير المؤشر
+    leafletMap.on('mousemove', handleMapMouseMove);
+
+    // جلب مكاتب الصرافة القريبة بناءً على الموقع الحالي
+    fetchNearbyExchanges(lat, lon);
+}
+
+function clearMapMarkers() {
+    mapMarkers.forEach(marker => {
+        if (leafletMap && leafletMap.hasLayer(marker)) {
+            leafletMap.removeLayer(marker);
+        }
+    });
+    mapMarkers = [];
+
+    if (currentSearchCenterMarker && leafletMap && leafletMap.hasLayer(currentSearchCenterMarker)) {
+        leafletMap.removeLayer(currentSearchCenterMarker);
+        currentSearchCenterMarker = null;
+    }
+}
+
+function handleMapClick(e) {
+    if (isSelectingNewArea) {
+        isSelectingNewArea = false;
+        leafletMap.getContainer().style.cursor = ''; // إعادة المؤشر الافتراضي
+        if (domElements.searchNewAreaText) domElements.searchNewAreaText.textContent = "بحث في منطقة أخرى";
+        showToast("جاري البحث في المنطقة الجديدة...");
+        fetchNearbyExchanges(e.latlng.lat, e.latlng.lng);
+    }
+}
+
+function handleMapMouseMove() {
+    if (isSelectingNewArea) {
+        leafletMap.getContainer().style.cursor = 'crosshair'; // تغيير المؤشر إلى علامة زائد
+    } else {
+        leafletMap.getContainer().style.cursor = ''; // إعادة المؤشر الافتراضي
+    }
+}
+
+async function fetchNearbyExchanges(lat, lon) {
+    const radius = 5000; // 5 كيلومتر
+    
+    // مسح العلامات القديمة قبل جلب الجديدة
+    clearMapMarkers();
+
+    // إضافة علامة لمركز البحث الحالي
+    currentSearchCenterMarker = L.marker([lat, lon]).addTo(leafletMap)
+        .bindPopup('<b>مركز البحث الحالي</b>').openPopup();
+
+    const query = `[out:json];node(around:${radius},${lat},${lon})["amenity"="bureau_de_change"];out;`;
+    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (domElements.nearbyExchangesList) domElements.nearbyExchangesList.innerHTML = ""; // مسح القائمة الجانبية
+
+        data.elements.forEach(el => {
+            // إنشاء محتوى النافذة المنبثقة مع زر الاتجاهات
+            const popupContent = `
+                <div class="text-right font-sans">
+                    <b class="text-slate-900 block mb-1">${name}</b>
+                    <span class="text-[10px] text-cyan-600 font-bold"><i class="fa-solid fa-location-dot"></i> يبعد عنك ${dist} كم</span>
+                    <div class="mt-3 border-t border-slate-100 pt-2">
+                        <button onclick="window.openDirections(${el.lat}, ${el.lon})" 
+                                class="bg-cyan-500 hover:bg-cyan-600 text-white text-[10px] font-bold py-1.5 px-3 rounded-lg transition-all flex items-center gap-2 w-full justify-center">
+                            <i class="fa-solid fa-diamond-turn-right"></i> الحصول على الاتجاهات
+                        </button>
+                    </div>
+                </div>
+            `;
+            const name = el.tags['name:ar'] || el.tags.name || "مكتب صرافة";
+            const dist = calculateDistance(lat, lon, el.lat, el.lon).toFixed(2);
+            const marker = L.marker([el.lat, el.lon], { icon: exchangeIcon }).addTo(leafletMap);
+            marker.bindPopup(popupContent);
+            mapMarkers.push(marker);
+
+            // إضافة المكتب إلى القائمة النصية الجانبية
+            if (domElements.nearbyExchangesList) {
+                const item = document.createElement('div');
+                item.className = "p-3 bg-slate-900/40 border border-slate-800 rounded-xl hover:border-cyan-500/30 transition cursor-pointer group";
+                item.innerHTML = `
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="overflow-hidden">
+                            <p class="text-xs font-bold text-white group-hover:text-cyan-400 transition-colors truncate">${name}</p>
+                            <p class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-location-dot"></i> يبعد ${dist} كم</p>
+                        </div>
+                    </div>
+                `;
+                item.onclick = () => {
+                    leafletMap.setView([el.lat, el.lon], 16);
+                    marker.openPopup();
+                };
+                domElements.nearbyExchangesList.appendChild(item);
+            }
+        });
+
+        if (data.elements.length === 0) {
+            showToast("لم يتم العثور على مكاتب صرافة قريبة جداً.");
+            if (domElements.nearbyExchangesList) domElements.nearbyExchangesList.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-10">لم يتم العثور على مكاتب قريبة</p>';
+        } else {
+            addApiLog(`✅ تم العثور على ${data.elements.length} مكتب صرافة.`);
+        }
+    } catch (err) {
+        addApiLog("❌ فشل جلب بيانات المكاتب.");
+    }
+}
+
+// وظيفة عالمية لفتح خرائط جوجل بالاتجاهات
+window.openDirections = (lat, lon) => {
+    // استخدام رابط Universal Link لفتح خرائط جوجل مباشرة
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+    window.open(url, '_blank');
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -710,12 +993,56 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(() => { if (!isManualMode) fetchApiPrices(); }, 60000);
     
     // --- أحداث لوحة التحكم ---
-    document.getElementById('searchInput')?.addEventListener('input', renderCurrencies);
-    document.getElementById('converterSearch')?.addEventListener('input', renderConverterOptions);
+    // استخدام Debounce للبحث لتقليل العمليات الحسابية المتكررة أثناء الكتابة السريعة
+    const debouncedRenderCurrencies = debounce(() => renderCurrencies());
+    const debouncedRenderOptions = debounce(() => renderConverterOptions());
+    document.getElementById('searchInput')?.addEventListener('input', debouncedRenderCurrencies);
+    document.getElementById('converterSearch')?.addEventListener('input', debouncedRenderOptions);
     document.getElementById('amountInput')?.addEventListener('input', calculateConversion);
     document.getElementById('baseCurrency')?.addEventListener('change', calculateConversion);
     document.getElementById('targetCurrency')?.addEventListener('change', calculateConversion);
     document.getElementById('amountInput')?.addEventListener('change', calculateConversion);
+
+    // حدث التحديد التلقائي للموقع والدولة
+    document.getElementById('autoDetectBtn')?.addEventListener('click', async () => {
+        addApiLog("📍 جاري تحديد موقعك...");
+        try {
+            const res = await fetch('https://ipapi.co/json/');
+            const data = await res.json();
+            
+            if (data.currency) {
+                const detectedCurrency = data.currency;
+                const select = domElements.displayCurrency;
+                
+                // إضافة العملة للقائمة إذا لم تكن موجودة
+                const optionExists = Array.from(select.options).some(opt => opt.value === detectedCurrency);
+                if (!optionExists) {
+                    const newOpt = new Option(`عرض بـ (${detectedCurrency})`, detectedCurrency);
+                    select.add(newOpt);
+                }
+                select.value = detectedCurrency;
+
+                // تحديد اللغة بناءً على قائمة الدول العربية
+                const arabCountries = ['EG', 'SA', 'AE', 'KW', 'QA', 'BH', 'OM', 'JO', 'LB', 'SY', 'IQ', 'MA', 'DZ', 'TN', 'LY', 'SD', 'YE', 'PS'];
+                currentLang = arabCountries.includes(data.country_code) ? 'ar' : 'en';
+                
+                localStorage.setItem('site_lang', currentLang);
+                applyTranslations();
+                updateUI();
+                
+                showToast(`تم التحديد: ${data.country_name} (${detectedCurrency})`);
+                addApiLog(`✅ تم تحديد الموقع: ${data.country_name}`);
+            }
+        } catch (error) {
+            addApiLog("❌ فشل تحديد الموقع تلقائياً");
+            showToast("عذراً، تعذر تحديد الموقع");
+        }
+    });
+
+    // تحديث الواجهة عند تغيير عملة العرض يدوياً
+    domElements.displayCurrency?.addEventListener('change', () => {
+        updateUI();
+    });
 
     // ميزة تبديل العملات
     domElements.swapCurrenciesBtn?.addEventListener('click', () => {
@@ -728,8 +1055,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // إغلاق مودال المقال
     document.getElementById('closeArticleModalBtn')?.addEventListener('click', () => domElements.articleModal.classList.add('hidden'));
 
-    // فتح لوحة التحكم أو تسجيل الدخول
-    document.getElementById('openAdminBtn').addEventListener('click', () => {
+    // وظيفة فتح لوحة التحكم المشتركة
+    const handleOpenAdmin = () => {
         if (auth.currentUser?.email === ADMIN_EMAIL) {
             domElements.adminPanel.classList.remove('hidden');
             // تعبئة القيم الحالية في المدخلات اليدوية عند الفتح
@@ -741,6 +1068,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             domElements.loginModal.classList.remove('hidden');
         }
+    };
+
+    // ربط الحدث بزر الكمبيوتر وزر الهاتف
+    document.getElementById('openAdminBtn')?.addEventListener('click', handleOpenAdmin);
+    document.getElementById('mobileAdminBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleOpenAdmin();
     });
 
     // إغلاق لوحة التحكم
@@ -820,6 +1154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'homeLink', section: 'home' }, { id: 'mobileHomeLink', section: 'home' },
         { id: 'goldMarketsLink', section: 'gold' }, { id: 'mobileGoldLink', section: 'gold' },
         { id: 'currencyMarketsLink', section: 'currency' }, { id: 'mobileCurrencyLink', section: 'currency' },
+        { id: 'nearbyLink', section: 'nearby' }, { id: 'mobileNearbyLink', section: 'nearby' },
         { id: 'articlesLink', section: 'articles' }, { id: 'mobileArticlesLink', section: 'articles' },
         { id: 'faqLink', section: 'faq' },
         { id: 'walletLink', section: 'wallet' }, { id: 'mobileWalletLink', section: 'wallet' },
@@ -837,6 +1172,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // تبديل اللغة
     document.getElementById('langToggle')?.addEventListener('click', window.toggleLanguage);
+
+    // --- برمجة زر ضبط التنبيه ---
+    domElements.setAlertBtn?.addEventListener('click', () => {
+        const threshold = parseFloat(domElements.alertThreshold.value);
+        const selectedSound = domElements.soundSelect.value;
+        const selectedDirection = domElements.alertDirection.value; // جلب اتجاه التنبيه
+
+        if (threshold > 0) {
+            // طلب إذن الإشعارات برمجياً عند التفعيل لضمان عملها "حقيقياً"
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
+
+            localStorage.setItem('goldPriceAlert', threshold);
+            localStorage.setItem('selectedNotificationSound', selectedSound);
+            localStorage.setItem('alertDirection', selectedDirection); // حفظ اتجاه التنبيه
+            showToast(`تم ضبط التنبيه: ${selectedDirection === 'above' ? 'أعلى من' : 'أقل من'} $${threshold}`);
+            addApiLog(`🎯 تم ضبط تنبيه السعر ${selectedDirection === 'above' ? 'أعلى من' : 'أقل من'} $${threshold}`);
+            
+            // تغيير شكل الزر ليوضح أن هناك تنبيهاً نشطاً (ذهبي)
+            domElements.setAlertBtn.classList.remove('bg-cyan-500/10', 'text-cyan-400', 'border-cyan-500/20');
+            domElements.setAlertBtn.classList.add('bg-amber-500/20', 'text-amber-400', 'border-amber-500/40');
+        } else {
+            showToast("يرجى إدخال سعر صحيح للتنبيه");
+        }
+    });
+
+    // استعادة حالة التنبيه النشط عند فتح الصفحة (Persistence)
+    const savedAlert = localStorage.getItem('goldPriceAlert');
+    if (savedAlert && domElements.alertThreshold && domElements.setAlertBtn) {
+        domElements.alertThreshold.value = savedAlert;
+        domElements.setAlertBtn.classList.remove('bg-cyan-500/10', 'text-cyan-400', 'border-cyan-500/20');
+        domElements.setAlertBtn.classList.add('bg-amber-500/20', 'text-amber-400', 'border-amber-500/40');
+        if (localStorage.getItem('alertDirection')) {
+            domElements.alertDirection.value = localStorage.getItem('alertDirection');
+        }
+    }
+
+    // حدث زر "بحث في منطقة أخرى"
+    domElements.searchNewAreaBtn?.addEventListener('click', () => {
+        isSelectingNewArea = !isSelectingNewArea;
+        if (isSelectingNewArea) {
+            if (domElements.searchNewAreaText) domElements.searchNewAreaText.textContent = "انقر على الخريطة...";
+            showToast("انقر على الخريطة لتحديد منطقة البحث الجديدة.");
+        } else {
+            if (domElements.searchNewAreaText) domElements.searchNewAreaText.textContent = "بحث في منطقة أخرى";
+            leafletMap.getContainer().style.cursor = ''; // إعادة المؤشر الافتراضي
+            showToast("تم إلغاء وضع البحث في منطقة أخرى.");
+        }
+    });
+
+    // تحديث الخريطة
+    document.getElementById('refreshMapBtn')?.addEventListener('click', () => {
+        if (leafletMap) {
+            leafletMap.remove(); // حذف كائن الخريطة القديم من الذاكرة
+            leafletMap = null;
+        }
+        document.getElementById('map').innerHTML = "";
+        if (domElements.nearbyExchangesList) domElements.nearbyExchangesList.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-10">جاري البحث عن مكاتب قريبة...</p>';
+        // إعادة تهيئة الخريطة والبحث عن المكاتب في الموقع الأولي
+        initMap();
+    });
 
     // حفظ الأسعار يدوياً إلى Firebase
     document.getElementById('saveManualPrices')?.addEventListener('click', async () => {
