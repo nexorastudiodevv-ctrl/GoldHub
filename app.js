@@ -87,6 +87,7 @@ const domElements = {
     silverTrend: document.getElementById('silverTrend'),
     platinumTrend: document.getElementById('platinumTrend'),
     currencyList: document.getElementById('currencyList'),
+    marketTabs: document.getElementById('marketTabs'),
     nearbySection: document.getElementById('nearbySection'),
     nearbyExchangesList: document.getElementById('nearbyExchangesList'),
     conversionResult: document.getElementById('conversionResult'),
@@ -130,6 +131,93 @@ const formatters = {
     egp: new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
     metal: new Intl.NumberFormat('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 }),
     crypto: new Intl.NumberFormat('en-US', { minimumFractionDigits: 6 })
+};
+
+// نظام التبويبات (Tabs) لتنظيم الواجهة
+let activeMarketTab = 'gold';
+
+window.switchMarketTab = (tabId) => {
+    activeMarketTab = tabId;
+
+    // 1. إضافة Haptic Feedback (اهتزاز لمسي خفيف جداً) للهواتف
+    if ("vibrate" in navigator) {
+        navigator.vibrate(15); // اهتزاز قصير جداً (15 ملي ثانية) لمحاكاة نقرة حقيقية
+    }
+
+    // 2. تشغيل صوت نقرة بسيطة (UI Click Sound)
+    try {
+        const tapSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
+        tapSound.volume = 0.2; // مستوى صوت منخفض ليكون غير مزعج
+        tapSound.play().catch(e => {}); // تجاهل الخطأ إذا حظر المتصفح التشغيل التلقائي
+    } catch (e) {}
+    
+    // تحديث شكل أزرار التبويبات
+    document.querySelectorAll('.market-tab-btn').forEach(btn => {
+        const isActive = btn.dataset.marketTab === tabId;
+        btn.classList.toggle('bg-cyan-500/10', isActive);
+        btn.classList.toggle('text-cyan-400', isActive);
+        btn.classList.toggle('border', isActive);
+        btn.classList.toggle('border-cyan-500/20', isActive);
+        btn.classList.toggle('text-slate-500', !isActive);
+        btn.setAttribute('aria-selected', isActive);
+    });
+
+    // جلب العناصر الأساسية
+    const goldSection = document.getElementById('goldSection');
+    const currencySection = document.getElementById('currencySection');
+    const goldMainCard = document.getElementById('goldMainCard');
+    const goldCaratsGrid = document.getElementById('goldCaratsGrid');
+    const metalsGrid = document.getElementById('metalsGrid');
+    const converter = document.getElementById('currencyConverterContainer');
+
+    const isDesktop = window.innerWidth >= 1024;
+
+    if (!isDesktop) {
+        // منطق الهواتف: إخفاء الأقسام غير المطلوبة تماماً
+        goldSection.classList.toggle('hidden', tabId !== 'gold' && tabId !== 'metals');
+        currencySection.classList.toggle('hidden', tabId !== 'currencies' && tabId !== 'favorites');
+        
+        if (tabId === 'gold') {
+            goldMainCard.classList.remove('hidden');
+            goldCaratsGrid.classList.remove('hidden');
+            metalsGrid.classList.add('hidden');
+        } else if (tabId === 'metals') {
+            goldMainCard.classList.add('hidden');
+            goldCaratsGrid.classList.add('hidden');
+            metalsGrid.classList.remove('hidden');
+        }
+        
+        if (converter) converter.classList.toggle('hidden', tabId === 'favorites');
+    } else {
+        // منطق الكمبيوتر: توسيع القسم النشط وتوزيع المساحات
+        goldSection.classList.remove('hidden', 'lg:col-span-2', 'lg:col-span-3');
+        currencySection.classList.remove('hidden', 'lg:col-span-1', 'lg:col-span-3');
+
+        if (tabId === 'gold' || tabId === 'metals') {
+            goldSection.classList.add('lg:col-span-3');
+            currencySection.classList.add('hidden');
+            goldMainCard.classList.toggle('hidden', tabId !== 'gold');
+            goldCaratsGrid.classList.toggle('hidden', tabId !== 'gold');
+            metalsGrid.classList.toggle('hidden', tabId !== 'metals');
+        } else {
+            currencySection.classList.add('lg:col-span-3');
+            goldSection.classList.add('hidden');
+            if (converter) converter.classList.toggle('hidden', tabId === 'favorites');
+        }
+    }
+
+    // تفعيل تأثير الانتقال للعناصر المرئية
+    const activeContainers = [goldSection, currencySection, goldMainCard, goldCaratsGrid, metalsGrid, converter];
+    activeContainers.forEach(el => {
+        if (el && !el.classList.contains('hidden')) {
+            el.classList.remove('tab-switch-anim');
+            void el.offsetWidth; // إجبار المتصفح على إعادة الحساب لتشغيل الأنميشن
+            el.classList.add('tab-switch-anim');
+        }
+    });
+
+    // إعادة رسم القوائم بناءً على الفلتر الجديد
+    renderCurrencies();
 };
 
 // دالة Debounce لتحسين أداء البحث والمدخلات
@@ -311,10 +399,15 @@ function renderCurrencies() {
     
     const favorites = JSON.parse(localStorage.getItem('favoriteCurrencies')) || [];
 
-    // تصفية العملات واستبعاد المعادن من القائمة الرئيسية إذا كانت قيمتها صغيرة جداً للعرض العادي
+    // تصفية العملات بناءً على التبويب النشط والبحث
     const filteredRates = Object.entries(exchangeRates).filter(([code]) => {
         const isMetal = ['XAU', 'XAG', 'XPT'].includes(code);
-        return code.toLowerCase().includes(searchTerm) && !isMetal;
+        const matchesSearch = code.toLowerCase().includes(searchTerm);
+        
+        if (activeMarketTab === 'favorites') {
+            return matchesSearch && favorites.includes(code) && !isMetal;
+        }
+        return matchesSearch && !isMetal;
     });
 
     domElements.currencyList.innerHTML = filteredRates.map(([code, rate]) => {
@@ -979,6 +1072,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // إظهار القسم الرئيسي افتراضياً
     showSection('home');
 
+    // تهيئة التبويبات
+    document.querySelectorAll('.market-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchMarketTab(btn.dataset.marketTab));
+    });
+
     // تسجيل الـ Service Worker وطلب إذن الإشعارات
     if ('serviceWorker' in navigator) {
         // استخدام المسار النسبي الصحيح للـ Service Worker
@@ -1059,6 +1157,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleOpenAdmin = () => {
         if (auth.currentUser?.email === ADMIN_EMAIL) {
             domElements.adminPanel.classList.remove('hidden');
+            if (!domElements.loginModal.classList.contains('hidden')) {
+                domElements.loginModal.classList.add('hidden');
+            }
             // تعبئة القيم الحالية في المدخلات اليدوية عند الفتح
             document.getElementById('manualGoldPrice').value = goldPrice;
             document.getElementById('manualSilverPrice').value = silverPrice;
@@ -1093,15 +1194,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // معالجة تسجيل الدخول للمدير
     document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        // التحقق الأولي من البريد الإلكتروني قبل محاولة تسجيل الدخول
+        if (email !== ADMIN_EMAIL) {
+            showToast("عذراً، هذا البريد لا يملك صلاحيات وصول إدارية");
+            return;
+        }
+
         const spinner = document.getElementById('loginSpinner');
         spinner.classList.remove('hidden');
         try {
-            await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
-            domElements.loginModal.classList.add('hidden');
-            domElements.adminPanel.classList.remove('hidden');
-            showToast("تم تسجيل الدخول بنجاح");
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            if (userCredential.user.email === ADMIN_EMAIL) {
+                handleOpenAdmin(); // فتح اللوحة بعد التحقق
+                showToast("تم تسجيل الدخول بنجاح ✅");
+            }
         } catch (err) {
-            alert("خطأ في بيانات الدخول: " + err.message);
+            alert("فشل الدخول: تأكد من كلمة المرور والبريد");
         } finally {
             spinner.classList.add('hidden');
         }

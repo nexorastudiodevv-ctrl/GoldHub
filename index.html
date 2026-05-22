@@ -104,6 +104,15 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        /* أنميشن مخصص لتبديل التبويبات */
+        .tab-switch-anim {
+            animation: tabReveal 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes tabReveal {
+            from { opacity: 0; transform: scale(0.98) translateY(5px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
 
         /* تأثير وميض عند تغير السعر */
         .price-up-flash {
@@ -481,8 +490,24 @@
             </div>
         </header>
 
+        <!-- شريط التبويبات (Tabs) لتنظيم البيانات وتحسين إمكانية الوصول على الهواتف -->
+        <div id="marketTabs" class="flex p-1 bg-slate-900/40 border border-slate-800 rounded-2xl mb-6 overflow-x-auto hide-scrollbar sticky top-4 z-40 backdrop-blur-md" role="tablist" aria-label="تبويبات سوق المال">
+            <button data-market-tab="gold" class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" role="tab" aria-selected="true" aria-controls="goldSection">
+                <i class="fa-solid fa-coins me-2"></i>الذهب
+            </button>
+            <button data-market-tab="currencies" class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-300" role="tab" aria-selected="false" aria-controls="currencySection">
+                <i class="fa-solid fa-dollar-sign me-2"></i>العملات
+            </button>
+            <button data-market-tab="metals" class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-300" role="tab" aria-selected="false" aria-controls="goldSection">
+                <i class="fa-solid fa-gem me-2"></i>المعادن
+            </button>
+            <button data-market-tab="favorites" class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-300" role="tab" aria-selected="false" aria-controls="currencySection">
+                <i class="fa-solid fa-star me-2"></i>مفضلتي
+            </button>
+        </div>
+
         <!-- شبكة العناصر الرئيسية (Grid Layout) -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-24 md:pb-0">
+        <div id="marketGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-24 md:pb-0">
             
             <!-- الجزء الأيمن: لوحة أسعار الذهب الفورية والرسم البياني -->
             <div id="goldSection" class="lg:col-span-2 space-y-6">
@@ -496,7 +521,7 @@
                 </div>
 
                 <!-- بطاقة الذهب الرئيسية -->
-                <div class="glass-panel rounded-2xl p-6 relative overflow-hidden">
+                <div id="goldMainCard" class="glass-panel rounded-2xl p-6 relative overflow-hidden">
                     <div class="absolute top-0 end-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
                     <div class="absolute top-0 end-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
                     <div class="flex justify-between items-start mb-6">
@@ -534,7 +559,7 @@
                 </div>
 
                 <!-- شبكة أسعار الجرام لكل عيار (الأسعار الفرعية بالأسفل) -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div id="goldCaratsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <!-- عيار 24 -->
                     <div class="glass-panel rounded-xl p-4 flex justify-between items-center">
                         <div>
@@ -578,7 +603,7 @@
                 </div>
 
                 <!-- شبكة أسعار الفضة والبلاتين -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div id="metalsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <!-- سعر الفضة -->
                     <div class="glass-panel rounded-xl p-4 space-y-4">
                         <div class="flex justify-between items-center">
@@ -635,7 +660,7 @@
             <div id="currencySection" class="space-y-6">
                 
                 <!-- لوحة أسعار العملات الرئيسية -->
-                <div class="glass-panel rounded-2xl p-5 space-y-4">
+                <div id="currencyListContainer" class="glass-panel rounded-2xl p-5 space-y-4">
                     <h3 class="text-sm font-bold text-white tracking-wide border-b border-slate-800 pb-3">أسعار العملات الرئيسية</h3>
                     
                     <div id="currencyList" class="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
@@ -667,7 +692,7 @@
                 </div>
 
                 <!-- حاسبة ومحول العملات السريع -->
-                <div class="glass-panel rounded-2xl p-5 space-y-4 border border-cyan-500/10">
+                <div id="currencyConverterContainer" class="glass-panel rounded-2xl p-5 space-y-4 border border-cyan-500/10">
                     <h3 class="text-sm font-bold text-white tracking-wide flex items-center gap-2">
                         <i class="fa-solid fa-calculator text-cyan-400"></i> محول العملات السريع
                     </h3>
