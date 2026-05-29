@@ -1,8 +1,9 @@
 // استيراد مكتبات Firebase داخل الـ Service Worker
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+// استخدام Modular SDK بدلاً من Compat Libraries
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getMessaging, onBackgroundMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
 
-firebase.initializeApp({
+const firebaseConfig = {
     apiKey: "AIzaSyBLHuPTH3RhwDTdxTDcgFRYPfvXZM3gco8",
     authDomain: "goldhub-1fdb1.firebaseapp.com",
     projectId: "goldhub-1fdb1",
@@ -10,11 +11,12 @@ firebase.initializeApp({
     messagingSenderId: "646245822812",
     appId: "1:646245822812:web:54a6380fa2eafec0391199",
     databaseURL: "https://goldhub-1fdb1-default-rtdb.firebaseio.com/"
-});
+};
 
-const messaging = firebase.messaging();
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
 
-const CACHE_NAME = 'gold-hub-v1';
+const CACHE_NAME = 'gold-hub-v2';
 const ASSETS = [
     'index.html',
     'manifest.json',
@@ -72,7 +74,7 @@ self.addEventListener('fetch', (e) => {
 });
 
 // التعامل مع الرسائل الواردة في الخلفية
-messaging.onBackgroundMessage((payload) => {
+onBackgroundMessage(messaging, (payload) => { // استخدام onBackgroundMessage من Modular SDK
     console.log('Received background message: ', payload);
     const notificationTitle = payload.notification.title;
     const notificationOptions = {
@@ -87,7 +89,7 @@ messaging.onBackgroundMessage((payload) => {
 self.addEventListener('notificationclick', (e) => {
     e.notification.close();
     e.waitUntil(
-        clients.matchAll({type: 'window'}).then(clientList => {
+        clients.matchAll({ type: 'window' }).then(clientList => {
             // إذا كان هناك نافذة مفتوحة، ركز عليها
             for (let i = 0; i < clientList.length; i++) {
                 if (clientList[i].url === '/' && 'focus' in clientList[i]) {
