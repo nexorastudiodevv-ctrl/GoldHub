@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 // استيراد مكتبات Firebase داخل الـ Service Worker
 // استخدام Modular SDK بدلاً من Compat Libraries
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -13,8 +14,16 @@ const firebaseConfig = {
     databaseURL: "https://goldhub-1fdb1-default-rtdb.firebaseio.com/"
 };
 
-const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
+let messaging = null;
+
+try {
+    const app = initializeApp(firebaseConfig);
+    // التحقق من دعم المتصفح للمراسلة قبل البدء
+    messaging = getMessaging(app);
+    console.log("🚀 Firebase Messaging initialized in SW");
+} catch (err) {
+    console.error("⚠️ Failed to initialize Firebase Messaging in SW:", err);
+}
 
 const CACHE_NAME = 'gold-hub-v2';
 const ASSETS = [
@@ -74,16 +83,18 @@ self.addEventListener('fetch', (e) => {
 });
 
 // التعامل مع الرسائل الواردة في الخلفية
-onBackgroundMessage(messaging, (payload) => { // استخدام onBackgroundMessage من Modular SDK
-    console.log('Received background message: ', payload);
-    const notificationTitle = payload.notification.title;
-    const notificationOptions = {
-        body: payload.notification.body,
-        icon: payload.notification.icon || 'icon.png',
-        badge: 'icon.png'
-    };
-    self.registration.showNotification(notificationTitle, notificationOptions);
-});
+if (messaging) {
+    onBackgroundMessage(messaging, (payload) => {
+        console.log('Received background message: ', payload);
+        const notificationTitle = payload?.notification?.title || "تحديث من GoldHub";
+        const notificationOptions = {
+            body: payload?.notification?.body || "توجد تحديثات جديدة في أسعار السوق.",
+            icon: payload?.notification?.icon || 'icon.png',
+            badge: 'icon.png'
+        };
+        self.registration.showNotification(notificationTitle, notificationOptions);
+    });
+}
 
 // التعامل مع إشعارات النظام في الخلفية
 self.addEventListener('notificationclick', (e) => {

@@ -1,0 +1,8 @@
+[warning] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation
+[error] Access to fetch at 'https://ipapi.co/json/' from origin 'http://localhost:5500' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+[error] Auto-detect failed: TypeError: Failed to fetch
+[info] Service Worker registered with scope: http://localhost:5500/
+[info] ℹ️ قاعدة البيانات فارغة، جلب البيانات من الـ API...
+[info] 🌐 تم تحديث الأسعار من المصادر العالمية بنجاح
+[info] 🌐 تم تحديث الأسعار من المصادر العالمية بنجاح
+[info] 🌐 تم تحديث الأسعار من المصادر العالمية بنجاح
