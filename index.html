@@ -23,14 +23,14 @@
     <!-- سياسة أمان المحتوى (CSP) للحماية من هجمات XSS ورفع مستوى الأمان -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; 
-      script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com 'unsafe-inline' 'unsafe-eval'; 
+      content="default-src 'self' https:; 
+      script-src 'self' https://cdn.tailwindcss.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com 'unsafe-inline' 'unsafe-eval'; 
       style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline'; 
-      img-src 'self' data: blob: https://*.googleusercontent.com https://unpkg.com https://flagcdn.com https://cdn-icons-png.flaticon.com https://*.openstreetmap.org https://server.arcgisonline.com https://*.basemaps.cartocdn.com https://upload.wikimedia.org https://*.egyptian-steel.com https://*.garhysteel.com https://gold-hub.com https://images.openai.com https://*.bing.net https://tse3.mm.bing.net https://images.openai.com; 
-      connect-src 'self' https://corsproxy.io https://unpkg.com https://www.gstatic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebase.com https://*.firebaseapp.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebasestorage.googleapis.com https://*.googleapis.com https://*.googletagmanager.com https://open.er-api.com https://api.binance.com https://api.jsonbin.io https://ipapi.co https://overpass-api.de https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://cdn.jsdelivr.net; 
+      img-src 'self' data: blob: https:; 
+      connect-src 'self' https: wss:; 
       font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; 
       media-src 'self' https://assets.mixkit.co; 
-      frame-src 'self' https://www.youtube.com https://*.firebase.com https://*.firebaseapp.com https://*.firebaseio.com;
+      frame-src 'self' https://apis.google.com https://*.google.com https://www.youtube.com https://*.firebase.com https://*.firebaseapp.com https://*.firebaseio.com;
       worker-src 'self' blob: https://www.gstatic.com;"
     />
 
@@ -114,9 +114,12 @@
     <link rel="apple-touch-icon" href="https://gold-hub.com/icon.png" />
     <link rel="shortcut icon" href="https://gold-hub.com/icon.png" type="image/png" />
     
+    <!-- تضمين مكتبة Tailwind CSS لتعمل التنسيقات مباشرة -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <meta name="theme-color" content="#090f1c" />
     <!-- استخدام ملف CSS الثابت المولد بدلاً من CDN لتحسين الأداء -->
-    <link rel="stylesheet" href="style.css">
+    <!-- <link rel="stylesheet" href="style.css"> -->
 
     <!-- تحسينات الأداء المتقدمة -->
     <link rel="dns-prefetch" href="https://open.er-api.com" />

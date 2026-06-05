@@ -45,7 +45,7 @@ let quill;
 // إعدادات الروابط الخارجية (APIs) لسهولة التحديث والصيانة
 const EXTERNAL_APIS = {
     CURRENCY: 'https://open.er-api.com/v6/latest/USD',
-    PROXY_BASE: 'https://corsproxy.io/?', // عنوان البروكسي لتجاوز قيود المتصفح (CORS)
+    PROXY_BASE: 'https://api.allorigins.win/raw?url=', // عنوان بروكسي أكثر استقراراً لـ Binance
     GOLD: 'https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT', // سعر الأونصة العالمي (PAXG)
     SILVER: 'https://api.binance.com/api/v3/ticker/price?symbol=XAGUSDT', // سعر أونصة الفضة العالمي (XAG)
     IRON: null // تم تعطيل الرابط القديم (404). يرجى إدخال رابط JSON جديد هنا لاحقاً.

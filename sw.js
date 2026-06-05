@@ -6,7 +6,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-comp
 
 const firebaseConfig = {
     apiKey: "AIzaSyBLHuPTH3RhwDTdxTDcgFRYPfvXZM3gco8",
-    authDomain: "gold-hub.com", // تحديث النطاق هنا أيضاً
+    authDomain: "goldhub-1fdb1.firebaseapp.com", // تم تحديث النطاق ليتطابق مع app.js
     projectId: "goldhub-1fdb1",
     storageBucket: "goldhub-1fdb1.firebasestorage.app",
     messagingSenderId: "646245822812",
@@ -32,6 +32,7 @@ const ASSETS = [
     'app.js',
     'icon.png',
     'icon.webp',
+    'https://cdn.tailwindcss.com',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
     'https://cdn.jsdelivr.net/npm/chart.js',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
@@ -73,17 +74,32 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
         fetch(e.request)
             .then(response => {
-                // السماح بتخزين الأصول الخارجية (CORS) مثل الأعلام
-                if (!response || response.status !== 200) {
+                // إذا لم تكن الاستجابة صالحة (مثل 404, 500، أو غيرها من الأخطاء)، لا تحاول تخزينها مؤقتاً
+                // أو إذا كانت استجابة معتمة (opaque) من مصدر خارجي ولا يمكن تخزينها بشكل موثوق
+                if (!response || !response.ok || response.type === 'opaque') {
                     return response;
                 }
+
+                // استنساخ الاستجابة لأن الجسم (body) يمكن قراءته مرة واحدة فقط
                 const resClone = response.clone();
-                if (e.request.url.startsWith('http')) {
-                    caches.open(CACHE_NAME).then(cache => cache.put(e.request, resClone));
-                }
+
+                // تخزين الاستجابة في الكاش
+                caches.open(CACHE_NAME).then(cache => {
+                    cache.put(e.request, resClone).catch(cacheError => {
+                        console.error(`⚠️ فشل تخزين ${e.request.url} في الكاش:`, cacheError);
+                    });
+                });
+
                 return response;
             })
-            .catch(() => caches.match(e.request).then(res => res || new Response("Offline Content Unavailable", { status: 404 })))
+            .catch(fetchError => {
+                // إذا فشل جلب المورد من الشبكة، حاول إعادته من الكاش
+                console.warn(`⚠️ فشل جلب ${e.request.url} من الشبكة:`, fetchError);
+                return caches.match(e.request).then(res => {
+                    // إذا لم يكن المورد موجوداً في الكاش، أرجع استجابة 404
+                    return res || new Response("Offline Content Unavailable", { status: 404 });
+                });
+            })
     );
 });
 
