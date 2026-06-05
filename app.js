@@ -45,8 +45,9 @@ let quill;
 // إعدادات الروابط الخارجية (APIs) لسهولة التحديث والصيانة
 const EXTERNAL_APIS = {
     CURRENCY: 'https://open.er-api.com/v6/latest/USD',
+    PROXY_BASE: 'https://corsproxy.io/?', // عنوان البروكسي لتجاوز قيود المتصفح (CORS)
     GOLD: 'https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT', // سعر الأونصة العالمي (PAXG)
-    SILVER: 'https://corsproxy.io/?' + encodeURIComponent('https://api.binance.com/api/v3/ticker/price?symbol=XAGUSDT'), // سعر أونصة الفضة العالمي (XAG) عبر CORS Proxy
+    SILVER: 'https://api.binance.com/api/v3/ticker/price?symbol=XAGUSDT', // سعر أونصة الفضة العالمي (XAG)
     IRON: null // تم تعطيل الرابط القديم (404). يرجى إدخال رابط JSON جديد هنا لاحقاً.
 };
 
@@ -145,7 +146,17 @@ const domElements = {
     soundSelect: document.getElementById('soundSelect'),
     alertDirection: document.getElementById('alertDirection'), // إضافة عنصر اتجاه التنبيه
     editorContainer: document.getElementById('editor-container'),
-    articlePreviewContainer: document.getElementById('articlePreviewContainer')
+    articlePreviewContainer: document.getElementById('articlePreviewContainer'),
+    mobileMoreBtn: document.getElementById('mobileMoreBtn'),
+    mobileMoreModal: document.getElementById('mobileMoreModal'),
+    closeMobileMoreModalBtn: document.getElementById('closeMobileMoreModalBtn'),
+    mobileMoreNearbyLink: document.getElementById('mobileMoreNearbyLink'),
+    mobileMoreArticlesLink: document.getElementById('mobileMoreArticlesLink'),
+    mobileMoreAdminBtn: document.getElementById('mobileMoreAdminBtn'),
+    mobileMoreWalletLink: document.getElementById('mobileMoreWalletLink'),
+    mobileMoreFaqLink: document.getElementById('mobileMoreFaqLink'),
+    mobileMoreAboutLink: document.getElementById('mobileMoreAboutLink'),
+    mobileMoreContactLink: document.getElementById('mobileMoreContactLink')
 };
 
 // تحسين الأداء: إنشاء كائنات تنسيق الأرقام مرة واحدة وإعادة استخدامها
@@ -581,7 +592,8 @@ async function fetchApiPrices() {
         apiKeys.push('GOLD');
 
         if (EXTERNAL_APIS.SILVER) {
-            apiRequests.push(fetch(EXTERNAL_APIS.SILVER, { cache: 'no-store' }).catch(err => { // إضافة no-store لمنع الكاش
+            const silverUrl = EXTERNAL_APIS.PROXY_BASE + encodeURIComponent(EXTERNAL_APIS.SILVER);
+            apiRequests.push(fetch(silverUrl, { cache: 'no-store' }).catch(err => { // إضافة no-store لمنع الكاش
                 console.error("❌ فشل جلب سعر الفضة من Binance:", err);
                 addApiLog(`❌ فشل جلب الفضة: ${err.message || 'خطأ غير معروف'}`);
                 return { status: 'rejected', reason: err };
@@ -1115,16 +1127,49 @@ window.showSection = (sectionName) => {
     }
 
     // تحديث الحالة النشطة في أزرار التنقل للهواتف
-    const mobileLinks = ['mobileHomeLink', 'mobileGoldLink', 'mobileCurrencyLink', 'mobileArticlesLink', 'mobileWalletLink', 'mobileAboutLink', 'mobileContactLink'];
-    mobileLinks.forEach(id => {
-        const el = document.getElementById(id);
+    const primaryMobileSections = ['home', 'gold', 'currency', 'about', 'contact'];
+    const moreModalSections = ['nearby', 'articles', 'wallet', 'faq', 'admin']; // 'admin' is special, handled by handleOpenAdmin
+
+    // Reset all mobile nav links (primary and More button)
+    document.querySelectorAll('#mobileBottomNav a, #mobileBottomNav button').forEach(link => {
+        link.classList.remove('text-cyan-400');
+        link.classList.add('text-slate-500');
+    });
+
+    // Set active state for primary links
+    if (primaryMobileSections.includes(sectionName)) {
+        const activeLink = document.getElementById('mobile' + sectionName.charAt(0).toUpperCase() + sectionName.slice(1) + 'Link');
+        if (activeLink) {
+            activeLink.classList.remove('text-slate-500');
+            activeLink.classList.add('text-cyan-400');
+        }
+    } else if (moreModalSections.includes(sectionName)) {
+        // If a section from the "More" modal (or admin panel) is active, make the "More" button active
+        const mobileMoreBtn = document.getElementById('mobileMoreBtn');
+        if (mobileMoreBtn) {
+            mobileMoreBtn.classList.remove('text-slate-500');
+            mobileMoreBtn.classList.add('text-cyan-400');
+        }
+    }
+
+    // Highlight the specific item within the modal if it's open
+    document.querySelectorAll('#mobileMoreModal button').forEach(el => {
         if (el) {
-            el.classList.remove('text-cyan-400');
-            el.classList.add('text-slate-500');
+            el.classList.remove('text-cyan-400', 'border-cyan-500/30');
+            el.classList.add('text-slate-400', 'border-slate-800');
         }
     });
-    const activeId = 'mobile' + sectionName.charAt(0).toUpperCase() + sectionName.slice(1) + 'Link';
-    document.getElementById(activeId)?.classList.add('text-cyan-400');
+    const activeMoreLink = document.getElementById('mobileMore' + sectionName.charAt(0).toUpperCase() + sectionName.slice(1) + 'Link');
+    if (activeMoreLink) {
+        activeMoreLink.classList.remove('text-slate-400', 'border-slate-800');
+        activeMoreLink.classList.add('text-cyan-400', 'border-cyan-500/30');
+    } else if (sectionName === 'admin') { // Special handling for admin button in modal
+        const adminMoreBtn = document.getElementById('mobileMoreAdminBtn');
+        if (adminMoreBtn) {
+            adminMoreBtn.classList.remove('text-amber-400', 'border-slate-800');
+            adminMoreBtn.classList.add('text-amber-300', 'border-amber-500/30');
+        }
+    }
 };
 
 // دالة حساب المسافة بين نقطتين (صيغة هافرسين)
@@ -1404,6 +1449,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // إظهار القسم الرئيسي افتراضياً
     showSection('home');
 
+    // --- أحداث نافذة المزيد للهواتف ---
+    domElements.mobileMoreBtn?.addEventListener('click', () => {
+        domElements.mobileMoreModal?.classList.remove('hidden');
+        domElements.mobileMoreModal?.classList.add('flex');
+    });
+
+    domElements.closeMobileMoreModalBtn?.addEventListener('click', () => {
+        domElements.mobileMoreModal?.classList.add('hidden');
+        domElements.mobileMoreModal?.classList.remove('flex');
+    });
+
     // تهيئة التبويبات
     document.querySelectorAll('.market-tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchMarketTab(btn.dataset.marketTab));
@@ -1503,6 +1559,28 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('mobileAdminBtn')?.addEventListener('click', (e) => {
         e.preventDefault();
         handleOpenAdmin();
+    });
+
+    // ربط أزرار نافذة "المزيد" بالأقسام المناسبة
+    const moreLinks = [
+        { id: 'mobileMoreNearbyLink', section: 'nearby' },
+        { id: 'mobileMoreArticlesLink', section: 'articles' },
+        { id: 'mobileMoreWalletLink', section: 'wallet' },
+        { id: 'mobileMoreFaqLink', section: 'faq' },
+        { id: 'mobileMoreAboutLink', section: 'about' },
+        { id: 'mobileMoreContactLink', section: 'contact' }
+    ];
+
+    moreLinks.forEach(item => {
+        document.getElementById(item.id)?.addEventListener('click', () => {
+            showSection(item.section);
+            domElements.mobileMoreModal?.classList.add('hidden');
+        });
+    });
+
+    domElements.mobileMoreAdminBtn?.addEventListener('click', () => {
+        handleOpenAdmin();
+        domElements.mobileMoreModal?.classList.add('hidden');
     });
 
     // إغلاق لوحة التحكم

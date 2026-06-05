@@ -27,7 +27,7 @@
       script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com 'unsafe-inline' 'unsafe-eval'; 
       style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com 'unsafe-inline'; 
       img-src 'self' data: blob: https://*.googleusercontent.com https://unpkg.com https://flagcdn.com https://cdn-icons-png.flaticon.com https://*.openstreetmap.org https://server.arcgisonline.com https://*.basemaps.cartocdn.com https://upload.wikimedia.org https://*.egyptian-steel.com https://*.garhysteel.com https://gold-hub.com https://images.openai.com https://*.bing.net https://tse3.mm.bing.net https://images.openai.com; 
-      connect-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebase.com https://*.firebaseapp.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebasestorage.googleapis.com https://*.googleapis.com https://*.googletagmanager.com https://open.er-api.com https://api.binance.com https://api.jsonbin.io https://ipapi.co https://overpass-api.de https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://cdn.jsdelivr.net; 
+      connect-src 'self' https://corsproxy.io https://unpkg.com https://www.gstatic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebase.com https://*.firebaseapp.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebasestorage.googleapis.com https://*.googleapis.com https://*.googletagmanager.com https://open.er-api.com https://api.binance.com https://api.jsonbin.io https://ipapi.co https://overpass-api.de https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://cdn.jsdelivr.net; 
       font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; 
       media-src 'self' https://assets.mixkit.co; 
       frame-src 'self' https://www.youtube.com https://*.firebase.com https://*.firebaseapp.com https://*.firebaseio.com;
@@ -267,6 +267,18 @@
         }
       }
 
+      /* أنميشن لظهور نافذة المزيد من الأسفل */
+      @keyframes slide-up {
+        from {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
       /* تحسينات إضافية للهواتف الصغيرة جداً */
       @media (max-width: 380px) {
         .mobile-nav-text {
@@ -2018,67 +2030,101 @@
       <a
         href="#currency"
         id="mobileCurrencyLink"
-        class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2"
+        class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-4"
         aria-label="أسعار العملات"
       >
         <i class="fa-solid fa-dollar-sign text-lg mobile-nav-icon"></i>
         <span class="text-[9px] font-medium mobile-nav-text">العملات</span>
       </a>
-      <a
-        href="#nearby"
-        id="mobileNearbyLink"
-        class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2"
-        aria-label="صرافة قريبة"
+      <button
+        id="mobileMoreBtn"
+        class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-4"
+        aria-label="المزيد"
       >
-        <i class="fa-solid fa-map-location-dot text-lg mobile-nav-icon"></i>
-        <span class="text-[9px] font-medium mobile-nav-text">الخريطة</span>
-      </a>
-      <a
-        href="#articles"
-        id="mobileArticlesLink"
-        class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2"
-        aria-label="المقالات"
-      >
-        <i class="fa-solid fa-newspaper text-lg mobile-nav-icon"></i>
-        <span class="text-[9px] font-medium mobile-nav-text">المقالات</span>
-      </a>
-      <a
-        href="#"
-        id="mobileAdminBtn"
-        class="flex flex-col items-center gap-1 text-amber-400 shrink-0 px-2"
-        aria-label="لوحة التحكم"
-      >
-        <i class="fa-solid fa-user-shield text-lg mobile-nav-icon"></i>
-        <span class="text-[9px] font-medium mobile-nav-text">التحكم</span>
-      </a>
-      <a
-        href="#wallet"
-        id="mobileWalletLink"
-        class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2"
-        aria-label="المحفظة"
-      >
-        <i class="fa-solid fa-wallet text-lg mobile-nav-icon"></i>
-        <span class="text-[9px] font-medium mobile-nav-text">المحفظة</span>
-      </a>
-      <a
-        href="#about"
-        id="mobileAboutLink"
-        class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2"
-        aria-label="من نحن"
-      >
-        <i class="fa-solid fa-circle-info text-lg mobile-nav-icon"></i>
-        <span class="text-[9px] font-medium mobile-nav-text">من نحن</span>
-      </a>
-      <a
-        href="#contact"
-        id="mobileContactLink"
-        class="flex flex-col items-center gap-1 text-slate-500 hover:text-white transition shrink-0 px-2"
-        aria-label="اتصل بنا"
-      >
-        <i class="fa-solid fa-envelope text-lg mobile-nav-icon"></i>
-        <span class="text-[9px] font-medium mobile-nav-text">اتصل بنا</span>
-      </a>
+        <i class="fa-solid fa-ellipsis text-lg mobile-nav-icon"></i>
+        <span class="text-[9px] font-medium mobile-nav-text">المزيد</span>
+      </button>
     </nav>
+
+    <!-- Mobile More Options Modal -->
+    <div
+      id="mobileMoreModal"
+      class="fixed inset-0 z-[60] bg-slate-950/90 backdrop-blur-md hidden flex items-end justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="mobileMoreModalTitle"
+    >
+      <div class="glass-panel w-full p-6 rounded-t-3xl space-y-4 animate-slide-up">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+          <h2 id="mobileMoreModalTitle" class="text-xl font-bold text-white">المزيد من الخيارات</h2>
+          <button
+            id="closeMobileMoreModalBtn"
+            class="text-slate-400 hover:text-white transition"
+            aria-label="إغلاق"
+          >
+            <i class="fa-solid fa-xmark text-2xl"></i>
+          </button>
+        </div>
+        <nav class="grid grid-cols-2 gap-4">
+          <button
+            id="mobileMoreNearbyLink"
+            class="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-900/40 border border-slate-800 text-slate-400 hover:text-white hover:border-cyan-500/30 transition"
+            aria-label="صرافة قريبة"
+          >
+            <i class="fa-solid fa-map-location-dot text-2xl"></i>
+            <span class="text-xs font-medium">صرافة قريبة</span>
+          </button>
+          <button
+            id="mobileMoreArticlesLink"
+            class="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-900/40 border border-slate-800 text-slate-400 hover:text-white hover:border-cyan-500/30 transition"
+            aria-label="المقالات المالية"
+          >
+            <i class="fa-solid fa-newspaper text-2xl"></i>
+            <span class="text-xs font-medium">المقالات المالية</span>
+          </button>
+          <button
+            id="mobileMoreAdminBtn"
+            class="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-900/40 border border-slate-800 text-amber-400 hover:text-amber-300 hover:border-amber-500/30 transition"
+            aria-label="لوحة التحكم"
+          >
+            <i class="fa-solid fa-user-shield text-2xl"></i>
+            <span class="text-xs font-medium">لوحة التحكم</span>
+          </button>
+          <button
+            id="mobileMoreWalletLink"
+            class="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-900/40 border border-slate-800 text-slate-400 hover:text-white hover:border-cyan-500/30 transition"
+            aria-label="المحفظة الشخصية"
+          >
+            <i class="fa-solid fa-wallet text-2xl"></i>
+            <span class="text-xs font-medium">المحفظة الشخصية</span>
+          </button>
+          <button
+            id="mobileMoreFaqLink"
+            class="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-900/40 border border-slate-800 text-slate-400 hover:text-white hover:border-cyan-500/30 transition"
+            aria-label="الأسئلة الشائعة"
+          >
+            <i class="fa-solid fa-circle-question text-2xl"></i>
+            <span class="text-xs font-medium">الأسئلة الشائعة</span>
+          </button>
+          <button
+            id="mobileMoreAboutLink"
+            class="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-900/40 border border-slate-800 text-slate-400 hover:text-white transition"
+            aria-label="من نحن"
+          >
+            <i class="fa-solid fa-circle-info text-2xl"></i>
+            <span class="text-xs font-medium">من نحن</span>
+          </button>
+          <button
+            id="mobileMoreContactLink"
+            class="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-900/40 border border-slate-800 text-slate-400 hover:text-white transition"
+            aria-label="اتصل بنا"
+          >
+            <i class="fa-solid fa-envelope text-2xl"></i>
+            <span class="text-xs font-medium">اتصل بنا</span>
+          </button>
+        </nav>
+      </div>
+    </div>
 
     <!-- 4. لوحة التحكم الإدارية (Admin Control Panel) -->
     <div
