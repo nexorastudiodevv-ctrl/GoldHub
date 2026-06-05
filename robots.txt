@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /temp/
 
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: https://gold-hub.com/sitemap.xml

@@ -20,8 +20,9 @@ window.addEventListener('unhandledrejection', (event) => {
 const firebaseConfig = {
     apiKey: "AIzaSyBLHuPTH3RhwDTdxTDcgFRYPfvXZM3gco8",
     authDomain: "goldhub-1fdb1.firebaseapp.com",
+    // ملاحظة: لا تكرر نفس المفتاح مرتين - احتفظ برابط Firebase الرسمي هنا
     projectId: "goldhub-1fdb1",
-    storageBucket: "goldhub-1fdb1.firebasestorage.app",
+    storageBucket: "goldhub-1fdb1.appspot.com",
     messagingSenderId: "646245822812",
     appId: "1:646245822812:web:54a6380fa2eafec0391199",
     measurementId: "G-SN6Q2JB1RB",
@@ -35,10 +36,19 @@ const db = getDatabase(app);
 const analytics = getAnalytics(app);
 const messaging = getMessaging(app);
 const pricesRef = ref(db, 'market_prices');
+const historyRef = ref(db, 'price_history');
 const articlesRef = ref(db, 'articles');
 let editArticleId = null;
 let allArticlesData = {};
 let quill;
+
+// إعدادات الروابط الخارجية (APIs) لسهولة التحديث والصيانة
+const EXTERNAL_APIS = {
+    CURRENCY: 'https://open.er-api.com/v6/latest/USD',
+    GOLD: 'https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT', // سعر الأونصة العالمي (PAXG)
+    SILVER: 'https://api.binance.com/api/v3/ticker/price?symbol=XAGUSDT', // سعر أونصة الفضة العالمي (XAG)
+    IRON: null // تم تعطيل الرابط القديم (404). يرجى إدخال رابط JSON جديد هنا لاحقاً.
+};
 
 // ربط رموز العملات برموز الدول للحصول على الأعلام
 const currencyToCountryCode = {
@@ -53,7 +63,7 @@ const currencyToCountryCode = {
 // نظام الترجمة
 const translations = {
     ar: {
-        gold_oz: "سعر أونصة الذهب بالدولار", silver_oz: "أوقية فضة", platinum_oz: "أوقية بلاتين", iron_ezz: "حديد عز (طن)", iron_egyptians: "حديد المصريين (طن)", iron_garhy: "حديد الجارحي (طن)",
+        gold_oz: "سعر أونصة الذهب بالدولار", gold_g: "سعر جرام الذهب بالدولار", silver_oz: "أوقية فضة", platinum_oz: "أوقية بلاتين", iron_ezz: "حديد عز (طن)", iron_egyptians: "حديد المصريين (طن)", iron_garhy: "حديد الجارحي (طن)",
         home: "الرئيسية", gold_markets: "أسواق الذهب", currency_markets: "أسعار العملات",
         admin_panel: "لوحة التحكم", wallet: "المحفظة الشخصية", about: "من نحن", contact: "اتصل بنا",
         privacy: "سياسة الخصوصية", live_market: "سوق المال المباشر", sub_heading: "تحديثات فورية لأسعار الذهب العالمية والمعادن",
@@ -61,7 +71,7 @@ const translations = {
         converter: "محول العملات السريع", result: "النتيجة التقريبية", search: "ابحث عن عملة أو عيار..."
     },
     en: {
-        gold_oz: "Gold Price per Ounce (USD)", silver_oz: "Silver Ounce", platinum_oz: "Platinum Ounce", iron_ezz: "Ezz Steel (Ton)", iron_egyptians: "Egyptian Steel (Ton)", iron_garhy: "El Garhy Steel (Ton)",
+        gold_oz: "Gold Price per Ounce (USD)", gold_g: "Gold Price per Gram (USD)", silver_oz: "Silver Ounce", platinum_oz: "Platinum Ounce", iron_ezz: "Ezz Steel (Ton)", iron_egyptians: "Egyptian Steel (Ton)", iron_garhy: "El Garhy Steel (Ton)",
         home: "Home", gold_markets: "Gold Markets", currency_markets: "Currencies",
         admin_panel: "Admin Panel", wallet: "My Wallet", about: "About Us", contact: "Contact Us",
         privacy: "Privacy Policy", live_market: "Live Market Hub", sub_heading: "Real-time updates for global gold and metal prices",
@@ -77,11 +87,19 @@ const domElements = {
     mainGoldPrice: document.getElementById('mainGoldPrice'),
     price24k: document.getElementById('price-24k'),
     price21k: document.getElementById('price-21k'),
-    price21kRaw: document.getElementById('price-21k-raw'),
     price18k: document.getElementById('price-18k'),
+    price14k: document.getElementById('price-14k'),
+    price12k: document.getElementById('price-12k'),
+    making24kDisplay: document.getElementById('making-24k-display'),
+    making21kDisplay: document.getElementById('making-21k-display'),
+    making18kDisplay: document.getElementById('making-18k-display'),
+    making14kDisplay: document.getElementById('making-14k-display'),
+    making12kDisplay: document.getElementById('making-12k-display'),
     trend24k: document.getElementById('trend-24k'),
     trend21k: document.getElementById('trend-21k'),
     trend18k: document.getElementById('trend-18k'),
+    trend14k: document.getElementById('trend-14k'),
+    trend12k: document.getElementById('trend-12k'),
     silverPrice: document.getElementById('silverPrice'),
     platinumPrice: document.getElementById('platinumPrice'),
     silverTrend: document.getElementById('silverTrend'),
@@ -93,6 +111,8 @@ const domElements = {
     ironGarhyPrice: document.getElementById('ironGarhyPrice'),
     ironGarhyTrend: document.getElementById('ironGarhyTrend'),
     currencyList: document.getElementById('currencyList'),
+    historicalSection: document.getElementById('historicalSection'),
+    historicalTableBody: document.getElementById('historicalTableBody'),
     marketTabs: document.getElementById('marketTabs'),
     nearbySection: document.getElementById('nearbySection'),
     nearbyExchangesList: document.getElementById('nearbyExchangesList'),
@@ -100,13 +120,8 @@ const domElements = {
     amountInput: document.getElementById('amountInput'),
     searchNewAreaBtn: document.getElementById('searchNewAreaBtn'),
     searchNewAreaText: document.getElementById('searchNewAreaText'),
-    baseCurrency: document.getElementById('baseCurrency'),
     displayCurrency: document.getElementById('displayCurrency'),
     targetCurrency: document.getElementById('targetCurrency'),
-    conversionResultDisplay: document.getElementById('conversionResultDisplay'),
-    baseFlagImg: document.getElementById('baseFlagImg'),
-    targetFlagImg: document.getElementById('targetFlagImg'),
-    swapCurrenciesBtn: document.getElementById('swapCurrenciesBtn'),
     apiLogs: document.getElementById('apiLogs'),
     articleModal: document.getElementById('articleModal'),
     articleModalTitle: document.getElementById('articleModalTitle'),
@@ -123,7 +138,8 @@ const domElements = {
     notificationsList: document.getElementById('notificationsList'),
     bellDot: document.getElementById('bellDot'),
     lastUpdateTime: document.getElementById('lastUpdateTime'),
-    converterSearch: document.getElementById('converterSearch'),
+    unitToggleBtn: document.getElementById('unitToggleBtn'),
+    goldPriceLabel: document.getElementById('goldPriceLabel'),
     alertThreshold: document.getElementById('alertThreshold'),
     setAlertBtn: document.getElementById('setAlertBtn'),
     soundSelect: document.getElementById('soundSelect'),
@@ -170,9 +186,7 @@ window.switchMarketTab = (tabId) => {
 
     // 2. تشغيل صوت نقرة بسيطة (UI Click Sound)
     try {
-        const tapSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
-        tapSound.volume = 0.2; // مستوى صوت منخفض ليكون غير مزعج
-        tapSound.play().catch(e => { }); // تجاهل الخطأ إذا حظر المتصفح التشغيل التلقائي
+        // تم تقليل جلب الملفات الصوتية لتحسين الأداء
     } catch (e) { }
 
     // تحديث شكل أزرار التبويبات
@@ -193,13 +207,15 @@ window.switchMarketTab = (tabId) => {
     const goldCaratsGrid = document.getElementById('goldCaratsGrid');
     const metalsGrid = document.getElementById('metalsGrid');
     const converter = document.getElementById('currencyConverterContainer');
+    const historicalSection = document.getElementById('historicalSection');
 
     const isDesktop = window.innerWidth >= 1024;
 
     if (!isDesktop) {
         // منطق الهواتف: إخفاء الأقسام غير المطلوبة تماماً
-        goldSection.classList.toggle('hidden', tabId !== 'gold' && tabId !== 'metals');
+        goldSection.classList.toggle('hidden', tabId !== 'gold' && tabId !== 'metals' && tabId !== 'history');
         currencySection.classList.toggle('hidden', tabId !== 'currencies' && tabId !== 'favorites');
+        historicalSection?.classList.toggle('hidden', tabId !== 'history');
 
         if (tabId === 'gold') {
             goldMainCard.classList.remove('hidden');
@@ -209,6 +225,10 @@ window.switchMarketTab = (tabId) => {
             goldMainCard.classList.add('hidden');
             goldCaratsGrid.classList.add('hidden');
             metalsGrid.classList.remove('hidden');
+        } else if (tabId === 'history') {
+            goldMainCard.classList.add('hidden');
+            goldCaratsGrid.classList.add('hidden');
+            renderHistoricalTable();
         }
 
         if (converter) converter.classList.toggle('hidden', tabId === 'favorites');
@@ -216,13 +236,18 @@ window.switchMarketTab = (tabId) => {
         // منطق الكمبيوتر: توسيع القسم النشط وتوزيع المساحات
         goldSection.classList.remove('hidden', 'lg:col-span-2', 'lg:col-span-3');
         currencySection.classList.remove('hidden', 'lg:col-span-1', 'lg:col-span-3');
+        historicalSection?.classList.add('hidden');
 
-        if (tabId === 'gold' || tabId === 'metals') {
+        if (tabId === 'gold' || tabId === 'metals' || tabId === 'history') {
             goldSection.classList.add('lg:col-span-3');
             currencySection.classList.add('hidden');
             goldMainCard.classList.toggle('hidden', tabId !== 'gold');
             goldCaratsGrid.classList.toggle('hidden', tabId !== 'gold');
             metalsGrid.classList.toggle('hidden', tabId !== 'metals');
+            if (tabId === 'history') {
+                historicalSection?.classList.remove('hidden');
+                renderHistoricalTable();
+            }
         } else {
             currencySection.classList.add('lg:col-span-3');
             goldSection.classList.add('hidden');
@@ -231,7 +256,7 @@ window.switchMarketTab = (tabId) => {
     }
 
     // تفعيل تأثير الانتقال للعناصر المرئية
-    const activeContainers = [goldSection, currencySection, goldMainCard, goldCaratsGrid, metalsGrid, converter];
+    const activeContainers = [goldSection, currencySection, goldMainCard, goldCaratsGrid, metalsGrid, converter, historicalSection];
     activeContainers.forEach(el => {
         if (el && !el.classList.contains('hidden')) {
             el.classList.remove('tab-switch-anim');
@@ -303,6 +328,21 @@ function getSafeFlagUrl(code) {
     return `https://flagcdn.com/w40/${finalCode.toLowerCase()}.png`;
 }
 
+// دالة مساعدة لتحويل رمز الدولة أو العملة إلى Emoji مناسب للأعلام (تصلح خطأ ReferenceError)
+function getFlagEmoji(code) {
+    const countryCode = currencyToCountryCode[code];
+    if (!countryCode || ['gold', 'silver', 'platinum'].includes(countryCode)) {
+        if (code === 'XAU') return '💰';
+        if (code === 'XAG') return '🥈';
+        if (code === 'XPT') return '💍';
+        return '🏳️';
+    }
+    return countryCode
+        .toUpperCase()
+        .replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397));
+}
+
+// ثابت الأونصة (أونصة تروي) بدقة عالية لاستخدامه في التحويلات (جرام ⇄ أونصة)
 const OUNCE_TO_GRAM = 31.1034768;
 let exchangeRates = JSON.parse(localStorage.getItem('last_rates')) || {
     "USD": 1, "EUR": 0.92, "EGP": 48.50, "SAR": 3.75, "AED": 3.67, "GBP": 0.79,
@@ -324,21 +364,20 @@ exchangeRates["XAG"] = 1 / silverPrice;
 exchangeRates["XPT"] = 1 / platinumPrice;
 
 let isManualMode = false;
-let caratPrices = { k24: goldPrice / OUNCE_TO_GRAM, k21: (goldPrice / OUNCE_TO_GRAM) * 0.875, k18: (goldPrice / OUNCE_TO_GRAM) * 0.75 };
+let caratPrices = { k24: goldPrice / OUNCE_TO_GRAM, k21: (goldPrice / OUNCE_TO_GRAM) * 0.875, k18: (goldPrice / OUNCE_TO_GRAM) * 0.75, k14: (goldPrice / OUNCE_TO_GRAM) * (14/24), k12: (goldPrice / OUNCE_TO_GRAM) * 0.5 };
 let previousSilverPrice = silverPrice;
 let previousPlatinumPrice = platinumPrice;
 let previousIronEzzPrice = ironEzzPrice;
 let previousIronEgyptiansPrice = ironEgyptiansPrice;
 let previousIronGarhyPrice = ironGarhyPrice;
-let silverCaratPrices = { s999: 0, s925: 0, s900: 0, s800: 0 };
-let makingCharges = { k24: 0, k21: 0, k18: 0 };
+let makingCharges = { k24: 0, k21: 0, k18: 0, k14: 0, k12: 0 };
 let priceHistory = [goldPrice];
-let silverPriceHistory = [silverPrice];
 let timeLabels = [new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })];
 let goldChart;
-let silverChart;
 let previousGoldPrice = goldPrice;
-let previousCaratPrices = { k24: 0, k21: 0, k18: 0 };
+let previousCaratPrices = { k24: 0, k21: 0, k18: 0, k14: 0, k12: 0 };
+// وحدة العرض الافتراضية: 'oz' للأونصة أو 'g' للجرام
+let displayUnit = localStorage.getItem('displayUnit') || 'oz';
 const ADMIN_EMAIL = "alfaydahmd02@gmail.com";
 
 function addApiLog(msg) {
@@ -370,14 +409,11 @@ window.applyTranslations = () => {
 // تحديث خيارات محول العملات مع ميزة البحث
 function renderConverterOptions() {
     // جلب العناصر مباشرة لضمان عدم وجود أخطاء Null
-    const baseEl = document.getElementById('baseCurrency');
     const targetEl = document.getElementById('targetCurrency');
-    const searchEl = document.getElementById('converterSearch');
 
-    if (!baseEl || !targetEl) return;
+    if (!targetEl) return;
 
-    const searchTerm = searchEl ? searchEl.value.toLowerCase() : "";
-    const currentBase = baseEl ? baseEl.value : "USD";
+    const searchTerm = "";
     const currentTarget = targetEl ? targetEl.value : "EGP";
 
     // دمج العملات والمعادن في قائمة واحدة مرتبة
@@ -415,10 +451,7 @@ function renderConverterOptions() {
         }
     }
 
-    baseEl.innerHTML = optionsHtml;
     targetEl.innerHTML = optionsHtml;
-
-    baseEl.value = currentBase;
     targetEl.value = currentTarget;
 }
 
@@ -484,12 +517,26 @@ window.toggleFavoriteCurrency = (currencyCode) => {
 
 // طلب الإذن بالإشعارات والحصول على التوكن
 async function initPushNotifications(registration) {
+    if (!("Notification" in window)) return;
+
+    // التحقق مما إذا كان المستخدم قد حظر الإشعارات مسبقاً لتجنب إرسال طلب مرفوض
+    if (Notification.permission === 'denied') {
+        console.warn('🔔 الإشعارات محظورة من قبل المستخدم. يمكن إعادة تفعيلها من إعدادات المتصفح.');
+        return;
+    }
+
     try {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
-            // استبدل بمفتاح VAPID الخاص بك من Firebase Console
+            const vapidKey = 'BMvP9_J0V6-m9_9j9-GvE_REPLACE_WITH_ACTUAL_KEY';
+            
+            if (vapidKey.includes('REPLACE_WITH_ACTUAL_KEY')) {
+                console.warn('🔔 تنبيه: يرجى استبدال مفتاح VAPID بمفتاح حقيقي من Firebase Console لتفعيل الإشعارات.');
+                return;
+            }
+
             const token = await getToken(messaging, {
-                vapidKey: 'BMvP9_J0V6-m9_9j9-GvE_REPLACE_WITH_ACTUAL_KEY',
+                vapidKey: vapidKey,
                 serviceWorkerRegistration: registration
             });
 
@@ -515,12 +562,20 @@ async function fetchApiPrices() {
         previousGoldPrice = goldPrice;
         previousCaratPrices = { ...caratPrices };
 
-        // إضافة مصدر الحديد (يمكنك استبدال الرابط برابط JSON خاص بك أو Google Apps Script)
-        const [currRes, goldRes, ironRes] = await Promise.allSettled([
-            fetch('https://open.er-api.com/v6/latest/USD'),
-            fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT'),
-            fetch('https://api.jsonbin.io/v3/b/664da622ad19ca34f86d8a3d').catch(() => ({ ok: false }))
-        ]);
+        // جلب البيانات مع التحقق من وجود روابط الـ APIs
+        const requests = [
+            fetch(EXTERNAL_APIS.CURRENCY),
+            fetch(EXTERNAL_APIS.GOLD)
+        ];
+        if (EXTERNAL_APIS.SILVER) requests.push(fetch(EXTERNAL_APIS.SILVER).catch(() => ({ ok: false }))); // إضافة طلب الفضة
+        if (EXTERNAL_APIS.IRON) requests.push(fetch(EXTERNAL_APIS.IRON).catch(() => ({ ok: false }))); // طلب الحديد سيكون الرابع الآن
+
+        const results = await Promise.allSettled(requests);
+        const currRes = results[0];
+        const goldRes = results[1];
+        const silverRes = results[2]; // الفضة الآن هي النتيجة الثالثة
+        const ironRes = results[3]; // الحديد الآن هو النتيجة الرابعة
+
         if (currRes.status === 'fulfilled' && currRes.value.ok) {
             const currData = await currRes.value.json();
             if (currData?.rates) {
@@ -529,16 +584,7 @@ async function fetchApiPrices() {
 
                 // التأكد من وجود الدولار كقاعدة
                 exchangeRates["USD"] = 1;
-
-                // دمج أسعار الفضة والبلاتين من الـ API لضمان دقة المحول
-                if (currData.rates.XAG) exchangeRates["XAG"] = currData.rates.XAG;
-                if (currData.rates.XPT) exchangeRates["XPT"] = currData.rates.XPT;
-
-                if (currData.rates.XAG) {
-                    previousSilverPrice = silverPrice;
-                    silverPrice = 1 / currData.rates.XAG; // تحويل المعدل إلى سعر أوقية بالدولار
-                    localStorage.setItem('last_silver_price', silverPrice);
-                }
+                
                 if (currData.rates.XPT) {
                     previousPlatinumPrice = platinumPrice;
                     platinumPrice = 1 / currData.rates.XPT;
@@ -551,18 +597,36 @@ async function fetchApiPrices() {
 
         if (goldRes.status === 'fulfilled' && goldRes.value.ok) {
             const goldData = await goldRes.value.json();
-            if (goldData?.price) {
+            // Binance يرجع السعر في حقل price كـ string
+            if (goldData && goldData.price) {
                 goldPrice = parseFloat(goldData.price);
                 // تحديث معدل الذهب في كائن الصرف (1 دولار = كم أوقية)
                 exchangeRates["XAU"] = 1 / goldPrice;
                 localStorage.setItem('last_gold_price', goldPrice);
-                const currentK24 = goldPrice / OUNCE_TO_GRAM;
-                caratPrices = { k24: currentK24, k21: currentK24 * 0.875, k18: currentK24 * 0.75 };
+                
+                // ربط العيارات برمجياً بسعر الأونصة الجديد
+                const gram24USD = goldPrice / OUNCE_TO_GRAM;
+                caratPrices.k24 = gram24USD;
+                caratPrices.k21 = gram24USD * 0.875;
+                caratPrices.k18 = gram24USD * 0.75;
+                caratPrices.k14 = gram24USD * (14/24);
+                caratPrices.k12 = gram24USD * 0.5;
+            }
+        }
+        
+        // معالجة بيانات الفضة من Binance
+        if (silverRes.status === 'fulfilled' && silverRes.value.ok) {
+            const silverData = await silverRes.value.json();
+            if (silverData && silverData.price) {
+                previousSilverPrice = silverPrice;
+                silverPrice = parseFloat(silverData.price);
+                exchangeRates["XAG"] = 1 / silverPrice; // تحديث معدل الفضة في كائن الصرف
+                localStorage.setItem('last_silver_price', silverPrice);
             }
         }
 
         // معالجة بيانات الحديد من المصدر المجاني
-        if (ironRes.status === 'fulfilled' && ironRes.value.ok) {
+        if (ironRes && ironRes.status === 'fulfilled' && ironRes.value.ok) {
             const ironData = await ironRes.value.json();
             const record = ironData?.record || ironData;
             if (record && record.ezz) {
@@ -572,9 +636,10 @@ async function fetchApiPrices() {
                 ironEgyptiansPrice = record.egyptians;
                 previousIronGarhyPrice = ironGarhyPrice;
                 ironGarhyPrice = record.garhy;
+                addApiLog("✅ تم تحديث أسعار الحديد بنجاح");
             }
         } else {
-            addApiLog("⚠️ بيانات الحديد من JSONBin غير متاحة حالياً");
+            addApiLog("⚠️ أسعار الحديد تستخدم البيانات المحلية (رابط API غير متاح)");
         }
 
         updateUI();
@@ -652,13 +717,25 @@ onValue(pricesRef, (snapshot) => {
     if (data) {
         previousGoldPrice = goldPrice;
         previousCaratPrices = { ...caratPrices };
-        goldPrice = data.gold;
+        
+        // تحديث سعر الأونصة من قاعدة البيانات
+        goldPrice = Number(data.gold) || goldPrice;
         exchangeRates = data.rates || exchangeRates;
+
+        // إعادة حساب العيارات بناءً على سعر الأونصة المحدث يدوياً لضمان الربط
+        const gram24USD = goldPrice / OUNCE_TO_GRAM;
+        caratPrices = {
+            k24: data.carats?.k24 || gram24USD,
+            k21: data.carats?.k21 || (gram24USD * 0.875),
+            k18: data.carats?.k18 || (gram24USD * 0.75),
+            k14: data.carats?.k14 || (gram24USD * (14/24)),
+            k12: data.carats?.k12 || (gram24USD * 0.5)
+        };
+
         if (data.silver) { previousSilverPrice = silverPrice; silverPrice = data.silver; }
         if (data.ironEzz) { previousIronEzzPrice = ironEzzPrice; ironEzzPrice = data.ironEzz; }
         if (data.ironEgyptians) { previousIronEgyptiansPrice = ironEgyptiansPrice; ironEgyptiansPrice = data.ironEgyptians; }
         if (data.ironGarhy) { previousIronGarhyPrice = ironGarhyPrice; ironGarhyPrice = data.ironGarhy; }
-        if (data.carats) caratPrices = { ...data.carats };
         if (data.makingCharges) makingCharges = data.makingCharges;
         isManualMode = true;
         renderConverterOptions();
@@ -668,6 +745,39 @@ onValue(pricesRef, (snapshot) => {
         fetchApiPrices();
     }
 });
+
+// دالة عرض جدول البيانات التاريخية (مقتبس من الموقع المطلوب)
+function renderHistoricalTable() {
+    const container = domElements.historicalTableBody;
+    if (!container) return;
+
+    onValue(historyRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) {
+            container.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-slate-500 italic">لا توجد بيانات تاريخية متاحة حالياً</td></tr>';
+            return;
+        }
+
+        const historyArray = Object.entries(data).sort((a, b) => b[1].timestamp - a[1].timestamp).slice(0, 10);
+        const displayRate = exchangeRates[domElements.displayCurrency?.value || "EGP"] || 1;
+
+        container.innerHTML = historyArray.map(([id, entry]) => {
+            const ozPrice = entry.gold_price;
+            const g24 = (ozPrice / OUNCE_TO_GRAM) * displayRate;
+            const g21 = g24 * 0.875;
+            const g18 = g24 * 0.75;
+
+            return `
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                    <td class="py-4 px-4 font-mono text-cyan-400">${entry.date}</td>
+                    <td class="py-4 px-4 text-white font-bold">${formatters.egp.format(g24)}</td>
+                    <td class="py-4 px-4 text-white font-bold">${formatters.egp.format(g21)}</td>
+                    <td class="py-4 px-4 text-white font-bold">${formatters.egp.format(g18)}</td>
+                    <td class="py-4 px-4 text-slate-400 font-mono">$${formatters.egp.format(ozPrice)}</td>
+                </tr>`;
+        }).join('');
+    });
+}
 
 // مراقبة المقالات من Firebase
 onValue(articlesRef, (snapshot) => {
@@ -711,8 +821,7 @@ onValue(articlesRef, (snapshot) => {
 function calculateConversion() {
     // استخدام العناصر المخزنة في domElements لتحسين الأداء
     const amount = parseFloat(domElements.amountInput?.value) || 0;
-    // إذا لم يوجد عنصر baseCurrency في القالب، نفترض USD كعملة أساسية
-    const fromCurrency = domElements.baseCurrency ? domElements.baseCurrency.value : "USD";
+    const fromCurrency = "USD"; // العملة الأساسية ثابتة حالياً في محول العملات السريع
     const toCurrency = domElements.targetCurrency?.value || "EGP";
 
     // مزامنة أسعار المعادن الحالية قبل إجراء عملية التحويل
@@ -738,16 +847,7 @@ function calculateConversion() {
     // استخدام الفورمات المجهز مسبقاً حسب نوع العملة
     const formatted = isMetal ? formatters.metal.format(result) : formatters.egp.format(result);
 
-    if (domElements.conversionResultDisplay) domElements.conversionResultDisplay.textContent = formatted;
     if (domElements.conversionResult) domElements.conversionResult.textContent = `${formatted} ${toCurrency}`;
-
-    // تحديث الأعلام الصورية في الواجهة
-    if (domElements.baseFlagImg) {
-        domElements.baseFlagImg.src = getSafeFlagUrl(fromCurrency);
-    }
-    if (domElements.targetFlagImg) {
-        domElements.targetFlagImg.src = getSafeFlagUrl(toCurrency);
-    }
 }
 
 function updateUI() {
@@ -759,7 +859,7 @@ function updateUI() {
     // تحديث وقت آخر تحديث للسعر في الواجهة
     if (domElements.lastUpdateTime) {
         const now = new Date();
-        const timeStr = now.toLocaleTimeString(currentLang === 'ar' ? 'ar-EG' : 'en-US', {
+        const timeStr = now.toLocaleTimeString(currentLang === 'ar' ? 'ar-EG' : 'en-GB', {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit'
@@ -775,17 +875,44 @@ function updateUI() {
 
     // تحديث السعر الرئيسي بالدولار
     if (domElements.mainGoldPrice) {
-        animateNumber(domElements.mainGoldPrice, previousGoldPrice, goldPrice, formatters.usd);
+        const prevMain = displayUnit === 'oz' ? previousGoldPrice : (previousGoldPrice / OUNCE_TO_GRAM);
+        const currMain = displayUnit === 'oz' ? goldPrice : (goldPrice / OUNCE_TO_GRAM);
+        const mainFormatter = displayUnit === 'oz' ? formatters.usd : formatters.metal;
+        animateNumber(domElements.mainGoldPrice, prevMain, currMain, mainFormatter);
     }
 
-    const baseK24 = caratPrices.k24 || (goldPrice / OUNCE_TO_GRAM);
-    const baseK21 = caratPrices.k21 || (baseK24 * 0.875);
-    const baseK18 = caratPrices.k18 || (baseK24 * 0.75);
+    // الربط الرياضي النهائي: اشتقاق الأسعار المحلية من سعر الأونصة العالمي الحالي والسابقة
+    const currentGram24USD = goldPrice / OUNCE_TO_GRAM;
+    const prevGram24USD = previousGoldPrice / OUNCE_TO_GRAM;
 
-    // تحديث أسعار الذهب بالعملة المختارة (ديناميكي)
-    if (domElements.price24k) animateNumber(domElements.price24k, previousCaratPrices.k24 * displayRate, baseK24 * displayRate, formatters.egp);
-    if (domElements.price21k) animateNumber(domElements.price21k, previousCaratPrices.k21 * displayRate, baseK21 * displayRate, formatters.egp);
-    if (domElements.price18k) animateNumber(domElements.price18k, previousCaratPrices.k18 * displayRate, baseK18 * displayRate, formatters.egp);
+    const currentPrices = { k24: currentGram24USD, k21: currentGram24USD * 0.875, k18: currentGram24USD * 0.75, k14: currentGram24USD * (14/24), k12: currentGram24USD * 0.5 };
+    const prevPrices = { k24: prevGram24USD, k21: prevGram24USD * 0.875, k18: prevGram24USD * 0.75, k14: prevGram24USD * (14/24), k12: prevGram24USD * 0.5 };
+
+    // حساب المصنعية بناءً على العملة المختارة (تحويل من الجنيه للعملة الحالية)
+    const m24 = selectedDisplayCurrency === 'EGP' ? (makingCharges?.k24 || 0) : (makingCharges?.k24 || 0) * (displayRate / (exchangeRates.EGP || 1));
+    const m21 = selectedDisplayCurrency === 'EGP' ? (makingCharges?.k21 || 0) : (makingCharges?.k21 || 0) * (displayRate / (exchangeRates.EGP || 1));
+    const m18 = selectedDisplayCurrency === 'EGP' ? (makingCharges?.k18 || 0) : (makingCharges?.k18 || 0) * (displayRate / (exchangeRates.EGP || 1));
+    const m14 = selectedDisplayCurrency === 'EGP' ? (makingCharges?.k14 || 0) : (makingCharges?.k14 || 0) * (displayRate / (exchangeRates.EGP || 1));
+    const m12 = selectedDisplayCurrency === 'EGP' ? (makingCharges?.k12 || 0) : (makingCharges?.k12 || 0) * (displayRate / (exchangeRates.EGP || 1));
+
+    // تحديث أسعار الذهب (الخام بدون مصنعية)
+    if (domElements.price24k) animateNumber(domElements.price24k, prevPrices.k24 * displayRate, currentPrices.k24 * displayRate, formatters.egp);
+    if (domElements.price21k) animateNumber(domElements.price21k, prevPrices.k21 * displayRate, currentPrices.k21 * displayRate, formatters.egp);
+    if (domElements.price18k) animateNumber(domElements.price18k, prevPrices.k18 * displayRate, currentPrices.k18 * displayRate, formatters.egp);
+    if (domElements.price14k) animateNumber(domElements.price14k, prevPrices.k14 * displayRate, currentPrices.k14 * displayRate, formatters.egp);
+    if (domElements.price12k) animateNumber(domElements.price12k, prevPrices.k12 * displayRate, currentPrices.k12 * displayRate, formatters.egp);
+
+    // عرض المصنعية بشكل منفصل
+    const updateMakingDisplay = (el, val) => {
+        if (!el) return;
+        const label = currentLang === 'ar' ? '+ مصنعية: ' : '+ Making: ';
+        el.textContent = val > 0 ? `${label}${formatters.egp.format(val)} ${currencySymbol}` : "";
+    };
+    updateMakingDisplay(domElements.making24kDisplay, m24);
+    updateMakingDisplay(domElements.making21kDisplay, m21);
+    updateMakingDisplay(domElements.making18kDisplay, m18);
+    updateMakingDisplay(domElements.making14kDisplay, m14);
+    updateMakingDisplay(domElements.making12kDisplay, m12);
 
     // تحديث أسعار المعادن الأخرى
     if (domElements.silverPrice) domElements.silverPrice.textContent = formatters.usd.format(silverPrice);
@@ -816,9 +943,11 @@ function updateUI() {
         el.innerHTML = `<i class="fa-solid fa-caret-${isUp ? 'up text-green-500' : 'down text-red-500'}"></i>`;
     };
 
-    updateTrend(domElements.trend24k, goldPrice, previousGoldPrice);
-    updateTrend(domElements.trend21k, baseK21, previousCaratPrices.k21);
-    updateTrend(domElements.trend18k, baseK18, previousCaratPrices.k18);
+    updateTrend(domElements.trend24k, currentPrices.k24, prevPrices.k24);
+    updateTrend(domElements.trend21k, currentPrices.k21, prevPrices.k21);
+    updateTrend(domElements.trend18k, currentPrices.k18, prevPrices.k18);
+    updateTrend(domElements.trend14k, currentPrices.k14, prevPrices.k14);
+    updateTrend(domElements.trend12k, currentPrices.k12, prevPrices.k12);
     updateTrend(domElements.silverTrend, silverPrice, previousSilverPrice);
     updateTrend(domElements.platinumTrend, platinumPrice, previousPlatinumPrice);
     updateTrend(domElements.ironEzzTrend, ironEzzPrice, previousIronEzzPrice);
@@ -828,6 +957,19 @@ function updateUI() {
     if (domElements.targetCurrency && !domElements.targetCurrency.options.length) renderConverterOptions();
     renderCurrencies();
     calculateConversion();
+
+    // تحديث تسمية وحدة السعر وزر التبديل
+    if (domElements.goldPriceLabel) {
+        domElements.goldPriceLabel.textContent = displayUnit === 'oz' ? translations[currentLang].gold_oz : translations[currentLang].gold_g;
+    }
+    if (domElements.unitToggleBtn) {
+        domElements.unitToggleBtn.textContent = displayUnit === 'oz' ? (currentLang === 'ar' ? 'عرض بالجرام' : 'Show per gram') : (currentLang === 'ar' ? 'عرض بالأونصة' : 'Show per ounce');
+        domElements.unitToggleBtn.onclick = () => {
+            displayUnit = displayUnit === 'oz' ? 'g' : 'oz';
+            localStorage.setItem('displayUnit', displayUnit);
+            updateUI();
+        };
+    }
 }
 
 function simulateMarket() {
@@ -1196,7 +1338,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // تسجيل الـ Service Worker وطلب إذن الإشعارات
     if ('serviceWorker' in navigator) {
         // استخدام المسار النسبي الصحيح للـ Service Worker
-        navigator.serviceWorker.register('./sw.js', { type: 'module' })
+        navigator.serviceWorker.register('./sw.js')
             .then((registration) => {
                 console.log('✅ Service Worker جاهز');
                 initPushNotifications(registration);
@@ -1212,11 +1354,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- أحداث لوحة التحكم ---
     // استخدام Debounce للبحث لتقليل العمليات الحسابية المتكررة أثناء الكتابة السريعة
     const debouncedRenderCurrencies = debounce(() => renderCurrencies());
-    const debouncedRenderOptions = debounce(() => renderConverterOptions());
     document.getElementById('searchInput')?.addEventListener('input', debouncedRenderCurrencies);
-    document.getElementById('converterSearch')?.addEventListener('input', debouncedRenderOptions);
     document.getElementById('amountInput')?.addEventListener('input', calculateConversion);
-    document.getElementById('baseCurrency')?.addEventListener('change', calculateConversion);
     document.getElementById('targetCurrency')?.addEventListener('change', calculateConversion);
     document.getElementById('amountInput')?.addEventListener('change', calculateConversion);
 
@@ -1261,14 +1400,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI();
     });
 
-    // ميزة تبديل العملات
-    domElements.swapCurrenciesBtn?.addEventListener('click', () => {
-        const temp = domElements.baseCurrency.value;
-        domElements.baseCurrency.value = domElements.targetCurrency.value;
-        domElements.targetCurrency.value = temp;
-        calculateConversion();
-    });
-
     // إغلاق مودال المقال
     document.getElementById('closeArticleModalBtn')?.addEventListener('click', () => domElements.articleModal.classList.add('hidden'));
 
@@ -1303,6 +1434,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // إغلاق لوحة التحكم
     document.getElementById('closeAdminBtn')?.addEventListener('click', () => domElements.adminPanel.classList.add('hidden'));
     document.getElementById('closeLoginBtn')?.addEventListener('click', () => domElements.loginModal.classList.add('hidden'));
+
+    // برمجة الربط التلقائي بين سعر الأونصة والعيارات في لوحة التحكم
+    const manualGoldInput = document.getElementById('manualGoldPrice');
+    const manual24kInput = document.getElementById('manual24k');
+    const manual21kInput = document.getElementById('manual21k');
+    const manual18kInput = document.getElementById('manual18k');
+    const manual14kInput = document.getElementById('manual14k');
+    const manual12kInput = document.getElementById('manual12k');
+
+    manualGoldInput?.addEventListener('input', (e) => {
+        const ozPrice = parseFloat(e.target.value);
+        if (ozPrice > 0) {
+            const g24 = ozPrice / OUNCE_TO_GRAM;
+            if (manual24kInput) manual24kInput.value = g24.toFixed(2);
+            if (manual21kInput) manual21kInput.value = (g24 * 0.875).toFixed(2);
+            if (manual18kInput) manual18kInput.value = (g24 * 0.75).toFixed(2);
+            if (manual14kInput) manual14kInput.value = (g24 * (14/24)).toFixed(2);
+            if (manual12kInput) manual12kInput.value = (g24 * 0.5).toFixed(2);
+        }
+    });
 
     // تهيئة محرر Quill
     if (document.getElementById('editor-container')) {
@@ -1477,16 +1628,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // حفظ الأسعار يدوياً إلى Firebase
     document.getElementById('saveManualPrices')?.addEventListener('click', async () => {
+        const manualEgpRate = parseFloat(document.getElementById('manualEGP').value) || exchangeRates.EGP;
+        const currentManualGoldPrice = parseFloat(document.getElementById('manualGoldPrice').value) || goldPrice;
+
+        // حساب أسعار العيارات يدوياً أو من المدخلات
+        const manualCarats = {
+            k24: parseFloat(document.getElementById('manual24k').value) || (parseFloat(document.getElementById('manual24kEGP').value) / manualEgpRate) || (currentManualGoldPrice / OUNCE_TO_GRAM),
+            k21: parseFloat(document.getElementById('manual21k').value) || (parseFloat(document.getElementById('manual21kEGP').value) / manualEgpRate) || ((currentManualGoldPrice / OUNCE_TO_GRAM) * 0.875),
+            k18: parseFloat(document.getElementById('manual18k').value) || (parseFloat(document.getElementById('manual18kEGP').value) / manualEgpRate) || ((currentManualGoldPrice / OUNCE_TO_GRAM) * 0.75),
+            k14: parseFloat(document.getElementById('manual14k').value) || (parseFloat(document.getElementById('manual14kEGP').value) / manualEgpRate) || ((currentManualGoldPrice / OUNCE_TO_GRAM) * (14/24)),
+            k12: parseFloat(document.getElementById('manual12k').value) || (parseFloat(document.getElementById('manual12kEGP').value) / manualEgpRate) || ((currentManualGoldPrice / OUNCE_TO_GRAM) * 0.5)
+        };
+
         const newPrices = {
             gold: parseFloat(document.getElementById('manualGoldPrice').value) || goldPrice,
             silver: parseFloat(document.getElementById('manualSilverPrice').value) || silverPrice,
             ironEzz: parseFloat(document.getElementById('manualIronEzzPrice').value) || ironEzzPrice,
             ironEgyptians: parseFloat(document.getElementById('manualIronEgyptiansPrice').value) || ironEgyptiansPrice,
             ironGarhy: parseFloat(document.getElementById('manualIronGarhyPrice').value) || ironGarhyPrice,
+            carats: manualCarats,
             rates: {
-                EGP: parseFloat(document.getElementById('manualEGP').value) || exchangeRates.EGP,
+                EGP: manualEgpRate,
                 SAR: parseFloat(document.getElementById('manualSAR').value) || exchangeRates.SAR,
                 EUR: parseFloat(document.getElementById('manualEUR').value) || exchangeRates.EUR
+            },
+            makingCharges: {
+                k24: parseFloat(document.getElementById('making24k').value) || 0,
+                k21: parseFloat(document.getElementById('making21k').value) || 0,
+                k18: parseFloat(document.getElementById('making18k').value) || 0,
+                k14: parseFloat(document.getElementById('making14k').value) || 0,
+                k12: parseFloat(document.getElementById('making12k').value) || 0
             },
             lastUpdated: Date.now()
         };

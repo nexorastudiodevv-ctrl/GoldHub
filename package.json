@@ -1,0 +1,16 @@
+{
+  "name": "good",
+  "version": "1.0.0",
+  "description": "موقع ويب متقدم ومتخصص لمتابعة **أسعار الذهب العالمية** و**أسعار الصرف** للعملات الرئيسية في الوقت الفعلي، مع واجهة مستخدم حديثة وميزات احترافية.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "tailwindcss": "^4.3.0"
+  }
+}

@@ -1,12 +1,12 @@
 /* eslint-disable no-restricted-globals */
 // استيراد مكتبات Firebase داخل الـ Service Worker
-// استخدام Modular SDK بدلاً من Compat Libraries
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getMessaging, onBackgroundMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
+// استخدام Compat SDK لضمان التوافقية العالية في بيئة الـ Service Worker
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
 const firebaseConfig = {
     apiKey: "AIzaSyBLHuPTH3RhwDTdxTDcgFRYPfvXZM3gco8",
-    authDomain: "goldhub-1fdb1.firebaseapp.com",
+    authDomain: "gold-hub.com", // تحديث النطاق هنا أيضاً
     projectId: "goldhub-1fdb1",
     storageBucket: "goldhub-1fdb1.firebasestorage.app",
     messagingSenderId: "646245822812",
@@ -17,9 +17,9 @@ const firebaseConfig = {
 let messaging = null;
 
 try {
-    const app = initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     // التحقق من دعم المتصفح للمراسلة قبل البدء
-    messaging = getMessaging(app);
+    messaging = firebase.messaging();
     console.log("🚀 Firebase Messaging initialized in SW");
 } catch (err) {
     console.error("⚠️ Failed to initialize Firebase Messaging in SW:", err);
@@ -31,7 +31,12 @@ const ASSETS = [
     'manifest.json',
     'app.js',
     'icon.png',
-    'icon.webp'
+    'icon.webp',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+    'https://cdn.jsdelivr.net/npm/chart.js',
+    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+    'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css'
 ];
 
 // تثبيت الـ Service Worker وتخزين الملفات الأساسية
@@ -84,7 +89,7 @@ self.addEventListener('fetch', (e) => {
 
 // التعامل مع الرسائل الواردة في الخلفية
 if (messaging) {
-    onBackgroundMessage(messaging, (payload) => {
+    messaging.onBackgroundMessage((payload) => {
         console.log('Received background message: ', payload);
         const notificationTitle = payload?.notification?.title || "تحديث من GoldHub";
         const notificationOptions = {

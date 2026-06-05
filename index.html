@@ -2,7 +2,10 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+    />
 
     <!-- فرض التحويل إلى HTTPS برمجياً لضمان الأمان وعمل الـ PWA -->
     <script>
@@ -22,10 +25,10 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; 
       script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com 'unsafe-inline' 'unsafe-eval'; 
-      style-src 'self' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com 'unsafe-inline'; 
-      img-src 'self' data: blob: https://unpkg.com https://flagcdn.com https://cdn-icons-png.flaticon.com https://*.openstreetmap.org https://server.arcgisonline.com https://*.basemaps.cartocdn.com https://upload.wikimedia.org https://*.egyptian-steel.com https://*.garhysteel.com https://gold-hub.com https://images.openai.com https://*.bing.net https://tse3.mm.bing.net https://images.openai.com; 
-      connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.firebase.com https://*.googleapis.com https://open.er-api.com https://api.binance.com https://api.jsonbin.io https://ipapi.co https://overpass-api.de https://www.google-analytics.com https://www.google.com https://region1.google-analytics.com https://cdn.jsdelivr.net; 
-      font-src 'self' https://cdnjs.cloudflare.com; 
+      style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com 'unsafe-inline'; 
+      img-src 'self' data: blob: https://*.googleusercontent.com https://unpkg.com https://flagcdn.com https://cdn-icons-png.flaticon.com https://*.openstreetmap.org https://server.arcgisonline.com https://*.basemaps.cartocdn.com https://upload.wikimedia.org https://*.egyptian-steel.com https://*.garhysteel.com https://gold-hub.com https://images.openai.com https://*.bing.net https://tse3.mm.bing.net https://images.openai.com; 
+      connect-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebase.com https://*.firebaseapp.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebasestorage.googleapis.com https://*.googleapis.com https://*.googletagmanager.com https://open.er-api.com https://api.binance.com https://api.jsonbin.io https://ipapi.co https://overpass-api.de https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://cdn.jsdelivr.net; 
+      font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; 
       media-src 'self' https://assets.mixkit.co; 
       frame-src 'self' https://www.youtube.com https://*.firebase.com https://*.firebaseapp.com https://*.firebaseio.com;
       worker-src 'self' blob: https://www.gstatic.com;"
@@ -50,11 +53,27 @@
     <meta name="author" content="GoldHub" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://gold-hub.com/" />
+    <link rel="canonical" href="https://gold-hub.it.com/" />
 
     <!-- روابط اللغة الدولية (Hreflang) للظهور العالمي -->
     <link rel="alternate" hreflang="ar" href="https://gold-hub.com/?lang=ar" />
     <link rel="alternate" hreflang="en" href="https://gold-hub.com/?lang=en" />
     <link rel="alternate" hreflang="x-default" href="https://gold-hub.com/" />
+    <link
+      rel="alternate"
+      hreflang="ar"
+      href="https://gold-hub.it.com/?lang=ar"
+    />
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://gold-hub.it.com/?lang=en"
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://gold-hub.it.com/"
+    />
 
     <!-- وسائل التواصل الاجتماعي (Open Graph) -->
     <meta
@@ -95,14 +114,13 @@
     <link rel="shortcut icon" href="icon.webp" type="image/webp" />
     <meta name="theme-color" content="#090f1c" />
     <link rel="apple-touch-icon" href="icon.png" />
-    <!-- تضمين مكتبة Tailwind CSS للتصميم السريع -->
-    <!-- تحسينات الأداء: Preconnect للموارد الخارجية -->
+    <!-- تضمين مكتبة Tailwind CSS للتصميم السريع عبر CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- تحسينات الأداء المتقدمة -->
+    <link rel="dns-prefetch" href="https://open.er-api.com" />
+    <link rel="dns-prefetch" href="https://www.gstatic.com" />
     <link rel="preconnect" href="https://cdn.tailwindcss.com" />
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="preconnect" href="https://basemaps.cartocdn.com" />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <script src="https://cdn.tailwindcss.com" defer></script>
     <!-- تضمين مكتبة أيقونات FontAwesome -->
     <link
       rel="stylesheet"
@@ -210,30 +228,6 @@
         }
       }
 
-      /* تأثير وميض عند تغير السعر */
-      .price-up-flash {
-        animation: flashGreen 0.5s ease-out;
-      }
-      .price-down-flash {
-        animation: flashRed 0.5s ease-out;
-      }
-      @keyframes flashGreen {
-        0% {
-          background-color: rgba(34, 197, 94, 0.3);
-        } /* Tailwind emerald-500/30 */
-        100% {
-          background-color: transparent;
-        }
-      }
-      @keyframes flashRed {
-        0% {
-          background-color: rgba(239, 68, 68, 0.3);
-        } /* Tailwind red-500/30 */
-        100% {
-          background-color: transparent;
-        }
-      }
-
       /* فقاعات الخلفية المتحركة */
       .bg-blob {
         position: fixed;
@@ -315,22 +309,6 @@
         -webkit-font-smoothing: antialiased;
       }
     </style>
-
-    <!-- تحميل FontAwesome CSS بشكل غير متزامن -->
-    <link
-      rel="preload"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      as="style"
-      onload="
-        this.onload = null;
-        this.rel = 'stylesheet';
-      "
-    />
-    <noscript
-      ><link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    /></noscript>
 
     <!-- وسم WebSite لتمكين ظهور اسم الموقع ومربع البحث في جوجل -->
     <script type="application/ld+json">
@@ -508,6 +486,7 @@
               width="24"
               height="24"
               decoding="async"
+              fetchpriority="high"
             />
           </div>
           <div
@@ -898,6 +877,27 @@
           role="tablist"
           aria-label="تبويبات سوق المال"
         >
+          <!-- بنر تنويهي لأسعار الذهب (Cyberpunk Glassmorphism style) -->
+          <div class="glass-panel border-amber-500/30 rounded-2xl p-4 md:p-5 mb-6 relative overflow-hidden group shadow-[0_0_20px_rgba(245,158,11,0.1)] section-fade-in">
+            <!-- تأثير توهج نيون خلفي -->
+            <div class="absolute -top-10 -start-10 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-500/20 transition-all duration-700"></div>
+            
+            <div class="flex items-center gap-4 relative z-10">
+              <!-- أيقونة التنبيه النابضة -->
+              <div class="shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                <span class="text-xl md:text-2xl animate-pulse">⚠️</span>
+              </div>
+              
+              <!-- نص التنبيه -->
+              <div class="flex-1">
+                <p class="text-[11px] md:text-sm leading-relaxed text-amber-100/90 font-medium">
+                  <strong class="text-amber-400 font-bold block mb-0.5 md:inline md:mb-0">تنبيه:</strong>
+                  هذه هي الأسعار العالمية الخام للذهب المقومة محلياً تلقائياً، وتختلف عن أسعار التنفيذ الفعلي في محلات الصاغة التي تخضع لآليات التحوط والعرض والطلب المحلي.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <button
             data-market-tab="gold"
             class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
@@ -933,6 +933,15 @@
             aria-controls="currencySection"
           >
             <i class="fa-solid fa-star me-2"></i>مفضلتي
+          </button>
+          <button
+            data-market-tab="history"
+            class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-300"
+            role="tab"
+            aria-selected="false"
+            aria-controls="historicalSection"
+          >
+            <i class="fa-solid fa-clock-rotate-left me-2"></i>التاريخي
           </button>
         </div>
 
@@ -1008,11 +1017,12 @@
 
               <!-- السعر الكبير والمؤشر -->
               <p class="text-xs text-slate-400 mb-1 flex items-center">
-                <span data-i18n="gold_oz">سعر أونصة الذهب بالدولار</span>
+                <span id="goldPriceLabel" data-i18n="gold_oz">سعر أونصة الذهب بالدولار</span>
                 <span
                   id="lastUpdateTime"
                   class="ms-2 text-[10px] text-slate-500 font-mono opacity-80"
                 ></span>
+                <button id="unitToggleBtn" class="ms-4 text-[11px] bg-slate-800/40 px-2 py-1 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800/60">عرض بالجرام</button>
               </p>
               <div class="flex items-baseline gap-4 mb-6">
                 <span
@@ -1040,7 +1050,7 @@
             <!-- شبكة أسعار الجرام لكل عيار (الأسعار الفرعية بالأسفل) -->
             <div
               id="goldCaratsGrid"
-              class="grid grid-cols-1 sm:grid-cols-3 gap-4"
+              class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4"
             >
               <!-- عيار 24 -->
               <div
@@ -1052,6 +1062,7 @@
                     id="price-24k"
                     class="text-lg font-bold text-white mt-1"
                   ></p>
+                  <p id="making-24k-display" class="text-[10px] text-cyan-400 mt-0.5 font-bold"></p>
                 </div>
                 <span
                   id="trend-24k"
@@ -1070,12 +1081,7 @@
                     id="price-21k"
                     class="text-lg font-bold text-white mt-1"
                   ></p>
-                  <p
-                    id="price-21k-raw"
-                    class="text-[10px] text-slate-500 mt-0.5 tracking-tight"
-                  >
-                    بدون مصنعية: 0.00 EGP
-                  </p>
+                  <p id="making-21k-display" class="text-[10px] text-cyan-400 mt-0.5 font-bold"></p>
                 </div>
                 <span
                   id="trend-21k"
@@ -1094,6 +1100,7 @@
                     id="price-18k"
                     class="text-lg font-bold text-white mt-1"
                   ></p>
+                  <p id="making-18k-display" class="text-[10px] text-cyan-400 mt-0.5 font-bold"></p>
                 </div>
                 <span
                   id="trend-18k"
@@ -1102,10 +1109,48 @@
                   <i class="fa-solid fa-arrow-trend-down ms-1"></i> هبوط
                 </span>
               </div>
+              <!-- عيار 14 -->
+              <div
+                class="glass-panel rounded-xl p-4 flex justify-between items-center"
+              >
+                <div>
+                  <p class="text-xs text-slate-400">عيار 14 (جرام)</p>
+                  <p
+                    id="price-14k"
+                    class="text-lg font-bold text-white mt-1"
+                  ></p>
+                  <p id="making-14k-display" class="text-[10px] text-cyan-400 mt-0.5 font-bold"></p>
+                </div>
+                <span
+                  id="trend-14k"
+                  class="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20"
+                >
+                  <i class="fa-solid fa-arrow-trend-up ms-1"></i> صعود
+                </span>
+              </div>
+              <!-- عيار 12 -->
+              <div
+                class="glass-panel rounded-xl p-4 flex justify-between items-center"
+              >
+                <div>
+                  <p class="text-xs text-slate-400">عيار 12 (جرام)</p>
+                  <p
+                    id="price-12k"
+                    class="text-lg font-bold text-white mt-1"
+                  ></p>
+                  <p id="making-12k-display" class="text-[10px] text-cyan-400 mt-0.5 font-bold"></p>
+                </div>
+                <span
+                  id="trend-12k"
+                  class="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20"
+                >
+                  <i class="fa-solid fa-arrow-trend-up ms-1"></i> صعود
+                </span>
+              </div>
 
               <!-- إعلان إضافي تحت أسعار العيارات -->
               <div
-                class="sm:col-span-3 glass-panel rounded-xl p-2 text-center border-dashed border-cyan-500/10"
+                class="sm:col-span-2 md:col-span-3 xl:grid-cols-5 glass-panel rounded-xl p-2 text-center border-dashed border-cyan-500/10"
               >
                 <p class="text-[8px] text-slate-500">إعلان</p>
                 <div
@@ -1537,6 +1582,36 @@
               class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
               <!-- تعبئة برمجية -->
+            </div>
+          </div>
+
+          <!-- قسم الأسعار التاريخية (مقتبس من gold-price-today) -->
+          <div id="historicalSection" class="hidden lg:col-span-3 space-y-6">
+            <div class="glass-panel rounded-3xl p-6 md:p-10 space-y-8 border border-cyan-500/10 section-fade-in">
+              <div class="flex justify-between items-center border-b border-slate-800 pb-6">
+                <div>
+                  <h3 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-calendar-days text-cyan-400"></i> تاريخ أسعار الذهب في مصر
+                  </h3>
+                  <p class="text-slate-400 mt-2 text-sm">سجل الأسعار اليومية لآخر 10 أيام</p>
+                </div>
+              </div>
+              <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-right text-sm">
+                  <thead class="text-slate-500 border-b border-slate-800">
+                    <tr>
+                      <th class="py-4 px-4 font-bold">التاريخ</th>
+                      <th class="py-4 px-4 font-bold">عيار 24</th>
+                      <th class="py-4 px-4 font-bold">عيار 21</th>
+                      <th class="py-4 px-4 font-bold">عيار 18</th>
+                      <th class="py-4 px-4 font-bold">الأوقية ($)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="historicalTableBody" class="divide-y divide-slate-800/50">
+                    <!-- يتم التعبئة تلقائياً -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -2200,6 +2275,36 @@
               class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-amber-500/50"
             />
           </div>
+          <div class="glass-panel p-5 rounded-2xl space-y-4">
+            <h3
+              class="text-sm font-bold text-amber-400 uppercase tracking-widest"
+            >
+              ذهب عيار 14 ($)
+            </h3>
+            <label for="manual14k" class="sr-only">سعر عيار 14 بالدولار</label>
+            <input
+              type="number"
+              id="manual14k"
+              step="0.01"
+              placeholder="سعر عيار 14"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-amber-500/50"
+            />
+          </div>
+          <div class="glass-panel p-5 rounded-2xl space-y-4">
+            <h3
+              class="text-sm font-bold text-amber-400 uppercase tracking-widest"
+            >
+              ذهب عيار 12 ($)
+            </h3>
+            <label for="manual12k" class="sr-only">سعر عيار 12 بالدولار</label>
+            <input
+              type="number"
+              id="manual12k"
+              step="0.01"
+              placeholder="سعر عيار 12"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-amber-500/50"
+            />
+          </div>
           <div
             class="glass-panel p-5 rounded-2xl space-y-4 border border-emerald-500/20"
           >
@@ -2258,6 +2363,44 @@
             />
           </div>
           <div
+            class="glass-panel p-5 rounded-2xl space-y-4 border border-emerald-500/20"
+          >
+            <h3
+              class="text-sm font-bold text-emerald-400 uppercase tracking-widest"
+            >
+              ذهب عيار 14 (EGP)
+            </h3>
+            <label for="manual14kEGP" class="sr-only"
+              >سعر عيار 14 بالجنيه المصري</label
+            >
+            <input
+              type="number"
+              id="manual14kEGP"
+              step="0.01"
+              placeholder="سعر عيار 14 بالمصري"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-emerald-500/50"
+            />
+          </div>
+          <div
+            class="glass-panel p-5 rounded-2xl space-y-4 border border-emerald-500/20"
+          >
+            <h3
+              class="text-sm font-bold text-emerald-400 uppercase tracking-widest"
+            >
+              ذهب عيار 12 (EGP)
+            </h3>
+            <label for="manual12kEGP" class="sr-only"
+              >سعر عيار 12 بالجنيه المصري</label
+            >
+            <input
+              type="number"
+              id="manual12kEGP"
+              step="0.01"
+              placeholder="سعر عيار 12 بالمصري"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-emerald-500/50"
+            />
+          </div>
+          <div
             class="glass-panel p-5 rounded-2xl space-y-4 border border-cyan-500/20"
           >
             <h3
@@ -2303,6 +2446,40 @@
             <input
               type="number"
               id="making18k"
+              step="0.01"
+              placeholder="المصنعية للجرام"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-cyan-500/50"
+            />
+          </div>
+          <div
+            class="glass-panel p-5 rounded-2xl space-y-4 border border-cyan-500/20"
+          >
+            <h3
+              class="text-sm font-bold text-cyan-400 uppercase tracking-widest"
+            >
+              مصنعية عيار 14 (EGP)
+            </h3>
+            <label for="making14k" class="sr-only">مصنعية عيار 14 للجرام</label>
+            <input
+              type="number"
+              id="making14k"
+              step="0.01"
+              placeholder="المصنعية للجرام"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-cyan-500/50"
+            />
+          </div>
+          <div
+            class="glass-panel p-5 rounded-2xl space-y-4 border border-cyan-500/20"
+          >
+            <h3
+              class="text-sm font-bold text-cyan-400 uppercase tracking-widest"
+            >
+              مصنعية عيار 12 (EGP)
+            </h3>
+            <label for="making12k" class="sr-only">مصنعية عيار 12 للجرام</label>
+            <input
+              type="number"
+              id="making12k"
               step="0.01"
               placeholder="المصنعية للجرام"
               class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-4 text-white outline-none focus:border-cyan-500/50"
