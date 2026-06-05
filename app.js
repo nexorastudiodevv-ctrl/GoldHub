@@ -562,21 +562,50 @@ async function fetchApiPrices() {
         previousGoldPrice = goldPrice;
         previousCaratPrices = { ...caratPrices };
 
-        // جلب البيانات مع التحقق من وجود روابط الـ APIs
-        const requests = [
-            fetch(EXTERNAL_APIS.CURRENCY),
-            fetch(EXTERNAL_APIS.GOLD)
-        ];
-        if (EXTERNAL_APIS.SILVER) requests.push(fetch(EXTERNAL_APIS.SILVER).catch(() => ({ ok: false }))); // إضافة طلب الفضة
-        if (EXTERNAL_APIS.IRON) requests.push(fetch(EXTERNAL_APIS.IRON).catch(() => ({ ok: false }))); // طلب الحديد سيكون الرابع الآن
+        const apiRequests = [];
+        const apiKeys = [];
 
-        const results = await Promise.allSettled(requests);
-        const currRes = results[0];
-        const goldRes = results[1];
-        const silverRes = results[2]; // الفضة الآن هي النتيجة الثالثة
-        const ironRes = results[3]; // الحديد الآن هو النتيجة الرابعة
+        apiRequests.push(fetch(EXTERNAL_APIS.CURRENCY).catch(err => {
+            console.error("❌ فشل جلب العملات:", err);
+            addApiLog(`❌ فشل جلب العملات: ${err.message || 'خطأ غير معروف'}`);
+            return { status: 'rejected', reason: err };
+        }));
+        apiKeys.push('CURRENCY');
 
-        if (currRes.status === 'fulfilled' && currRes.value.ok) {
+        apiRequests.push(fetch(EXTERNAL_APIS.GOLD).catch(err => {
+            console.error("❌ فشل جلب الذهب:", err);
+            addApiLog(`❌ فشل جلب الذهب: ${err.message || 'خطأ غير معروف'}`);
+            return { status: 'rejected', reason: err };
+        }));
+        apiKeys.push('GOLD');
+
+        if (EXTERNAL_APIS.SILVER) {
+            apiRequests.push(fetch(EXTERNAL_APIS.SILVER).catch(err => {
+                console.error("❌ فشل جلب سعر الفضة من Binance:", err);
+                addApiLog(`❌ فشل جلب الفضة: ${err.message || 'خطأ غير معروف'}`);
+                return { status: 'rejected', reason: err };
+            }));
+            apiKeys.push('SILVER');
+        }
+
+        if (EXTERNAL_APIS.IRON) {
+            apiRequests.push(fetch(EXTERNAL_APIS.IRON).catch(err => {
+                console.error("❌ فشل جلب سعر الحديد:", err);
+                addApiLog(`❌ فشل جلب الحديد: ${err.message || 'خطأ غير معروف'}`);
+                return { status: 'rejected', reason: err };
+            }));
+            apiKeys.push('IRON');
+        }
+
+        const results = await Promise.allSettled(apiRequests);
+
+        const processedResults = {};
+        results.forEach((result, index) => {
+            processedResults[apiKeys[index]] = result;
+        });
+
+        const currRes = processedResults.CURRENCY;
+        if (currRes && currRes.status === 'fulfilled' && currRes.value.ok) {
             const currData = await currRes.value.json();
             if (currData?.rates) {
                 // تحديث كائن الأسعار بجميع العملات التي يوفرها الـ API
@@ -593,9 +622,14 @@ async function fetchApiPrices() {
                 localStorage.setItem('last_rates', JSON.stringify(exchangeRates));
             }
             renderConverterOptions();
+        } else if (currRes && currRes.status === 'rejected') {
+            // Error already logged in the catch block of the fetch call
+        } else {
+            addApiLog("⚠️ فشل جلب العملات (استجابة غير صالحة).");
         }
 
-        if (goldRes.status === 'fulfilled' && goldRes.value.ok) {
+        const goldRes = processedResults.GOLD;
+        if (goldRes && goldRes.status === 'fulfilled' && goldRes.value.ok) {
             const goldData = await goldRes.value.json();
             // Binance يرجع السعر في حقل price كـ string
             if (goldData && goldData.price) {
@@ -612,10 +646,15 @@ async function fetchApiPrices() {
                 caratPrices.k14 = gram24USD * (14/24);
                 caratPrices.k12 = gram24USD * 0.5;
             }
+        } else if (goldRes && goldRes.status === 'rejected') {
+            // Error already logged in the catch block of the fetch call
+        } else {
+            addApiLog("⚠️ فشل جلب الذهب (استجابة غير صالحة).");
         }
         
         // معالجة بيانات الفضة من Binance
-        if (silverRes.status === 'fulfilled' && silverRes.value.ok) {
+        const silverRes = processedResults.SILVER;
+        if (silverRes && silverRes.status === 'fulfilled' && silverRes.value.ok) {
             const silverData = await silverRes.value.json();
             if (silverData && silverData.price) {
                 previousSilverPrice = silverPrice;
@@ -623,9 +662,14 @@ async function fetchApiPrices() {
                 exchangeRates["XAG"] = 1 / silverPrice; // تحديث معدل الفضة في كائن الصرف
                 localStorage.setItem('last_silver_price', silverPrice);
             }
+        } else if (silverRes && silverRes.status === 'rejected') {
+            // Error already logged in the catch block of the fetch call
+        } else {
+            addApiLog("⚠️ فشل جلب الفضة (استجابة غير صالحة).");
         }
 
         // معالجة بيانات الحديد من المصدر المجاني
+        const ironRes = processedResults.IRON;
         if (ironRes && ironRes.status === 'fulfilled' && ironRes.value.ok) {
             const ironData = await ironRes.value.json();
             const record = ironData?.record || ironData;
@@ -636,10 +680,11 @@ async function fetchApiPrices() {
                 ironEgyptiansPrice = record.egyptians;
                 previousIronGarhyPrice = ironGarhyPrice;
                 ironGarhyPrice = record.garhy;
-                addApiLog("✅ تم تحديث أسعار الحديد بنجاح");
             }
+        } else if (ironRes && ironRes.status === 'rejected') {
+            // Error already logged in the catch block of the fetch call
         } else {
-            addApiLog("⚠️ أسعار الحديد تستخدم البيانات المحلية (رابط API غير متاح)");
+            addApiLog("⚠️ أسعار الحديد تستخدم البيانات المحلية (رابط API غير متاح أو استجابة غير صالحة).");
         }
 
         updateUI();
@@ -732,7 +777,10 @@ onValue(pricesRef, (snapshot) => {
             k12: data.carats?.k12 || (gram24USD * 0.5)
         };
 
-        if (data.silver) { previousSilverPrice = silverPrice; silverPrice = data.silver; }
+        // تحديث سعر الفضة من Firebase فقط إذا كان موجوداً، وإلا فسيتم الاحتفاظ بآخر قيمة من API أو القيمة الافتراضية
+        // هذا يضمن أن الفضة لا يتم تجاوزها بقيمة قديمة إذا لم يقم المدير بتحديثها
+        // إذا لم يتم توفيرها من قبل المدير، فستظل قيمة API هي السائدة (أو القيمة الافتراضية إذا فشل API)
+        if (data.silver !== undefined) { previousSilverPrice = silverPrice; silverPrice = data.silver; }
         if (data.ironEzz) { previousIronEzzPrice = ironEzzPrice; ironEzzPrice = data.ironEzz; }
         if (data.ironEgyptians) { previousIronEgyptiansPrice = ironEgyptiansPrice; ironEgyptiansPrice = data.ironEgyptians; }
         if (data.ironGarhy) { previousIronGarhyPrice = ironGarhyPrice; ironGarhyPrice = data.ironGarhy; }

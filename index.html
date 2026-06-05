@@ -842,6 +842,7 @@
               <div
                 id="notificationsDropdown"
                 class="hidden absolute top-full left-0 mt-3 w-80 glass-panel border border-slate-800 rounded-2xl shadow-2xl z-[300] overflow-hidden text-right"
+                class="hidden absolute top-full left-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 glass-panel border border-slate-800 rounded-2xl shadow-2xl z-[300] overflow-hidden text-right"
               >
                 <div
                   class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/40"
@@ -871,33 +872,33 @@
         </header>
 
         <!-- شريط التبويبات (Tabs) لتنظيم البيانات وتحسين إمكانية الوصول على الهواتف -->
+        <!-- بنر تنويهي لأسعار الذهب (Cyberpunk Glassmorphism style) -->
+        <div class="glass-panel border-amber-500/30 rounded-2xl p-3 md:p-5 mb-6 relative overflow-hidden group shadow-[0_0_20px_rgba(245,158,11,0.05)] section-fade-in">
+          <!-- تأثير توهج نيون خلفي -->
+          <div class="absolute -top-10 -start-10 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-500/20 transition-all duration-700"></div>
+          
+          <div class="flex items-center gap-3 md:gap-4 relative z-10">
+            <!-- أيقونة التنبيه النابضة -->
+            <div class="shrink-0 w-9 h-9 md:w-12 md:h-12 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+              <span class="text-lg md:text-2xl animate-pulse">⚠️</span>
+            </div>
+            
+            <!-- نص التنبيه -->
+            <div class="flex-1">
+              <p class="text-[10px] sm:text-xs md:text-sm leading-relaxed text-amber-100/90 font-medium">
+                <strong class="text-amber-400 font-bold block mb-0.5 md:inline md:mb-0">تنبيه:</strong>
+                هذه هي الأسعار العالمية الخام للذهب المقومة محلياً تلقائياً، وتختلف عن أسعار التنفيذ الفعلي في محلات الصاغة التي تخضع لآليات التحوط والعرض والطلب المحلي.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div
           id="marketTabs"
-          class="flex p-1 bg-slate-900/40 border border-slate-800 rounded-2xl mb-6 overflow-x-auto hide-scrollbar sticky top-4 z-40 backdrop-blur-md"
+          class="flex p-1 bg-slate-900/40 border border-slate-800 rounded-2xl mb-6 overflow-x-auto hide-scrollbar sticky top-4 z-30 backdrop-blur-md"
           role="tablist"
           aria-label="تبويبات سوق المال"
         >
-          <!-- بنر تنويهي لأسعار الذهب (Cyberpunk Glassmorphism style) -->
-          <div class="glass-panel border-amber-500/30 rounded-2xl p-4 md:p-5 mb-6 relative overflow-hidden group shadow-[0_0_20px_rgba(245,158,11,0.1)] section-fade-in">
-            <!-- تأثير توهج نيون خلفي -->
-            <div class="absolute -top-10 -start-10 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-500/20 transition-all duration-700"></div>
-            
-            <div class="flex items-center gap-4 relative z-10">
-              <!-- أيقونة التنبيه النابضة -->
-              <div class="shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
-                <span class="text-xl md:text-2xl animate-pulse">⚠️</span>
-              </div>
-              
-              <!-- نص التنبيه -->
-              <div class="flex-1">
-                <p class="text-[11px] md:text-sm leading-relaxed text-amber-100/90 font-medium">
-                  <strong class="text-amber-400 font-bold block mb-0.5 md:inline md:mb-0">تنبيه:</strong>
-                  هذه هي الأسعار العالمية الخام للذهب المقومة محلياً تلقائياً، وتختلف عن أسعار التنفيذ الفعلي في محلات الصاغة التي تخضع لآليات التحوط والعرض والطلب المحلي.
-                </p>
-              </div>
-            </div>
-          </div>
-
           <button
             data-market-tab="gold"
             class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
@@ -1028,6 +1029,7 @@
                 <span
                   id="mainGoldPrice"
                   class="text-4xl font-extrabold text-white tracking-tight transition-all duration-500"
+                  class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight transition-all duration-500"
                   >$2,350.75</span
                 >
                 <span
@@ -1051,6 +1053,7 @@
             <div
               id="goldCaratsGrid"
               class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4"
+              class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4"
             >
               <!-- عيار 24 -->
               <div
