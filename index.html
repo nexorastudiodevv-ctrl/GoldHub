@@ -24,8 +24,8 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; 
-      script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com 'unsafe-inline' 'unsafe-eval'; 
-      style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com 'unsafe-inline'; 
+      script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com 'unsafe-inline' 'unsafe-eval'; 
+      style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline'; 
       img-src 'self' data: blob: https://*.googleusercontent.com https://unpkg.com https://flagcdn.com https://cdn-icons-png.flaticon.com https://*.openstreetmap.org https://server.arcgisonline.com https://*.basemaps.cartocdn.com https://upload.wikimedia.org https://*.egyptian-steel.com https://*.garhysteel.com https://gold-hub.com https://images.openai.com https://*.bing.net https://tse3.mm.bing.net https://images.openai.com; 
       connect-src 'self' https://corsproxy.io https://unpkg.com https://www.gstatic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebase.com https://*.firebaseapp.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebasestorage.googleapis.com https://*.googleapis.com https://*.googletagmanager.com https://open.er-api.com https://api.binance.com https://api.jsonbin.io https://ipapi.co https://overpass-api.de https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://cdn.jsdelivr.net; 
       font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; 
@@ -108,18 +108,19 @@
     />
 
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" type="image/webp" href="icon.webp" />
-    <link rel="icon" type="image/png" href="icon.png" />
-    <link rel="shortcut icon" href="icon.webp" type="image/webp" />
+    <!-- الروابط المحسنة لأيقونة الموقع لضمان ظهورها في جوجل -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://gold-hub.com/icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="https://gold-hub.com/icon.png" />
+    <link rel="apple-touch-icon" href="https://gold-hub.com/icon.png" />
+    <link rel="shortcut icon" href="https://gold-hub.com/icon.png" type="image/png" />
+    
     <meta name="theme-color" content="#090f1c" />
-    <link rel="apple-touch-icon" href="icon.png" />
-    <!-- تضمين مكتبة Tailwind CSS للتصميم السريع عبر CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استخدام ملف CSS الثابت المولد بدلاً من CDN لتحسين الأداء -->
+    <link rel="stylesheet" href="style.css">
 
     <!-- تحسينات الأداء المتقدمة -->
     <link rel="dns-prefetch" href="https://open.er-api.com" />
     <link rel="dns-prefetch" href="https://www.gstatic.com" />
-    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
     <!-- تضمين مكتبة أيقونات FontAwesome -->
     <link
       rel="stylesheet"
@@ -408,6 +409,10 @@
         "name": "شعار GoldHub - أسعار الذهب والفضة والعملات",
         "description": "شعار موقع GoldHub الرسمي، يمثل أسعار الذهب والفضة والعملات الحية.",
         "encodingFormat": "image/png"
+        "creditText": "GoldHub",
+        "license": "https://gold-hub.com/license",
+        "copyrightNotice": "© 2026 GoldHub. All rights reserved.",
+        "acquireLicensePage": "https://gold-hub.com/contact"
       }
     </script>
 

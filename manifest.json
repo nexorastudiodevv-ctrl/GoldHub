@@ -1,7 +1,10 @@
 {
     "name": "GoldHub",
     "short_name": "GoldHub",
-    "description": "Live gold, silver, and currency market updates with real-time charts.",
+    "description": "أدقت منصة لمتابعة أسعار الذهب والفضة والعملات العالمية والمحلية لحظة بلحظة مع رسوم بيانية حية وتنبيهات ذكية.",
+    "lang": "ar",
+    "dir": "rtl",
+    "categories": ["finance", "utilities"],
     "start_url": "index.html",
     "display": "standalone",
     "background_color": "#090f1c",
