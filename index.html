@@ -308,6 +308,18 @@
         transform: translateZ(0); /* تفعيل تسريع العتاد للحصول على نعومة أفضل */
         -webkit-font-smoothing: antialiased;
       }
+
+      /* إصلاحات الخريطة للشاشات الصغيرة */
+      .leaflet-control-container .leaflet-top,
+      .leaflet-control-container .leaflet-bottom {
+        z-index: 20 !important; /* أقل من شريط التنقل السفلي والتبويبات */
+      }
+      .leaflet-control-attribution {
+        font-size: 7px !important;
+        line-height: 1;
+        background: rgba(15, 23, 42, 0.6) !important;
+        color: #94a3b8 !important;
+      }
     </style>
 
     <!-- وسم WebSite لتمكين ظهور اسم الموقع ومربع البحث في جوجل -->
@@ -733,7 +745,7 @@
 
     <!-- 2. منطقة المحتوى الرئيسية (Main Content) -->
     <main class="flex-1 overflow-y-auto hide-scrollbar">
-      <div class="max-w-screen-2xl mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+      <div class="max-w-screen-2xl mx-auto p-2 sm:p-6 lg:p-8 space-y-3 sm:space-y-6">
         <!-- بنر طلب إذن الإشعارات (يظهر فقط إذا لم يتم تفعيل الإشعارات) -->
         <div
           id="notificationPrompt"
@@ -766,7 +778,8 @@
 
         <!-- شريط البحث العلوي والتنبيهات -->
         <header
-          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-800"
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 py-2 sm:pb-4 border-b border-slate-800"
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 py-2 sm:pb-4 border-b border-slate-800"
         >
           <div>
             <h2 class="text-2xl font-bold text-white">سوق المال المباشر</h2>
@@ -841,7 +854,6 @@
               <!-- مركز الإشعارات المنسدل -->
               <div
                 id="notificationsDropdown"
-                class="hidden absolute top-full left-0 mt-3 w-80 glass-panel border border-slate-800 rounded-2xl shadow-2xl z-[300] overflow-hidden text-right"
                 class="hidden absolute top-full left-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 glass-panel border border-slate-800 rounded-2xl shadow-2xl z-[300] overflow-hidden text-right"
               >
                 <div
@@ -873,19 +885,19 @@
 
         <!-- شريط التبويبات (Tabs) لتنظيم البيانات وتحسين إمكانية الوصول على الهواتف -->
         <!-- بنر تنويهي لأسعار الذهب (Cyberpunk Glassmorphism style) -->
-        <div class="glass-panel border-amber-500/30 rounded-2xl p-3 md:p-5 mb-6 relative overflow-hidden group shadow-[0_0_20px_rgba(245,158,11,0.05)] section-fade-in">
+        <div class="glass-panel border-amber-500/30 rounded-2xl p-2 sm:p-4 md:p-5 mb-3 sm:mb-6 relative overflow-hidden group shadow-[0_0_20px_rgba(245,158,11,0.05)] section-fade-in">
           <!-- تأثير توهج نيون خلفي -->
           <div class="absolute -top-10 -start-10 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-500/20 transition-all duration-700"></div>
           
-          <div class="flex items-center gap-3 md:gap-4 relative z-10">
+          <div class="flex items-center gap-2 md:gap-4 relative z-10">
             <!-- أيقونة التنبيه النابضة -->
-            <div class="shrink-0 w-9 h-9 md:w-12 md:h-12 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+            <div class="shrink-0 w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
               <span class="text-lg md:text-2xl animate-pulse">⚠️</span>
             </div>
             
             <!-- نص التنبيه -->
             <div class="flex-1">
-              <p class="text-[10px] sm:text-xs md:text-sm leading-relaxed text-amber-100/90 font-medium">
+              <p class="text-[8px] xs:text-[10px] sm:text-xs md:text-sm leading-relaxed text-amber-100/90 font-medium">
                 <strong class="text-amber-400 font-bold block mb-0.5 md:inline md:mb-0">تنبيه:</strong>
                 هذه هي الأسعار العالمية الخام للذهب المقومة محلياً تلقائياً، وتختلف عن أسعار التنفيذ الفعلي في محلات الصاغة التي تخضع لآليات التحوط والعرض والطلب المحلي.
               </p>
@@ -895,13 +907,13 @@
 
         <div
           id="marketTabs"
-          class="flex p-1 bg-slate-900/40 border border-slate-800 rounded-2xl mb-6 overflow-x-auto hide-scrollbar sticky top-4 z-30 backdrop-blur-md"
+          class="flex p-1 bg-slate-900/40 border border-slate-800 rounded-2xl mb-3 sm:mb-6 overflow-x-auto hide-scrollbar sticky top-4 z-30 backdrop-blur-md whitespace-nowrap flex-nowrap gap-1"
           role="tablist"
           aria-label="تبويبات سوق المال"
         >
           <button
             data-market-tab="gold"
-            class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+            class="market-tab-btn shrink-0 flex-1 min-w-[80px] py-2 px-3 rounded-xl text-xs font-bold transition-all bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
             role="tab"
             aria-selected="true"
             aria-controls="goldSection"
@@ -910,7 +922,7 @@
           </button>
           <button
             data-market-tab="currencies"
-            class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-300"
+            class="market-tab-btn shrink-0 flex-1 min-w-[90px] py-2.5 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 border border-slate-800/50 hover:text-slate-300"
             role="tab"
             aria-selected="false"
             aria-controls="currencySection"
@@ -919,7 +931,7 @@
           </button>
           <button
             data-market-tab="metals"
-            class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-300"
+            class="market-tab-btn shrink-0 flex-1 min-w-[90px] py-2.5 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 border border-slate-800/50 hover:text-slate-300"
             role="tab"
             aria-selected="false"
             aria-controls="goldSection"
@@ -928,7 +940,7 @@
           </button>
           <button
             data-market-tab="favorites"
-            class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-300"
+            class="market-tab-btn shrink-0 flex-1 min-w-[90px] py-2.5 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 border border-slate-800/50 hover:text-slate-300"
             role="tab"
             aria-selected="false"
             aria-controls="currencySection"
@@ -937,7 +949,7 @@
           </button>
           <button
             data-market-tab="history"
-            class="market-tab-btn flex-1 min-w-[90px] py-3 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-300"
+            class="market-tab-btn shrink-0 flex-1 min-w-[90px] py-2.5 px-4 rounded-xl text-xs font-bold transition-all text-slate-500 border border-slate-800/50 hover:text-slate-300"
             role="tab"
             aria-selected="false"
             aria-controls="historicalSection"
@@ -949,30 +961,14 @@
         <!-- شبكة العناصر الرئيسية (Grid Layout) -->
         <div
           id="marketGrid"
-          class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-24 md:pb-0"
+          class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 pb-24 md:pb-0"
         >
           <!-- الجزء الأيمن: لوحة أسعار الذهب الفورية والرسم البياني -->
-          <div id="goldSection" class="lg:col-span-2 space-y-6">
-            <!-- إعلان علوي عريض للموبايل والديسكطوب -->
-            <div
-              class="glass-panel rounded-2xl p-2 text-center border-dashed border-cyan-500/20"
-            >
-              <p class="text-[8px] text-slate-500 mb-1">إعلان</p>
-              <div
-                class="w-full bg-slate-900/40 h-20 sm:h-24 flex items-center justify-center rounded-xl border border-slate-800"
-                role="img"
-                aria-label="إعلان مستجيب"
-              >
-                <span class="text-xs text-slate-600"
-                  >إعلان مستجيب (Responsive Ad)</span
-                >
-              </div>
-            </div>
-
+          <div id="goldSection" class="lg:col-span-2 flex flex-col space-y-4 sm:space-y-6">
             <!-- بطاقة الذهب الرئيسية -->
             <div
               id="goldMainCard"
-              class="glass-panel rounded-2xl p-6 relative overflow-hidden"
+              class="glass-panel rounded-2xl p-6 relative overflow-hidden order-1"
             >
               <div
                 class="absolute top-0 end-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"
@@ -1028,7 +1024,6 @@
               <div class="flex items-baseline gap-4 mb-6">
                 <span
                   id="mainGoldPrice"
-                  class="text-4xl font-extrabold text-white tracking-tight transition-all duration-500"
                   class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight transition-all duration-500"
                   >$2,350.75</span
                 >
@@ -1052,8 +1047,7 @@
             <!-- شبكة أسعار الجرام لكل عيار (الأسعار الفرعية بالأسفل) -->
             <div
               id="goldCaratsGrid"
-              class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4"
-              class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4"
+              class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4 order-2 mt-4 sm:mt-0"
             >
               <!-- عيار 24 -->
               <div
@@ -1151,6 +1145,22 @@
                 </span>
               </div>
 
+            <!-- إعلان علوي عريض للموبايل والديسكطوب (تم نقله للأسفل في الترتيب البصري) -->
+            <div
+              class="glass-panel rounded-2xl p-2 text-center border-dashed border-cyan-500/20 order-4"
+            >
+              <p class="text-[8px] text-slate-500 mb-1">إعلان</p>
+              <div
+                class="w-full bg-slate-900/40 h-16 sm:h-24 flex items-center justify-center rounded-xl border border-slate-800"
+                role="img"
+                aria-label="إعلان مستجيب"
+              >
+                <span class="text-xs text-slate-600"
+                  >إعلان مستجيب (Responsive Ad)</span
+                >
+              </div>
+            </div>
+
               <!-- إعلان إضافي تحت أسعار العيارات -->
               <div
                 class="sm:col-span-2 md:col-span-3 xl:grid-cols-5 glass-panel rounded-xl p-2 text-center border-dashed border-cyan-500/10"
@@ -1169,7 +1179,7 @@
             </div>
 
             <!-- شبكة أسعار الفضة والبلاتين -->
-            <div id="metalsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div id="metalsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 order-3">
               <!-- سعر الفضة -->
               <div class="glass-panel rounded-xl p-4 space-y-4">
                 <div class="flex justify-between items-center">
@@ -1652,7 +1662,7 @@
               <div class="flex flex-col lg:flex-row gap-6">
                 <div
                   id="map"
-                  class="w-full lg:w-2/3 h-[450px] rounded-2xl border border-slate-800 z-0"
+                  class="w-full lg:w-2/3 h-[300px] md:h-[450px] rounded-2xl border border-slate-800 z-0"
                 ></div>
                 <div class="w-full lg:w-1/3 flex flex-col gap-4">
                   <h4

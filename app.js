@@ -46,7 +46,7 @@ let quill;
 const EXTERNAL_APIS = {
     CURRENCY: 'https://open.er-api.com/v6/latest/USD',
     GOLD: 'https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT', // سعر الأونصة العالمي (PAXG)
-    SILVER: 'https://api.binance.com/api/v3/ticker/price?symbol=XAGUSDT', // سعر أونصة الفضة العالمي (XAG)
+    SILVER: 'https://corsproxy.io/?' + encodeURIComponent('https://api.binance.com/api/v3/ticker/price?symbol=XAGUSDT'), // سعر أونصة الفضة العالمي (XAG) عبر CORS Proxy
     IRON: null // تم تعطيل الرابط القديم (404). يرجى إدخال رابط JSON جديد هنا لاحقاً.
 };
 
@@ -572,7 +572,8 @@ async function fetchApiPrices() {
         }));
         apiKeys.push('CURRENCY');
 
-        apiRequests.push(fetch(EXTERNAL_APIS.GOLD).catch(err => {
+        const goldUrl = EXTERNAL_APIS.PROXY_BASE + encodeURIComponent(EXTERNAL_APIS.GOLD);
+        apiRequests.push(fetch(goldUrl).catch(err => {
             console.error("❌ فشل جلب الذهب:", err);
             addApiLog(`❌ فشل جلب الذهب: ${err.message || 'خطأ غير معروف'}`);
             return { status: 'rejected', reason: err };
@@ -580,7 +581,7 @@ async function fetchApiPrices() {
         apiKeys.push('GOLD');
 
         if (EXTERNAL_APIS.SILVER) {
-            apiRequests.push(fetch(EXTERNAL_APIS.SILVER).catch(err => {
+            apiRequests.push(fetch(EXTERNAL_APIS.SILVER, { cache: 'no-store' }).catch(err => { // إضافة no-store لمنع الكاش
                 console.error("❌ فشل جلب سعر الفضة من Binance:", err);
                 addApiLog(`❌ فشل جلب الفضة: ${err.message || 'خطأ غير معروف'}`);
                 return { status: 'rejected', reason: err };
@@ -620,6 +621,20 @@ async function fetchApiPrices() {
                     localStorage.setItem('last_platinum_price', platinumPrice);
                 }
                 localStorage.setItem('last_rates', JSON.stringify(exchangeRates));
+
+                // Fallback for Silver: If Binance failed, try to get from OpenExchangeRates
+                // هذا الجزء تم حذفه سابقاً، لكننا نعيده كخيار احتياطي لضمان تحديث سعر الفضة
+                if (!processedResults.SILVER || processedResults.SILVER.status === 'rejected' || !processedResults.SILVER.value.ok) {
+                    if (currData.rates.XAG) {
+                        previousSilverPrice = silverPrice;
+                        silverPrice = 1 / currData.rates.XAG;
+                        exchangeRates["XAG"] = 1 / silverPrice;
+                        localStorage.setItem('last_silver_price', silverPrice);
+                        addApiLog("✅ تم تحديث سعر الفضة من OpenExchangeRates (كخيار احتياطي).");
+                    } else {
+                        addApiLog("⚠️ فشل جلب الفضة من OpenExchangeRates أيضاً.");
+                    }
+                }
             }
             renderConverterOptions();
         } else if (currRes && currRes.status === 'rejected') {
@@ -645,6 +660,7 @@ async function fetchApiPrices() {
                 caratPrices.k18 = gram24USD * 0.75;
                 caratPrices.k14 = gram24USD * (14/24);
                 caratPrices.k12 = gram24USD * 0.5;
+                addApiLog("✅ تم تحديث سعر الذهب من Binance.");
             }
         } else if (goldRes && goldRes.status === 'rejected') {
             // Error already logged in the catch block of the fetch call
@@ -709,21 +725,31 @@ function initChart() {
                 fill: true,
                 backgroundColor: gradient,
                 tension: 0.4,
-                pointRadius: 2
+                pointRadius: 0, // إلغاء رسم النقاط الفردية لزيادة سرعة الرندر
+                borderJoinStyle: 'round',
+                spanGaps: true
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { display: false }, y: { ticks: { color: '#64748b', font: { size: 10 } } } }
+            animation: false, // تعطيل الأنميشن الافتراضي لزيادة سرعة التحديث اللحظي
+            normalized: true, // إخبار المكتبة أن البيانات مرتبة زمنياً لتسريع البحث
+            plugins: { 
+                legend: { display: false },
+                tooltip: { enabled: false } // تعطيل التلميحات لتقليل استهلاك المعالج عند تحريك الماوس
+            },
+            scales: { 
+                x: { display: false }, 
+                y: { ticks: { color: '#64748b', font: { size: 10 }, maxTicksLimit: 5 } } 
+            }
         },
         plugins: [{
             id: 'glow',
             beforeDatasetsDraw: (chart) => {
                 const { ctx } = chart;
                 ctx.save();
-                ctx.shadowBlur = 15;
+                ctx.shadowBlur = 8; // تقليل نصف قطر التوهج لتخفيف الحمل على كرت الشاشة
                 ctx.shadowColor = chart.data.datasets[0].borderColor;
             },
             afterDatasetsDraw: (chart) => {
@@ -754,7 +780,7 @@ function updateChart(newPrice) {
     priceHistory.push(newPrice);
     timeLabels.push(new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }));
     if (priceHistory.length > 20) { priceHistory.shift(); timeLabels.shift(); }
-    goldChart.update();
+    goldChart.update('none'); // تحديث الرسم بدون أنميشن (Mode: none) لتوفير موارد الجهاز
 }
 
 onValue(pricesRef, (snapshot) => {
@@ -1159,7 +1185,7 @@ async function initMap() {
 }
 
 function setupMap(lat, lon, zoom = 14) {
-    leafletMap = L.map('map').setView([lat, lon], zoom);
+    leafletMap = L.map('map', { scrollWheelZoom: false }).setView([lat, lon], zoom);
     // إنشاء pane مخصص لطبقة التسميات لضمان ظهورها فوق كل شيء آخر (بما في ذلك العلامات)
     leafletMap.createPane('labelsPane');
     leafletMap.getPane('labelsPane').style.zIndex = 650; // أعلى من العلامات (600)
