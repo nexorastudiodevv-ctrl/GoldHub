@@ -69,37 +69,35 @@ self.addEventListener('activate', (e) => {
 // استراتيجية الاستجابة: حاول الشبكة أولاً، إذا فشلت استخدم التخزين المؤقت
 self.addEventListener('fetch', (e) => {
     // تجاهل الطلبات التي ليست من نوع GET (مثل رفع الصور عبر POST) لأن التخزين المؤقت لا يدعمها
-    if (e.request.method !== 'GET') return;
+    if (e.request.method !== 'GET' || e.request.url.includes('firebaseio.com')) return;
 
     e.respondWith(
-        fetch(e.request)
-            .then(response => {
-                // إذا لم تكن الاستجابة صالحة (مثل 404, 500، أو غيرها من الأخطاء)، لا تحاول تخزينها مؤقتاً
-                // أو إذا كانت استجابة معتمة (opaque) من مصدر خارجي ولا يمكن تخزينها بشكل موثوق
-                if (!response || !response.ok || response.type === 'opaque') {
+        caches.match(e.request).then((cachedResponse) => {
+            if (cachedResponse) {
+                // إرجاع النسخة المخزنة فوراً للسرعة
+                return cachedResponse;
+            }
+
+            return fetch(e.request).then((response) => {
+                // التحقق من صحة الاستجابة قبل تخزينها
+                if (!response || response.status !== 200 || response.type !== 'basic' && !e.request.url.startsWith('https://cdn')) {
                     return response;
                 }
 
-                // استنساخ الاستجابة لأن الجسم (body) يمكن قراءته مرة واحدة فقط
-                const resClone = response.clone();
-
-                // تخزين الاستجابة في الكاش
-                caches.open(CACHE_NAME).then(cache => {
-                    cache.put(e.request, resClone).catch(cacheError => {
-                        console.error(`⚠️ فشل تخزين ${e.request.url} في الكاش:`, cacheError);
-                    });
+                const responseToCache = response.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(e.request, responseToCache);
                 });
 
                 return response;
-            })
-            .catch(fetchError => {
-                // إذا فشل جلب المورد من الشبكة، حاول إعادته من الكاش
-                console.warn(`⚠️ فشل جلب ${e.request.url} من الشبكة:`, fetchError);
-                return caches.match(e.request).then(res => {
-                    // إذا لم يكن المورد موجوداً في الكاش، أرجع استجابة 404
-                    return res || new Response("Offline Content Unavailable", { status: 404 });
-                });
-            })
+            }).catch(() => {
+                // في حالة فشل الإنترنت تماماً وعدم وجود كاش
+                if (e.request.mode === 'navigate') {
+                    return caches.match('index.html');
+                }
+                return new Response("Offline", { status: 503 });
+            });
+        })
     );
 });
 
