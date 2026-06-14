@@ -8,7 +8,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyBLHuPTH3RhwDTdxTDcgFRYPfvXZM3gco8",
     authDomain: "goldhub-1fdb1.firebaseapp.com", // تم تحديث النطاق ليتطابق مع app.js
     projectId: "goldhub-1fdb1",
-    storageBucket: "goldhub-1fdb1.firebasestorage.app",
+    storageBucket: "goldhub-1fdb1.appspot.com",
     messagingSenderId: "646245822812",
     appId: "1:646245822812:web:54a6380fa2eafec0391199",
     databaseURL: "https://goldhub-1fdb1-default-rtdb.firebaseio.com/"
@@ -25,14 +25,14 @@ try {
     console.error("⚠️ Failed to initialize Firebase Messaging in SW:", err);
 }
 
-const CACHE_NAME = 'gold-hub-v2';
+const CACHE_NAME = 'gold-hub-v5';
 const ASSETS = [
     'index.html',
     'manifest.json',
     'app.js',
+    'dist/output.css',
     'icon.png',
     'icon.webp',
-    'https://cdn.tailwindcss.com',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
     'https://cdn.jsdelivr.net/npm/chart.js',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
@@ -80,7 +80,7 @@ self.addEventListener('fetch', (e) => {
 
             return fetch(e.request).then((response) => {
                 // التحقق من صحة الاستجابة قبل تخزينها
-                if (!response || response.status !== 200 || response.type !== 'basic' && !e.request.url.startsWith('https://cdn')) {
+                if (!response || response.status !== 200 || (response.type !== 'basic' && response.type !== 'cors')) {
                     return response;
                 }
 

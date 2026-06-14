@@ -12,7 +12,8 @@
       if (
         location.protocol !== "https:" &&
         location.hostname !== "localhost" &&
-        location.hostname !== "127.0.0.1"
+        location.hostname !== "127.0.0.1" &&
+        location.protocol !== "file:"
       ) {
         location.replace(
           `https:${location.href.substring(location.protocol.length)}`,
@@ -23,14 +24,14 @@
     <!-- سياسة أمان المحتوى (CSP) للحماية من هجمات XSS ورفع مستوى الأمان -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self' https:; 
-      script-src 'self' https://cdn.tailwindcss.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com 'unsafe-inline' 'unsafe-eval'; 
+      content="default-src 'self' https:;
+      script-src 'self' https://pagead2.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://cdn.tailwindcss.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com https://*.google.com https://ep2.adtrafficquality.google 'unsafe-inline' 'unsafe-eval'; 
       style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline'; 
-      img-src 'self' data: blob: https:; 
+      img-src 'self' data: blob: https: https://pagead2.googlesyndication.com; 
       connect-src 'self' https: wss:; 
       font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; 
       media-src 'self' https://assets.mixkit.co; 
-      frame-src 'self' https://apis.google.com https://*.google.com https://www.youtube.com https://*.firebase.com https://*.firebaseapp.com https://*.firebaseio.com;
+      frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://apis.google.com https://*.google.com https://www.youtube.com https://*.firebase.com https://*.firebaseapp.com https://*.firebaseio.com https://*.adtrafficquality.google;
       worker-src 'self' blob: https://www.gstatic.com;"
     />
 
@@ -96,6 +97,8 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@GoldHub" />
     <meta name="twitter:creator" content="@GoldHub" />
+    <meta name="twitter:site" content="@YourHandle" />
+    <meta name="twitter:creator" content="@YourHandle" />
     <meta name="twitter:title" content="أسعار الذهب والعملات في مصر والعالم | GoldHub" />
     <meta
       name="twitter:description"
@@ -109,17 +112,15 @@
 
     <link rel="manifest" href="manifest.json" />
     <!-- الروابط المحسنة لأيقونة الموقع لضمان ظهورها في جوجل -->
-    <link rel="icon" type="image/png" sizes="32x32" href="https://gold-hub.com/icon.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="https://gold-hub.com/icon.png" />
-    <link rel="apple-touch-icon" href="https://gold-hub.com/icon.png" />
-    <link rel="shortcut icon" href="https://gold-hub.com/icon.png" type="image/png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon.png" />
+    <link rel="apple-touch-icon" href="./icon.png" />
+    <link rel="shortcut icon" href="./icon.png" type="image/png" />
     
-    <!-- تضمين مكتبة Tailwind CSS لتعمل التنسيقات مباشرة -->
-    <script src="https://cdn.tailwindcss.com" defer></script>
+    <!-- استخدام Tailwind CDN لضمان عمل التنسيق مباشرة في بيئة التطوير -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <meta name="theme-color" content="#090f1c" />
-    <!-- استخدام ملف CSS الثابت المولد بدلاً من CDN لتحسين الأداء -->
-    <!-- <link rel="stylesheet" href="style.css"> -->
 
     <!-- تحسينات الأداء المتقدمة -->
     <link rel="dns-prefetch" href="https://open.er-api.com" />
@@ -131,27 +132,24 @@
       crossorigin="anonymous"
     />
     <!-- كود Google AdSense الرئيسي (استبدل CA-PUB-ID بمعرفك الخاص) -->
-    <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
 
     <!-- تضمين مكتبة Chart.js للرسوم البيانية -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <!-- تضمين مكتبة Leaflet للخرائط -->
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       crossorigin="anonymous"
     />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- تضمين مكتبة Quill.js لمحرر النصوص الغني -->
     <link
       href="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css"
       rel="stylesheet"
       crossorigin="anonymous"
     />
-    <script 
-      src="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js"
-      defer
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js"></script>
 
     <!-- تخصيص بعض المؤثرات البصرية للنيون والزجاج الخلفي -->
     <style>
@@ -260,6 +258,7 @@
       .shimmer-text {
         background: linear-gradient(90deg, #fff, #64748b, #fff);
         background-size: 200% auto;
+        background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         animation: shine 3s linear infinite;
@@ -411,7 +410,7 @@
         },
         "name": "شعار GoldHub - أسعار الذهب والفضة والعملات",
         "description": "شعار موقع GoldHub الرسمي، يمثل أسعار الذهب والفضة والعملات الحية.",
-        "encodingFormat": "image/png"
+        "encodingFormat": "image/png",
         "creditText": "GoldHub",
         "license": "https://gold-hub.com/license",
         "copyrightNotice": "© 2026 GoldHub. All rights reserved.",
@@ -733,6 +732,7 @@
         >
           <a
             href="https://facebook.com/yourpage"
+            href="https://facebook.com/YourHandle"
             target="_blank"
             title="فيسبوك"
             class="text-slate-500 hover:text-cyan-400 transition-all transform hover:scale-110"
@@ -742,6 +742,7 @@
           </a>
           <a
             href="https://twitter.com/yourprofile"
+            href="https://x.com/YourHandle"
             target="_blank"
             title="تويتر"
             class="text-slate-500 hover:text-cyan-400 transition-all transform hover:scale-110"
@@ -751,6 +752,7 @@
           </a>
           <a
             href="https://t.me/yourchannel"
+            href="https://t.me/YourHandle"
             target="_blank"
             title="تيليجرام"
             class="text-slate-500 hover:text-cyan-400 transition-all transform hover:scale-110"
@@ -838,6 +840,16 @@
                 ></i>
               </button>
             </div>
+
+            <!-- زر التحديث اليدوي -->
+            <button
+                id="manualRefreshBtn"
+                title="تحديث الأسعار الآن"
+                class="p-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-cyan-400 hover:text-white transition group"
+                aria-label="تحديث الأسعار يدوياً"
+              >
+                <i class="fa-solid fa-rotate text-sm group-hover:rotate-180 transition-transform duration-500"></i>
+            </button>
 
             <!-- شريط بحث مالي -->
             <div class="relative w-full sm:w-64">
@@ -1272,6 +1284,19 @@
                   class="text-xs font-medium text-red-400 bg-red-500/10 px-2 py-1 rounded-lg border border-red-500/20"
                 >
                   <i class="fa-solid fa-arrow-trend-down ms-1"></i> هبوط
+                </span>
+              </div>
+
+              <!-- سعر النحاس -->
+              <div
+                class="glass-panel rounded-xl p-4 flex justify-between items-center"
+              >
+                <div>
+                  <p class="text-xs text-slate-400">النحاس (رطل)</p>
+                  <p id="copperPrice" class="text-lg font-bold text-white mt-1">$0.00</p>
+                </div>
+                <span id="copperTrend" class="text-xs font-medium text-slate-400">
+                  <i class="fa-solid fa-minus ms-1"></i>
                 </span>
               </div>
 
@@ -1973,6 +1998,7 @@
           <div class="flex justify-center gap-4">
             <a
               href="https://facebook.com/goldhub"
+              href="https://facebook.com/YourHandle"
               target="_blank"
               class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10"
               aria-label="صفحتنا على فيسبوك"
@@ -1981,6 +2007,7 @@
             </a>
             <a
               href="https://twitter.com/goldhub"
+              href="https://x.com/YourHandle"
               target="_blank"
               class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10"
               aria-label="حسابنا على تويتر"
@@ -1989,6 +2016,7 @@
             </a>
             <a
               href="https://t.me/goldhub"
+              href="https://t.me/YourHandle"
               target="_blank"
               class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10"
               aria-label="قناتنا على تيليجرام"
