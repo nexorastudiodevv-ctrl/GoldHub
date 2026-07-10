@@ -1414,8 +1414,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     setInterval(simulateMarket, 5000);
-    // تحديث كل 5 دقائق (300,000ms) بدلاً من دقيقة واحدة لتوفير استهلاك الـ API
-    setInterval(() => { if (!isManualMode) fetchApiPrices(); }, 300000);
+
+    // تحديث الأسعار عند تحميل الصفحة فقط لتقليل استهلاك الـ API
+    // (يتم اتخاذ قرار "تحديث/لا" داخل Serverless Function حسب آخر تحديث في Firebase)
+    addApiLog("🚀 جلب أحدث الأسعار (عند التحميل)...");
+    fetchApiPrices();
+
 
     // --- أحداث لوحة التحكم ---
     // استخدام Debounce للبحث لتقليل العمليات الحسابية المتكررة أثناء الكتابة السريعة
