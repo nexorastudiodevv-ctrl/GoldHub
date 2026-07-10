@@ -42,8 +42,11 @@ let editArticleId = null;
 let allArticlesData = {};
 let quill;
 
-// إعدادات API Ninjas (أدخل مفتاحك هنا لاحقاً)
-const NINJA_API_KEY = 'inmE8YUxP8omD7Ln9aA4xv1JaL3EVB47MJ3yQKyi';
+// إعدادات API Ninjas
+// تم نقل جلب الأسعار إلى Serverless Function على Vercel لحماية مفاتيح الـ API.
+// احتفظ بهذا السطر لتفادي أخطاء إن وجدت كمرجع، لكن لن يُستخدم في fetchApiPrices.
+const NINJA_API_KEY = '';
+
 
 // إعدادات الروابط الخارجية (APIs) لسهولة التحديث والصيانة
 const EXTERNAL_APIS = {
@@ -575,161 +578,60 @@ async function initPushNotifications(registration) {
 
 async function fetchApiPrices() {
     if (isManualMode) return;
-    addApiLog("📡 جاري جلب البيانات من API...");
+    addApiLog("📡 جاري جلب البيانات من السيرفر...");
     try {
-        const apiRequests = [];
-        const apiKeys = [];
+        const res = await fetch(`/api/getPrices`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-        // إضافة timestamp لمنع الكاش من البروكسي
-        const ts = Date.now();
+        const payload = await res.json();
 
-        apiRequests.push(fetch(`${EXTERNAL_APIS.CURRENCY}?ts=${ts}`).catch(err => {
-            console.error("❌ فشل جلب العملات:", err);
-            addApiLog(`❌ فشل جلب العملات: ${err.message || 'خطأ غير معروف'}`);
-            return { status: 'rejected', reason: err };
-        }));
-        apiKeys.push('CURRENCY');
+        const safeRates = payload?.rates && typeof payload.rates === 'object' ? payload.rates : null;
+        const metals = payload?.metals && typeof payload.metals === 'object' ? payload.metals : {};
 
-        // جلب أسعار المعادن من API Ninjas إذا توفر المفتاح
-        if (NINJA_API_KEY) {
-            const headers = { 'X-Api-Key': NINJA_API_KEY };
-            // الأسماء بالصيغة الصحيحة لـ API Ninjas (lowercase)
-            const metals = [
-                { name: 'gold', key: 'GOLD' },
-                { name: 'silver', key: 'SILVER' },
-                { name: 'platinum', key: 'PLATINUM' },
-                { name: 'copper', key: 'COPPER' }
-            ];
-
-            for (const metal of metals) {
-                try {
-                    const res = await fetch(EXTERNAL_APIS.NINJA_COMMODITY + metal.name, { headers });
-                    if (!res.ok) {
-                        addApiLog(`⚠️ استجابة ${metal.key} غير صحيحة (${res.status}).`);
-                        continue;
-                    }
-                    const data = await res.json();
-                    // API Ninjas تعيد {name, price, updated} أو [{name, price, updated}]
-                    const price = Array.isArray(data) ? data[0]?.price : data?.price;
-                    if (price) {
-                        if (metal.key === 'GOLD') {
-                            goldPrice = parseFloat(price);
-                            exchangeRates["XAU"] = 1 / goldPrice;
-                            updateCaratPrices(goldPrice);
-                            localStorage.setItem('last_gold_price', goldPrice);
-                        } else if (metal.key === 'SILVER') {
-                            previousSilverPrice = silverPrice;
-                            silverPrice = parseFloat(price);
-                            exchangeRates["XAG"] = 1 / silverPrice;
-                            localStorage.setItem('last_silver_price', silverPrice);
-                        } else if (metal.key === 'PLATINUM') {
-                            previousPlatinumPrice = platinumPrice;
-                            platinumPrice = parseFloat(price);
-                            exchangeRates["XPT"] = 1 / platinumPrice;
-                            localStorage.setItem('last_platinum_price', platinumPrice);
-                        } else if (metal.key === 'COPPER') {
-                            previousCopperPrice = copperPrice;
-                            copperPrice = parseFloat(price);
-                            localStorage.setItem('last_copper_price', copperPrice);
-                        }
-                        addApiLog(`✅ تم تحديث ${metal.key} من API Ninjas.`);
-                    } else {
-                        addApiLog(`⚠️ بيانات ${metal.key} غير متوفرة في الرد.`);
-                    }
-                } catch (e) {
-                    addApiLog(`❌ فشل جلب ${metal.key} من API Ninjas.`);
-                }
-            }
-        }
-
-        if (EXTERNAL_APIS.IRON) {
-            apiRequests.push(fetch(EXTERNAL_APIS.IRON).catch(err => {
-                console.error("❌ فشل جلب سعر الحديد:", err);
-                addApiLog(`❌ فشل جلب الحديد: ${err.message || 'خطأ غير معروف'}`);
-                return { status: 'rejected', reason: err };
-            }));
-            apiKeys.push('IRON');
-        }
-
-        const results = await Promise.allSettled(apiRequests);
-
-        const processedResults = {};
-        results.forEach((result, index) => {
-            processedResults[apiKeys[index]] = result;
-        });
-
-        const currRes = processedResults.CURRENCY;
-        if (currRes && currRes.status === 'fulfilled' && currRes.value.ok) {
-            const currData = await currRes.value.json();
-            if (currData?.rates) {
-                previousGoldPrice = goldPrice;
-                previousCaratPrices = { ...caratPrices };
-                // تحديث كائن الأسعار بجميع العملات التي يوفرها الـ API
-                exchangeRates = { ...exchangeRates, ...currData.rates };
-
-                // التأكد من وجود الدولار كقاعدة
-                exchangeRates["USD"] = 1;
-
-                if (currData.rates.XPT) {
-                    previousPlatinumPrice = platinumPrice;
-                    platinumPrice = 1 / currData.rates.XPT;
-                    localStorage.setItem('last_platinum_price', platinumPrice);
-                }
-                localStorage.setItem('last_rates', JSON.stringify(exchangeRates));
-
-                // --- نظام الاحتياط (Fallback) في حال فشل Binance ---
-                if (!processedResults.GOLD || processedResults.GOLD.status === 'rejected' || !processedResults.GOLD.value.ok) {
-                    if (currData.rates.XAU) {
-                        goldPrice = 1 / currData.rates.XAU;
-                        exchangeRates["XAU"] = 1 / goldPrice;
-                        updateCaratPrices(goldPrice);
-                        addApiLog("✅ تم استخدام سعر الذهب الاحتياطي.");
-                    }
-                }
-
-                if (!processedResults.SILVER || processedResults.SILVER.status === 'rejected' || !processedResults.SILVER.value.ok) {
-                    if (currData.rates.XAG) {
-                        previousSilverPrice = silverPrice;
-                        silverPrice = 1 / currData.rates.XAG;
-                        exchangeRates["XAG"] = 1 / silverPrice;
-                        localStorage.setItem('last_silver_price', silverPrice);
-                        addApiLog("✅ تم تحديث سعر الفضة من OpenExchangeRates (كخيار احتياطي).");
-                    } else {
-                        addApiLog("⚠️ فشل جلب الفضة من OpenExchangeRates أيضاً.");
-                    }
-                }
-            }
+        // update exchange rates
+        if (safeRates) {
+            exchangeRates = { ...exchangeRates, ...safeRates, USD: 1 };
+            localStorage.setItem('last_rates', JSON.stringify(exchangeRates));
             renderConverterOptions();
-        } else if (currRes && currRes.status === 'rejected') {
-            // Error already logged in the catch block of the fetch call
-        } else {
-            addApiLog("⚠️ فشل جلب العملات (استجابة غير صالحة).");
         }
 
-        // معالجة بيانات الحديد من المصدر المجاني
-        const ironRes = processedResults.IRON;
-        if (ironRes && ironRes.status === 'fulfilled' && ironRes.value.ok) {
-            const ironData = await ironRes.value.json();
-            const record = ironData?.record || ironData;
-            if (record && record.ezz) {
-                previousIronEzzPrice = ironEzzPrice;
-                ironEzzPrice = record.ezz;
-                previousIronEgyptiansPrice = ironEgyptiansPrice;
-                ironEgyptiansPrice = record.egyptians;
-                previousIronGarhyPrice = ironGarhyPrice;
-                ironGarhyPrice = record.garhy;
-            }
-        } else if (ironRes && ironRes.status === 'rejected') {
-            // Error already logged in the catch block of the fetch call
-        } else {
-            addApiLog("⚠️ أسعار الحديد تستخدم البيانات المحلية (رابط API غير متاح أو استجابة غير صالحة).");
+        // update metals (oz USD)
+        if (typeof metals.goldOzUsd === 'number' && metals.goldOzUsd > 0) {
+            previousGoldPrice = goldPrice;
+            goldPrice = metals.goldOzUsd;
+            exchangeRates["XAU"] = 1 / goldPrice;
+            updateCaratPrices(goldPrice);
+            localStorage.setItem('last_gold_price', goldPrice);
+        }
+
+        if (typeof metals.silverOzUsd === 'number' && metals.silverOzUsd > 0) {
+            previousSilverPrice = silverPrice;
+            silverPrice = metals.silverOzUsd;
+            exchangeRates["XAG"] = 1 / silverPrice;
+            localStorage.setItem('last_silver_price', silverPrice);
+        }
+
+        if (typeof metals.platinumOzUsd === 'number' && metals.platinumOzUsd > 0) {
+            previousPlatinumPrice = platinumPrice;
+            platinumPrice = metals.platinumOzUsd;
+            exchangeRates["XPT"] = 1 / platinumPrice;
+            localStorage.setItem('last_platinum_price', platinumPrice);
+        }
+
+        if (typeof metals.copperUsd === 'number' && metals.copperUsd > 0) {
+            previousCopperPrice = copperPrice;
+            copperPrice = metals.copperUsd;
+            localStorage.setItem('last_copper_price', copperPrice);
         }
 
         updateUI();
     } catch (error) {
         addApiLog(`❌ فشل التحديث: ${error.message}`);
+        updateUI();
     }
 }
+
+
 
 // دالة مساعدة لتحديث أسعار العيارات بناءً على سعر الأونصة
 function updateCaratPrices(ozPrice) {
