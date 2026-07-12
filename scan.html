@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>مسح باركود</title>
+    <style>
+      body{
+        margin:0;
+        background:#090f1c;
+        color:#e2e8f0;
+        font-family:system-ui,-apple-system,Segoe UI,Tahoma,sans-serif;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        min-height:100vh;
+        padding:16px;
+      }
+      .wrap{width:min(720px,95vw)}
+      .card{
+        background:rgba(13,20,35,.7);
+        border:1px solid rgba(255,255,255,.06);
+        backdrop-filter:blur(12px);
+        -webkit-backdrop-filter:blur(12px);
+        border-radius:16px;
+        padding:18px;
+        text-align:center;
+      }
+      #result{margin-top:12px;font-size:13px;color:#94a3b8;word-break:break-word}
+      .btn{
+        display:inline-flex;align-items:center;justify-content:center;gap:8px;
+        padding:10px 14px;border-radius:12px;border:1px solid rgba(34,197,94,.25);
+        background:rgba(34,197,94,.12);color:#22c55e;font-weight:700;cursor:pointer;user-select:none
+      }
+      .muted{font-size:12px;color:#94a3b8;margin-top:10px;line-height:1.6}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1 style="margin:0 0 6px; font-size:18px;">مسح باركود لزيارة الموقع</h1>
+        <p class="muted">افتح الكاميرا ثم وجّهها على الباركود/QR. بعد القراءة سيتم فتح الموقع تلقائياً.</p>
+        <div style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <label class="btn" for="startBtn" style="cursor:pointer">
+            <i aria-hidden="true">📷</i> بدء المسح
+          </label>
+          <button class="btn" id="copyLinkBtn" type="button" style="display:none">نسخ رابط المتابعة</button>
+        </div>
+        <div id="result">—</div>
+        <div class="muted">ملاحظة: هذه الصفحة تعتمد على مكتبة مسح QR عند توفرها (تجربة محلية).</div>
+      </div>
+    </div>
+
+    <!--
+      ملاحظة تنفيذية:
+      - لتطبيق مسح حقيقي على جميع الأجهزة نحتاج مكتبة مثل: @zxing/library أو html5-qrcode.
+      - حالياً سأجهز هذه الصفحة كتجهيزية، وباقي العمل يكون بإضافة المكتبة وربط حدث المسح.
+      إذا رغبت، أضيف المكتبة مباشرة.
+    -->
+    <script>
+      // fallback: إذا فتح المستخدم هذه الصفحة مباشرة عبر QR فهذا المسار سيكون نقطة بدء.
+      // لتفعيل مسح QR فعلياً نحتاج إدخال مكتبة.
+      document.getElementById('result').textContent = 'جاهز لبدء المسح. (يلزم إضافة مكتبة مسح QR/Barcode).';
+    </script>
+  </body>
+</html>
+
