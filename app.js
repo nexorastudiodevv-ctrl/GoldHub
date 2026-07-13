@@ -385,6 +385,8 @@ exchangeRates["XAG"] = 1 / silverPrice;
 exchangeRates["XPT"] = 1 / platinumPrice;
 
 let isManualMode = false;
+let lastFirebaseUpdated = 0;
+
 let caratPrices = { k24: goldPrice / OUNCE_TO_GRAM, k21: (goldPrice / OUNCE_TO_GRAM) * 0.875, k18: (goldPrice / OUNCE_TO_GRAM) * 0.75, k14: (goldPrice / OUNCE_TO_GRAM) * (14 / 24), k12: (goldPrice / OUNCE_TO_GRAM) * 0.5 };
 let previousSilverPrice = silverPrice;
 let previousPlatinumPrice = platinumPrice;
@@ -577,7 +579,10 @@ async function initPushNotifications(registration) {
 }
 
 async function fetchApiPrices() {
-    if (isManualMode) return;
+    const MAX_AGE_MS = 8 * 60 * 60 * 1000; // 8 ساعات
+    if (isManualMode) {
+        if (!lastFirebaseUpdated || (Date.now() - lastFirebaseUpdated) < MAX_AGE_MS) return;
+    }
     addApiLog("📡 جاري جلب البيانات من السيرفر...");
     try {
         const res = await fetch(`/api/getPrices`);
@@ -752,6 +757,7 @@ onValue(pricesRef, (snapshot) => {
         updateUI();
     } else {
         isManualMode = false;
+        lastFirebaseUpdated = 0;
         fetchApiPrices();
     }
 });
@@ -1480,7 +1486,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!domElements.loginModal.classList.contains('hidden')) {
                 domElements.loginModal.classList.add('hidden');
             }
-            // تعبئة القيم الحالية في المدخلات اليدوية عند الفتح
+    // تعبئة القيم الحالية في المدخلات اليدوية عند الفتح
+            // (تمت إضافة مدخل جديد لسعر الأونصة مباشرة داخل لوحة التحكم)
+            document.getElementById('manualGoldPriceTop')?.value = goldPrice;
             document.getElementById('manualGoldPrice').value = goldPrice;
             document.getElementById('manualSilverPrice').value = silverPrice;
             document.getElementById('manualIronEzzPrice').value = ironEzzPrice;
@@ -1535,6 +1543,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const manual14kInput = document.getElementById('manual14k');
     const manual12kInput = document.getElementById('manual12k');
 
+    // عندما يغير المدير سعر الأونصة ($) يتم تحديث أسعار العيارات (بالـ $) تلقائياً
     manualGoldInput?.addEventListener('input', (e) => {
         const ozPrice = parseFloat(e.target.value);
         if (ozPrice > 0) {
@@ -1546,6 +1555,28 @@ document.addEventListener('DOMContentLoaded', () => {
             if (manual12kInput) manual12kInput.value = (g24 * 0.5).toFixed(2);
         }
     });
+
+    // (اقتراح المستخدم) عند تعديل سعر عيار 24 (بالـ $) مباشرة، نحسب سعر الأونصة ثم نحدث باقي العيارات.
+    // ملاحظة: نفس المنطق ينطبق على أي عيار، لكن هنا نبدأ بالـ 24k لتقليل تغييرات غير لازمة.
+    const bindManualKaratFrom24kUSD = () => {
+        if (!manual24kInput || !manualGoldInput) return;
+        manual24kInput.addEventListener('input', (e) => {
+            const k24Usd = parseFloat(e.target.value);
+            if (k24Usd > 0) {
+                const ozUsd = k24Usd * OUNCE_TO_GRAM;
+                // تحديث حقل الأونصة
+                manualGoldInput.value = ozUsd.toFixed(2);
+                // تحديث باقي العيارات
+                const g24 = k24Usd;
+                if (manual21kInput) manual21kInput.value = (g24 * 0.875).toFixed(2);
+                if (manual18kInput) manual18kInput.value = (g24 * 0.75).toFixed(2);
+                if (manual14kInput) manual14kInput.value = (g24 * (14 / 24)).toFixed(2);
+                if (manual12kInput) manual12kInput.value = (g24 * 0.5).toFixed(2);
+            }
+        });
+    };
+
+    bindManualKaratFrom24kUSD();
 
     // تهيئة محرر Quill
     if (document.getElementById('editor-container')) {

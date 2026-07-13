@@ -14,14 +14,7 @@
     "disown-opener": "off",
     "css-prefix-order": "off",
     "compat-api/html": "off",
-    "compat-api/css": [
-      "default",
-      {
-        "ignore": [
-          "image-rendering: crisp-edges"
-        ]
-      }
-    ],
+    "compat-api/css": "off",
     "no-inline-styles": "off",
     "meta-viewport": "off"
   },
