@@ -25,7 +25,7 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self' https:;
-      script-src 'self' https://pagead2.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://cdn.tailwindcss.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com https://*.google.com https://ep2.adtrafficquality.google 'unsafe-inline' 'unsafe-eval'; 
+      script-src 'self' https://pagead2.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://cdn.tailwindcss.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com https://*.google.com https://ep2.adtrafficquality.google https://va.vercel-scripts.com 'unsafe-inline' 'unsafe-eval'; 
       style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline'; 
       img-src 'self' data: blob: https: https://pagead2.googlesyndication.com; 
       connect-src 'self' https: wss:; 
@@ -2897,6 +2897,13 @@
         class="fa-solid fa-arrow-down text-xl glow-cyan relative z-10 group-hover:animate-bounce"
       ></i>
     </button>
+
+    <!-- Vercel Speed Insights -->
+    <script>
+      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+
 
     <script type="module" src="app.js"></script>
   </body>
