@@ -1983,9 +1983,9 @@ function updateArticleSchema(article) {
             "@type": "ImageObject",
             "url": article.image || (window.location.origin + "/icon.png"),
             "creditText": "Gold & Currency Hub",
-            "license": "https://goldcurrencyhub.com/privacy",
+            "license": "https://nexorastudio-eg.com/privacy",
             "copyrightNotice": "© 2026 Gold & Currency Hub",
-            "acquireLicensePage": "https://goldcurrencyhub.com/contact"
+            "acquireLicensePage": "https://nexorastudio-eg.com/contact"
         },
         "datePublished": article.timestamp ? new Date(article.timestamp).toISOString() : new Date().toISOString(),
         "author": {
@@ -1999,9 +1999,9 @@ function updateArticleSchema(article) {
                 "@type": "ImageObject",
                 "url": window.location.origin + "/icon.png",
                 "creditText": "Gold & Currency Hub",
-                "license": "https://goldcurrencyhub.com/privacy",
+                "license": "https://nexorastudio-eg.com/privacy",
                 "copyrightNotice": "© 2026 Gold & Currency Hub",
-                "acquireLicensePage": "https://goldcurrencyhub.com/contact"
+                "acquireLicensePage": "https://nexorastudio-eg.com/contact"
             }
         },
         "description": article.summary || article.title

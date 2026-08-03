@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /temp/
 
-Sitemap: https://gold-hub.com/sitemap.xml
+Sitemap: https://nexorastudio-eg.com/sitemap.xml

@@ -1,21 +1,22 @@
-# TODO - GoldHub: Cache ذكي لأسعار الذهب (اقتصادي)
+# TODO — تحديث SEO إلى الدومين الجديد nexorastudio-eg.com
 
-- [ ] تحديث `api/getPrices.js`:
-  - [ ] إضافة قراءة Firebase Realtime Database لمسار يحتوي على آخر وقت تحديث سعر الذهب (market_prices.lastUpdated أو ما يعادله)
-  - [ ] إذا كان الفرق الزمني < 8 ساعات: إعادة آخر سعر مخزن في Firebase بدون أي طلب GoldAPI
-  - [ ] إذا كان الفرق الزمني >= 8 ساعات: جلب سعر الذهب من GoldAPI.io باستخدام `process.env.GOLD_API_KEY` ثم تحديث Firebase بالمعدل + وقت التحديث
-  - [ ] إضافة fallback: إذا فشل أي شيء، يتم إرجاع آخر سعر مخزّن مسبقاً داخل الدالة (fallback ثابت)
-  - [ ] التأكد من عدم إرسال مفتاح GoldAPI للعميل
+## الأهداف
+- [x] استبدال جميع إشارات `gold-hub.com` في ملفات الموقع بالدومين الجديد `nexorastudio-eg.com`
+- [x] تحديث `robots.txt` ليشير إلى ملف Sitemap الجديد
+- [x] تحديث `sitemap.xml` بجميع روابط الدومين الجديد
+- [x] تحديث `app.js` (روابط schema الخاصة بالمقالات)
+- [x] تحديث إصدار ذاكرة التخزين المؤقت لـ Service Worker (`gold-hub-v5` → `gold-hub-v6`)
+- [x] التحقق من صحة الملفات بعد التعديل
 
-- [ ] تحديث `app.js`:
-  - [ ] جعل fetch يعمل عند تحميل الصفحة مرة واحدة (بدل setInterval المستمر)
-  - [ ] تقليل استهلاك الدالة مع الإبقاء على زر التحديث اليدوي (اختياري)
+## الخطوات التفصيلية
+- [x] تعديل `index.html` — جميع الإشارات في JSON-LD
+- [x] تعديل `robots.txt` — سطر Sitemap
+- [x] تعديل `sitemap.xml` — جميع الروابط
+- [x] تعديل `app.js` — مراجع `goldcurrencyhub.com`
+- [x] تعديل `sw.js` — رفع إصدار الكاش إلى `gold-hub-v6`
 
-- [ ] تحديث Firebase structure (اختياري حسب الموجود):
-  - [ ] التأكد من وجود الحقول اللازمة مثل `market_prices.gold` و `market_prices.lastUpdated`
-
-- [ ] اختبار محلي (اختياري):
-  - [ ] تشغيل build/serve والتحقق أن fetch('/api/getPrices') يحدّث الواجهة
-
-- [ ] رفع التغييرات إلى GitHub
-
+## خطوات ما بعد التعديل
+- [x] نشر التحديثات على GitHub Pages (push إلى main)
+- [ ] في Google Search Console: التحقق من الملكية للدومين `nexorastudio-eg.com`
+- [ ] إرسال `sitemap.xml` في Search Console
+- [ ] إعادة فحص الفهرس
