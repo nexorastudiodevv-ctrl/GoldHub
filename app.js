@@ -68,7 +68,7 @@ const translations = {
     ar: {
         gold_oz: "سعر أونصة الذهب بالدولار", gold_g: "سعر جرام الذهب بالدولار", silver_oz: "أوقية فضة", platinum_oz: "أوقية بلاتين", iron_ezz: "حديد عز (طن)", iron_egyptians: "حديد المصريين (طن)", iron_garhy: "حديد الجارحي (طن)",
         home: "الرئيسية", gold_markets: "أسواق الذهب", currency_markets: "أسعار العملات",
-        admin_panel: "لوحة التحكم", wallet: "المحفظة الشخصية", about: "من نحن", contact: "اتصل بنا",
+admin_panel: "لوحة التحكم", about: "من نحن", contact: "اتصل بنا",
         privacy: "سياسة الخصوصية", live_market: "سوق المال المباشر", sub_heading: "تحديثات فورية لأسعار الذهب العالمية والمعادن",
         up: "صعود", down: "هبوط", stable: "ثابت", live_update: "تحديث مباشر", share: "مشاركة السعر",
         converter: "محول العملات السريع", result: "النتيجة التقريبية", search: "ابحث عن عملة أو عيار..."
@@ -76,7 +76,7 @@ const translations = {
     en: {
         gold_oz: "Gold Price per Ounce (USD)", gold_g: "Gold Price per Gram (USD)", silver_oz: "Silver Ounce", platinum_oz: "Platinum Ounce", iron_ezz: "Ezz Steel (Ton)", iron_egyptians: "Egyptian Steel (Ton)", iron_garhy: "El Garhy Steel (Ton)",
         home: "Home", gold_markets: "Gold Markets", currency_markets: "Currencies",
-        admin_panel: "Admin Panel", wallet: "My Wallet", about: "About Us", contact: "Contact Us",
+        admin_panel: "Admin Panel", about: "About Us", contact: "Contact Us",
         privacy: "Privacy Policy", live_market: "Live Market Hub", sub_heading: "Real-time updates for global gold and metal prices",
         up: "Up", down: "Down", stable: "Stable", live_update: "Live Update", share: "Share Price",
         converter: "Currency Converter", result: "Approximate Result", search: "Search currency or carat..."
@@ -157,8 +157,7 @@ const domElements = {
     closeMobileMoreModalBtn: document.getElementById('closeMobileMoreModalBtn'),
     mobileMoreNearbyLink: document.getElementById('mobileMoreNearbyLink'),
     mobileMoreArticlesLink: document.getElementById('mobileMoreArticlesLink'),
-    mobileMoreAdminBtn: document.getElementById('mobileMoreAdminBtn'),
-    mobileMoreWalletLink: document.getElementById('mobileMoreWalletLink'),
+mobileMoreAdminBtn: document.getElementById('mobileMoreAdminBtn'),
     mobileMoreFaqLink: document.getElementById('mobileMoreFaqLink'),
     mobileMoreAboutLink: document.getElementById('mobileMoreAboutLink'),
     mobileMoreContactLink: document.getElementById('mobileMoreContactLink')
@@ -1180,7 +1179,7 @@ window.showSection = (sectionName) => {
     // العودة للأعلى تلقائياً عند تغيير القسم
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    const sections = ['goldSection', 'currencySection', 'walletSection', 'articlesSection', 'aboutSection', 'contactSection', 'privacySection', 'faqSection', 'nearbySection'];
+const sections = ['goldSection', 'currencySection', 'articlesSection', 'aboutSection', 'contactSection', 'privacySection', 'faqSection', 'nearbySection'];
     sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
 
     if (sectionName === 'home') {
@@ -1198,7 +1197,7 @@ window.showSection = (sectionName) => {
 
     // تحديث الحالة النشطة في أزرار التنقل للهواتف
     const primaryMobileSections = ['home', 'gold', 'currency', 'about', 'contact'];
-    const moreModalSections = ['nearby', 'articles', 'wallet', 'faq', 'admin']; // 'admin' is special, handled by handleOpenAdmin
+const moreModalSections = ['nearby', 'articles', 'faq', 'admin']; // 'admin' is special, handled by handleOpenAdmin
 
     // Reset all mobile nav links (primary and More button)
     document.querySelectorAll('#mobileBottomNav a, #mobileBottomNav button').forEach(link => {
@@ -1644,8 +1643,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ربط أزرار نافذة "المزيد" بالأقسام المناسبة
     const moreLinks = [
         { id: 'mobileMoreNearbyLink', section: 'nearby' },
-        { id: 'mobileMoreArticlesLink', section: 'articles' },
-        { id: 'mobileMoreWalletLink', section: 'wallet' },
+{ id: 'mobileMoreArticlesLink', section: 'articles' },
         { id: 'mobileMoreFaqLink', section: 'faq' },
         { id: 'mobileMoreAboutLink', section: 'about' },
         { id: 'mobileMoreContactLink', section: 'contact' }
@@ -1779,8 +1777,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'currencyMarketsLink', section: 'currency' }, { id: 'mobileCurrencyLink', section: 'currency' },
         { id: 'nearbyLink', section: 'nearby' }, { id: 'mobileNearbyLink', section: 'nearby' },
         { id: 'articlesLink', section: 'articles' }, { id: 'mobileArticlesLink', section: 'articles' },
-        { id: 'faqLink', section: 'faq' },
-        { id: 'walletLink', section: 'wallet' }, { id: 'mobileWalletLink', section: 'wallet' },
+{ id: 'faqLink', section: 'faq' },
         { id: 'aboutLink', section: 'about' }, { id: 'mobileAboutLink', section: 'about' },
         { id: 'contactLink', section: 'contact' }, { id: 'mobileContactLink', section: 'contact' },
         { id: 'privacyLink', section: 'privacy' }
