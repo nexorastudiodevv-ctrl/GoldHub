@@ -42,11 +42,8 @@ let editArticleId = null;
 let allArticlesData = {};
 let quill;
 
-// إعدادات API Ninjas
-// تم نقل جلب الأسعار إلى Serverless Function على Vercel لحماية مفاتيح الـ API.
-// احتفظ بهذا السطر لتفادي أخطاء إن وجدت كمرجع، لكن لن يُستخدم في fetchApiPrices.
-const NINJA_API_KEY = '';
-
+// إعدادات API Ninjas (أدخل مفتاحك هنا لاحقاً)
+const NINJA_API_KEY = 'inmE8YUxP8omD7Ln9aA4xv1JaL3EVB47MJ3yQKyi';
 
 // إعدادات الروابط الخارجية (APIs) لسهولة التحديث والصيانة
 const EXTERNAL_APIS = {
@@ -385,8 +382,9 @@ exchangeRates["XAG"] = 1 / silverPrice;
 exchangeRates["XPT"] = 1 / platinumPrice;
 
 let isManualMode = false;
-let lastFirebaseUpdated = 0;
-
+// متغيرات تتبع توقيت آخر تحديث يدوي وآخر تحديث من API
+let manualLastUpdate = parseInt(localStorage.getItem('manual_last_update')) || 0;
+let apiLastUpdate = parseInt(localStorage.getItem('api_last_update')) || 0;
 let caratPrices = { k24: goldPrice / OUNCE_TO_GRAM, k21: (goldPrice / OUNCE_TO_GRAM) * 0.875, k18: (goldPrice / OUNCE_TO_GRAM) * 0.75, k14: (goldPrice / OUNCE_TO_GRAM) * (14 / 24), k12: (goldPrice / OUNCE_TO_GRAM) * 0.5 };
 let previousSilverPrice = silverPrice;
 let previousPlatinumPrice = platinumPrice;
@@ -579,64 +577,182 @@ async function initPushNotifications(registration) {
 }
 
 async function fetchApiPrices() {
-    const MAX_AGE_MS = 8 * 60 * 60 * 1000; // 8 ساعات
-    if (isManualMode) {
-        if (!lastFirebaseUpdated || (Date.now() - lastFirebaseUpdated) < MAX_AGE_MS) return;
+    if (isManualMode) return;
+    addApiLog("📡 جاري جلب البيانات من API...");
+
+    // التحقق من التوقيت: إذا كان التحديث اليدوي أحدث من آخر تحديث API، نتجاهل بيانات الـ API
+    if (manualLastUpdate > 0 && manualLastUpdate > apiLastUpdate) {
+        addApiLog("⏸️ تم تجاهل بيانات الـ API لأن التحديث اليدوي أحدث.");
+        return;
     }
-    addApiLog("📡 جاري جلب البيانات من السيرفر...");
+
+    // Telemetry سريع لسبب الثبات (يظهر داخل apiLogs)
+    const startedAt = Date.now();
+    const before = {
+        gold: goldPrice,
+        silver: silverPrice,
+        platinum: platinumPrice
+    };
+
     try {
-        const res = await fetch(`/api/getPrices`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const apiRequests = [];
+        const apiKeys = [];
 
-        const payload = await res.json();
+        // إضافة timestamp لمنع الكاش من البروكسي
+        const ts = Date.now();
 
-        const safeRates = payload?.rates && typeof payload.rates === 'object' ? payload.rates : null;
-        const metals = payload?.metals && typeof payload.metals === 'object' ? payload.metals : {};
+        apiRequests.push(fetch(`${EXTERNAL_APIS.CURRENCY}?ts=${ts}`).catch(err => {
+            console.error("❌ فشل جلب العملات:", err);
+            addApiLog(`❌ فشل جلب العملات: ${err.message || 'خطأ غير معروف'}`);
+            return { status: 'rejected', reason: err };
+        }));
+        apiKeys.push('CURRENCY');
 
-        // update exchange rates
-        if (safeRates) {
-            exchangeRates = { ...exchangeRates, ...safeRates, USD: 1 };
-            localStorage.setItem('last_rates', JSON.stringify(exchangeRates));
+
+        // جلب أسعار المعادن من API Ninjas إذا توفر المفتاح
+        if (NINJA_API_KEY) {
+            const headers = { 'X-Api-Key': NINJA_API_KEY };
+            // الأسماء بالصيغة الصحيحة لـ API Ninjas (lowercase)
+            const metals = [
+                { name: 'gold', key: 'GOLD' },
+                { name: 'silver', key: 'SILVER' },
+                { name: 'platinum', key: 'PLATINUM' },
+                { name: 'copper', key: 'COPPER' }
+            ];
+
+            for (const metal of metals) {
+                try {
+                    const res = await fetch(EXTERNAL_APIS.NINJA_COMMODITY + metal.name, { headers });
+                    if (!res.ok) {
+                        addApiLog(`⚠️ استجابة ${metal.key} غير صحيحة (${res.status}).`);
+                        continue;
+                    }
+                    const data = await res.json();
+                    // API Ninjas تعيد {name, price, updated} أو [{name, price, updated}]
+                    const price = Array.isArray(data) ? data[0]?.price : data?.price;
+                    if (price) {
+                        if (metal.key === 'GOLD') {
+                            goldPrice = parseFloat(price);
+                            exchangeRates["XAU"] = 1 / goldPrice;
+                            updateCaratPrices(goldPrice);
+                            localStorage.setItem('last_gold_price', goldPrice);
+                        } else if (metal.key === 'SILVER') {
+                            previousSilverPrice = silverPrice;
+                            silverPrice = parseFloat(price);
+                            exchangeRates["XAG"] = 1 / silverPrice;
+                            localStorage.setItem('last_silver_price', silverPrice);
+                        } else if (metal.key === 'PLATINUM') {
+                            previousPlatinumPrice = platinumPrice;
+                            platinumPrice = parseFloat(price);
+                            exchangeRates["XPT"] = 1 / platinumPrice;
+                            localStorage.setItem('last_platinum_price', platinumPrice);
+                        } else if (metal.key === 'COPPER') {
+                            previousCopperPrice = copperPrice;
+                            copperPrice = parseFloat(price);
+                            localStorage.setItem('last_copper_price', copperPrice);
+                        }
+                        addApiLog(`✅ تم تحديث ${metal.key} من API Ninjas.`);
+                    } else {
+                        addApiLog(`⚠️ بيانات ${metal.key} غير متوفرة في الرد.`);
+                    }
+                } catch (e) {
+                    addApiLog(`❌ فشل جلب ${metal.key} من API Ninjas.`);
+                }
+            }
+        }
+
+        if (EXTERNAL_APIS.IRON) {
+            apiRequests.push(fetch(EXTERNAL_APIS.IRON).catch(err => {
+                console.error("❌ فشل جلب سعر الحديد:", err);
+                addApiLog(`❌ فشل جلب الحديد: ${err.message || 'خطأ غير معروف'}`);
+                return { status: 'rejected', reason: err };
+            }));
+            apiKeys.push('IRON');
+        }
+
+        const results = await Promise.allSettled(apiRequests);
+
+        const processedResults = {};
+        results.forEach((result, index) => {
+            processedResults[apiKeys[index]] = result;
+        });
+
+        const currRes = processedResults.CURRENCY;
+        if (currRes && currRes.status === 'fulfilled' && currRes.value.ok) {
+            const currData = await currRes.value.json();
+            if (currData?.rates) {
+                previousGoldPrice = goldPrice;
+                previousCaratPrices = { ...caratPrices };
+                // تحديث كائن الأسعار بجميع العملات التي يوفرها الـ API
+                exchangeRates = { ...exchangeRates, ...currData.rates };
+
+                // التأكد من وجود الدولار كقاعدة
+                exchangeRates["USD"] = 1;
+
+                if (currData.rates.XPT) {
+                    previousPlatinumPrice = platinumPrice;
+                    platinumPrice = 1 / currData.rates.XPT;
+                    localStorage.setItem('last_platinum_price', platinumPrice);
+                }
+                localStorage.setItem('last_rates', JSON.stringify(exchangeRates));
+
+                // --- نظام الاحتياط (Fallback) في حال فشل Binance ---
+                if (!processedResults.GOLD || processedResults.GOLD.status === 'rejected' || !processedResults.GOLD.value.ok) {
+                    if (currData.rates.XAU) {
+                        goldPrice = 1 / currData.rates.XAU;
+                        exchangeRates["XAU"] = 1 / goldPrice;
+                        updateCaratPrices(goldPrice);
+                        addApiLog("✅ تم استخدام سعر الذهب الاحتياطي.");
+                    }
+                }
+
+                if (!processedResults.SILVER || processedResults.SILVER.status === 'rejected' || !processedResults.SILVER.value.ok) {
+                    if (currData.rates.XAG) {
+                        previousSilverPrice = silverPrice;
+                        silverPrice = 1 / currData.rates.XAG;
+                        exchangeRates["XAG"] = 1 / silverPrice;
+                        localStorage.setItem('last_silver_price', silverPrice);
+                        addApiLog("✅ تم تحديث سعر الفضة من OpenExchangeRates (كخيار احتياطي).");
+                    } else {
+                        addApiLog("⚠️ فشل جلب الفضة من OpenExchangeRates أيضاً.");
+                    }
+                }
+            }
             renderConverterOptions();
+        } else if (currRes && currRes.status === 'rejected') {
+            // Error already logged in the catch block of the fetch call
+        } else {
+            addApiLog("⚠️ فشل جلب العملات (استجابة غير صالحة).");
         }
 
-        // update metals (oz USD)
-        if (typeof metals.goldOzUsd === 'number' && metals.goldOzUsd > 0) {
-            previousGoldPrice = goldPrice;
-            goldPrice = metals.goldOzUsd;
-            exchangeRates["XAU"] = 1 / goldPrice;
-            updateCaratPrices(goldPrice);
-            localStorage.setItem('last_gold_price', goldPrice);
+        // معالجة بيانات الحديد من المصدر المجاني
+        const ironRes = processedResults.IRON;
+        if (ironRes && ironRes.status === 'fulfilled' && ironRes.value.ok) {
+            const ironData = await ironRes.value.json();
+            const record = ironData?.record || ironData;
+            if (record && record.ezz) {
+                previousIronEzzPrice = ironEzzPrice;
+                ironEzzPrice = record.ezz;
+                previousIronEgyptiansPrice = ironEgyptiansPrice;
+                ironEgyptiansPrice = record.egyptians;
+                previousIronGarhyPrice = ironGarhyPrice;
+                ironGarhyPrice = record.garhy;
+            }
+        } else if (ironRes && ironRes.status === 'rejected') {
+            // Error already logged in the catch block of the fetch call
+        } else {
+addApiLog("⚠️ أسعار الحديد تستخدم البيانات المحلية (رابط API غير متاح أو استجابة غير صالحة).");
         }
 
-        if (typeof metals.silverOzUsd === 'number' && metals.silverOzUsd > 0) {
-            previousSilverPrice = silverPrice;
-            silverPrice = metals.silverOzUsd;
-            exchangeRates["XAG"] = 1 / silverPrice;
-            localStorage.setItem('last_silver_price', silverPrice);
-        }
-
-        if (typeof metals.platinumOzUsd === 'number' && metals.platinumOzUsd > 0) {
-            previousPlatinumPrice = platinumPrice;
-            platinumPrice = metals.platinumOzUsd;
-            exchangeRates["XPT"] = 1 / platinumPrice;
-            localStorage.setItem('last_platinum_price', platinumPrice);
-        }
-
-        if (typeof metals.copperUsd === 'number' && metals.copperUsd > 0) {
-            previousCopperPrice = copperPrice;
-            copperPrice = metals.copperUsd;
-            localStorage.setItem('last_copper_price', copperPrice);
-        }
+        // تسجيل توقيت آخر تحديث ناجح من الـ API
+        apiLastUpdate = Date.now();
+        localStorage.setItem('api_last_update', apiLastUpdate);
 
         updateUI();
     } catch (error) {
         addApiLog(`❌ فشل التحديث: ${error.message}`);
-        updateUI();
     }
 }
-
-
 
 // دالة مساعدة لتحديث أسعار العيارات بناءً على سعر الأونصة
 function updateCaratPrices(ozPrice) {
@@ -724,43 +840,65 @@ function updateChart(newPrice) {
     goldChart.update('none'); // تحديث الرسم بدون أنميشن (Mode: none) لتوفير موارد الجهاز
 }
 
+// مستمع Firebase لقراءة سعر الأونصة اليدوي وتطبيقه على الموقع
+// يعرض السعر الأحدث حسب التوقيت بين الـ API واليدوي
 onValue(pricesRef, (snapshot) => {
     const data = snapshot.val();
-    if (data) {
-        previousGoldPrice = goldPrice;
-        previousCaratPrices = { ...caratPrices };
-
-        // تحديث سعر الأونصة من قاعدة البيانات
-        goldPrice = Number(data.gold) || goldPrice;
-        exchangeRates = data.rates || exchangeRates;
-
-        // إعادة حساب العيارات بناءً على سعر الأونصة المحدث يدوياً لضمان الربط
-        const gram24USD = goldPrice / OUNCE_TO_GRAM;
-        caratPrices = {
-            k24: data.carats?.k24 || gram24USD,
-            k21: data.carats?.k21 || (gram24USD * 0.875),
-            k18: data.carats?.k18 || (gram24USD * 0.75),
-            k14: data.carats?.k14 || (gram24USD * (14 / 24)),
-            k12: data.carats?.k12 || (gram24USD * 0.5)
-        };
-
-        // تحديث سعر الفضة من Firebase فقط إذا كان موجوداً، وإلا فسيتم الاحتفاظ بآخر قيمة من API أو القيمة الافتراضية
-        // هذا يضمن أن الفضة لا يتم تجاوزها بقيمة قديمة إذا لم يقم المدير بتحديثها
-        // إذا لم يتم توفيرها من قبل المدير، فستظل قيمة API هي السائدة (أو القيمة الافتراضية إذا فشل API)
-        if (data.silver !== undefined) { previousSilverPrice = silverPrice; silverPrice = data.silver; }
-        if (data.ironEzz) { previousIronEzzPrice = ironEzzPrice; ironEzzPrice = data.ironEzz; }
-        if (data.ironEgyptians) { previousIronEgyptiansPrice = ironEgyptiansPrice; ironEgyptiansPrice = data.ironEgyptians; }
-        if (data.ironGarhy) { previousIronGarhyPrice = ironGarhyPrice; ironGarhyPrice = data.ironGarhy; }
-        if (data.makingCharges) makingCharges = data.makingCharges;
-        isManualMode = true;
-        renderConverterOptions();
-        updateUI();
-    } else {
+    if (!data || !data.gold) {
+        // لا توجد بيانات يدوية أو تم حذفها -> العودة للوضع التلقائي
         isManualMode = false;
-        lastFirebaseUpdated = 0;
-        fetchApiPrices();
+        manualLastUpdate = 0;
+        localStorage.removeItem('manual_last_update');
+        if (apiLastUpdate === 0) fetchApiPrices();
+        return;
     }
+
+    const serverTime = Number(data.lastUpdated) || 0;
+    // السعر اليدوي يتفوق فقط إذا كان أحدث من آخر تحديث API
+    if (serverTime > 0 && serverTime < apiLastUpdate) {
+        // الـ API أحدث -> لا نطبق القيم اليدوية الآن
+        return;
+    }
+
+    previousGoldPrice = goldPrice;
+    previousCaratPrices = { ...caratPrices };
+
+    // تحديث سعر الأونصة من قاعدة البيانات
+    goldPrice = Number(data.gold) || goldPrice;
+    exchangeRates = { ...(data.rates || exchangeRates) };
+    exchangeRates["USD"] = 1;
+
+    // إعادة حساب العيارات بناءً على سعر الأونصة المحدث يدوياً لضمان الربط
+    const gram24USD = goldPrice / OUNCE_TO_GRAM;
+    caratPrices = {
+        k24: data.carats?.k24 || gram24USD,
+        k21: data.carats?.k21 || (gram24USD * 0.875),
+        k18: data.carats?.k18 || (gram24USD * 0.75),
+        k14: data.carats?.k14 || (gram24USD * (14 / 24)),
+        k12: data.carats?.k12 || (gram24USD * 0.5)
+    };
+
+    // تحديث سعر الفضة من Firebase فقط إذا كان موجوداً، وإلا فسيتم الاحتفاظ بآخر قيمة من API أو القيمة الافتراضية
+    if (data.silver !== undefined) { previousSilverPrice = silverPrice; silverPrice = data.silver; }
+    if (data.ironEzz) { previousIronEzzPrice = ironEzzPrice; ironEzzPrice = data.ironEzz; }
+    if (data.ironEgyptians) { previousIronEgyptiansPrice = ironEgyptiansPrice; ironEgyptiansPrice = data.ironEgyptians; }
+    if (data.ironGarhy) { previousIronGarhyPrice = ironGarhyPrice; ironGarhyPrice = data.ironGarhy; }
+    if (data.makingCharges) makingCharges = data.makingCharges;
+
+    isManualMode = true;
+    manualLastUpdate = serverTime > 0 ? serverTime : Date.now();
+    localStorage.setItem('manual_last_update', manualLastUpdate);
+    localStorage.setItem('last_gold_price', goldPrice);
+    localStorage.setItem('last_rates', JSON.stringify(exchangeRates));
+    renderConverterOptions();
+    updateUI();
+    updateLivePreview();
 });
+
+// تشغيل الـ APIs فوراً لضمان عرض الأسعار بدون انتظار Firebase
+if (!isManualMode) {
+    fetchApiPrices();
+}
 
 // دالة عرض جدول البيانات التاريخية (مقتبس من الموقع المطلوب)
 function renderHistoricalTable() {
@@ -1420,12 +1558,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     setInterval(simulateMarket, 5000);
-
-    // تحديث الأسعار عند تحميل الصفحة فقط لتقليل استهلاك الـ API
-    // (يتم اتخاذ قرار "تحديث/لا" داخل Serverless Function حسب آخر تحديث في Firebase)
-    addApiLog("🚀 جلب أحدث الأسعار (عند التحميل)...");
-    fetchApiPrices();
-
+    // تحديث كل 5 دقائق (300,000ms) بدلاً من دقيقة واحدة لتوفير استهلاك الـ API
+    setInterval(() => { if (!isManualMode) fetchApiPrices(); }, 300000);
 
     // --- أحداث لوحة التحكم ---
     // استخدام Debounce للبحث لتقليل العمليات الحسابية المتكررة أثناء الكتابة السريعة
@@ -1486,9 +1620,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!domElements.loginModal.classList.contains('hidden')) {
                 domElements.loginModal.classList.add('hidden');
             }
-    // تعبئة القيم الحالية في المدخلات اليدوية عند الفتح
-            // (تمت إضافة مدخل جديد لسعر الأونصة مباشرة داخل لوحة التحكم)
-            document.getElementById('manualGoldPriceTop')?.value = goldPrice;
+            // تعبئة القيم الحالية في المدخلات اليدوية عند الفتح
             document.getElementById('manualGoldPrice').value = goldPrice;
             document.getElementById('manualSilverPrice').value = silverPrice;
             document.getElementById('manualIronEzzPrice').value = ironEzzPrice;
@@ -1543,7 +1675,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const manual14kInput = document.getElementById('manual14k');
     const manual12kInput = document.getElementById('manual12k');
 
-    // عندما يغير المدير سعر الأونصة ($) يتم تحديث أسعار العيارات (بالـ $) تلقائياً
     manualGoldInput?.addEventListener('input', (e) => {
         const ozPrice = parseFloat(e.target.value);
         if (ozPrice > 0) {
@@ -1555,28 +1686,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (manual12kInput) manual12kInput.value = (g24 * 0.5).toFixed(2);
         }
     });
-
-    // (اقتراح المستخدم) عند تعديل سعر عيار 24 (بالـ $) مباشرة، نحسب سعر الأونصة ثم نحدث باقي العيارات.
-    // ملاحظة: نفس المنطق ينطبق على أي عيار، لكن هنا نبدأ بالـ 24k لتقليل تغييرات غير لازمة.
-    const bindManualKaratFrom24kUSD = () => {
-        if (!manual24kInput || !manualGoldInput) return;
-        manual24kInput.addEventListener('input', (e) => {
-            const k24Usd = parseFloat(e.target.value);
-            if (k24Usd > 0) {
-                const ozUsd = k24Usd * OUNCE_TO_GRAM;
-                // تحديث حقل الأونصة
-                manualGoldInput.value = ozUsd.toFixed(2);
-                // تحديث باقي العيارات
-                const g24 = k24Usd;
-                if (manual21kInput) manual21kInput.value = (g24 * 0.875).toFixed(2);
-                if (manual18kInput) manual18kInput.value = (g24 * 0.75).toFixed(2);
-                if (manual14kInput) manual14kInput.value = (g24 * (14 / 24)).toFixed(2);
-                if (manual12kInput) manual12kInput.value = (g24 * 0.5).toFixed(2);
-            }
-        });
-    };
-
-    bindManualKaratFrom24kUSD();
 
     // تهيئة محرر Quill
     if (document.getElementById('editor-container')) {

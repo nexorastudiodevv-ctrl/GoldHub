@@ -1,3 +1,41 @@
+# GoldHub
+
+موقع ثابت لعرض أسعار الذهب والفضة والعملات لحظة بلحظة.
+
+تشغيل محلي سريع:
+
+```bash
+# تثبيت أدوات (اختياري، npx يستخدم مباشرة دون تثبيت دائم)
+npx serve -s . -l 3000
+
+# أو باستخدام npm script
+npm install
+npm run start
+```
+
+نشر إلى GitHub:
+
+```bash
+# إنشاء مستودع محلي
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+# أضف remote إلى GitHub (استبدل URL)
+git remote add origin https://github.com/USERNAME/REPO.git
+git push -u origin main
+```
+
+نشر إلى Vercel:
+
+1. سجل دخول إلى https://vercel.com واصل حساب GitHub.
+2. أنشئ مشروع جديد واختر المستودع الذي قمت بدفعه.
+3. اختر `Framework Preset` كـ `Other` أو `Static` وادخل `build` إن لم تحتاج بناءً اترك الحقول فارغة.
+4. اضغط Deploy.
+
+ملاحظات أمان وتوصيات سريعة:
+- راجع Content-Security-Policy في `index.html` واستخدم nonces أو نقل السكربتات إلى ملفات خارجية قبل إزالة `unsafe-inline`.
+- تحقق من مفاتيح API الحساسة وعدم رفعها إلى المستودع (ضعها في متغيرات بيئة في Vercel).
 # 🌟 Gold & Currency Hub - موقع تتبع الذهب والعملات
 
 ## 📋 نظرة عامة
