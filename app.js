@@ -39,6 +39,7 @@ const pricesRef = ref(db, 'market_prices');
 const historyRef = ref(db, 'price_history');
 const articlesRef = ref(db, 'articles');
 let editArticleId = null;
+let currentArticleId = null;
 let allArticlesData = {};
 let quill;
 
@@ -2011,13 +2012,93 @@ function updateArticleSchema(article) {
 window.openArticleModal = (id) => {
     const art = allArticlesData[id];
     if (art) {
+        currentArticleId = id;
         domElements.articleModalTitle.textContent = art.title;
+
+        // ضبط صورة المقال وتاريخه إن وجدا
+        if (domElements.articleModalImage) {
+            if (art.image) {
+                domElements.articleModalImage.src = art.image;
+                domElements.articleModalImage.classList.remove('hidden');
+            } else {
+                domElements.articleModalImage.classList.add('hidden');
+            }
+        }
+        if (domElements.articleModalDate) {
+            domElements.articleModalDate.textContent = art.date || new Date(art.timestamp).toLocaleDateString('ar-EG') || "";
+        }
+
         domElements.articleModalContent.innerHTML = art.content;
         domElements.articleModal.classList.remove('hidden');
 
         // تحديث البيانات المهيكلة (JSON-LD) فور فتح المقال
         updateArticleSchema(art);
     }
+};
+
+// مشاركة المقال الحالي على منصات التواصل الاجتماعي (فيسبوك / تويتر)
+window.shareArticle = (platform) => {
+    const art = allArticlesData[currentArticleId];
+    if (!art) {
+        showToast("عذراً، لم يتم العثور على المقال المطلوب للمشاركة");
+        return;
+    }
+
+    // بناء رابط المقال (يشير إلى الصفحة الرئيسية مع معرّف المقال في التجزئة)
+    const baseUrl = window.location.origin + (window.location.pathname.includes('index.html') ? '/index.html' : '/');
+    const articleUrl = encodeURIComponent(`${baseUrl}#article-${currentArticleId}`);
+    const articleTitle = encodeURIComponent(art.title);
+    const shareText = encodeURIComponent(`📰 ${art.title}`);
+    const hashtags = 'ذهب,Gold,أسعار_الذهب';
+
+    let shareUrl = "";
+    if (platform === 'facebook') {
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${articleUrl}`;
+    } else if (platform === 'twitter') {
+        shareUrl = `https://twitter.com/intent/tweet?url=${articleUrl}&text=${shareText}&hashtags=${hashtags}`;
+    } else if (platform === 'linkedin') {
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${articleUrl}`;
+    } else if (platform === 'whatsapp') {
+        shareUrl = `https://api.whatsapp.com/send?text=${shareText}%20${articleUrl}`;
+    } else if (platform === 'telegram') {
+        shareUrl = `https://t.me/share/url?url=${articleUrl}&text=${shareText}`;
+    } else if (platform === 'copy') {
+        // نسخ الرابط مباشرة إلى الحافظة
+        const finalUrl = decodeURIComponent(articleUrl);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(finalUrl).then(() => {
+                showToast("تم نسخ رابط المقال ✅");
+            }).catch(() => {
+                showToast("تعذر نسخ الرابط، انسخه يدوياً: " + finalUrl);
+            });
+        } else {
+            // طريقة بديلة للنسخ في المتصفحات القديمة
+            const tempInput = document.createElement('textarea');
+            tempInput.value = finalUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast("تم نسخ رابط المقال ✅");
+        }
+        return;
+    }
+
+    if (!shareUrl) {
+        showToast("منصة المشاركة غير مدعومة");
+        return;
+    }
+
+    // فتح نافذة المشاركة المنبثقة بحجم مناسب
+    const width = 600;
+    const height = 500;
+    const left = (window.screen.width - width) / 2;
+    const top = (window.screen.height - height) / 2;
+    window.open(
+        shareUrl,
+        'shareArticle',
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    );
 };
 
 function renderAdminArticles(filter = "") {

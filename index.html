@@ -2871,6 +2871,64 @@
             <i class="fa-solid fa-xmark text-2xl"></i>
           </button>
         </div>
+        <!-- أزرار مشاركة المقال على منصات التواصل الاجتماعي -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs text-slate-400 font-bold">مشاركة المقال:</span>
+          <button
+            onclick="shareArticle('facebook')"
+            class="flex items-center gap-2 text-[11px] font-bold text-white bg-[#1877F2]/20 border border-[#1877F2]/40 px-3 py-1.5 rounded-xl hover:bg-[#1877F2]/40 transition active:scale-95"
+            aria-label="مشاركة المقال على فيسبوك"
+            title="مشاركة على فيسبوك"
+          >
+            <i class="fa-brands fa-facebook-f text-[#1877F2]"></i>
+            فيسبوك
+          </button>
+          <button
+            onclick="shareArticle('twitter')"
+            class="flex items-center gap-2 text-[11px] font-bold text-white bg-slate-500/20 border border-slate-400/40 px-3 py-1.5 rounded-xl hover:bg-slate-500/40 transition active:scale-95"
+            aria-label="مشاركة المقال على تويتر"
+            title="مشاركة على تويتر (إكس)"
+          >
+            <i class="fa-brands fa-x-twitter text-slate-300"></i>
+            تويتر
+          </button>
+          <button
+            onclick="shareArticle('linkedin')"
+            class="flex items-center gap-2 text-[11px] font-bold text-white bg-[#0A66C2]/20 border border-[#0A66C2]/40 px-3 py-1.5 rounded-xl hover:bg-[#0A66C2]/40 transition active:scale-95"
+            aria-label="مشاركة المقال على لينكدإن"
+            title="مشاركة على لينكدإن"
+          >
+            <i class="fa-brands fa-linkedin-in text-[#0A66C2]"></i>
+            لينكدإن
+          </button>
+          <button
+            onclick="shareArticle('whatsapp')"
+            class="flex items-center gap-2 text-[11px] font-bold text-white bg-green-600/20 border border-green-500/40 px-3 py-1.5 rounded-xl hover:bg-green-600/40 transition active:scale-95"
+            aria-label="مشاركة المقال عبر واتساب"
+            title="مشاركة عبر واتساب"
+          >
+            <i class="fa-brands fa-whatsapp text-green-400"></i>
+            واتساب
+          </button>
+          <button
+            onclick="shareArticle('telegram')"
+            class="flex items-center gap-2 text-[11px] font-bold text-white bg-[#229ED9]/20 border border-[#229ED9]/40 px-3 py-1.5 rounded-xl hover:bg-[#229ED9]/40 transition active:scale-95"
+            aria-label="مشاركة المقال عبر تيليجرام"
+            title="مشاركة عبر تيليجرام"
+          >
+            <i class="fa-brands fa-telegram text-[#229ED9]"></i>
+            تيليجرام
+          </button>
+          <button
+            onclick="shareArticle('copy')"
+            class="flex items-center gap-2 text-[11px] font-bold text-white bg-cyan-500/10 border border-cyan-500/40 px-3 py-1.5 rounded-xl hover:bg-cyan-500/30 transition active:scale-95"
+            aria-label="نسخ رابط المقال"
+            title="نسخ رابط المقال"
+          >
+            <i class="fa-solid fa-link text-cyan-400"></i>
+            نسخ الرابط
+          </button>
+        </div>
         <div class="flex-1 overflow-y-auto px-2 space-y-6">
           <img
             id="articleModalImage"
