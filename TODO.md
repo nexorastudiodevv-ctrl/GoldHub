@@ -1,22 +1,23 @@
-# TODO — تحديث SEO إلى الدومين الجديد nexorastudio-eg.com
+# TODO — إصلاح مشكلة تغيّر التخطيط (CLS)
 
-## الأهداف
-- [x] استبدال جميع إشارات `gold-hub.com` في ملفات الموقع بالدومين الجديد `nexorastudio-eg.com`
-- [x] تحديث `robots.txt` ليشير إلى ملف Sitemap الجديد
-- [x] تحديث `sitemap.xml` بجميع روابط الدومين الجديد
-- [x] تحديث `app.js` (روابط schema الخاصة بالمقالات)
-- [x] تحديث إصدار ذاكرة التخزين المؤقت لـ Service Worker (`gold-hub-v5` → `gold-hub-v6`)
-- [x] التحقق من صحة الملفات بعد التعديل
+## الهدف
+تقليل نتيجة Cumulative Layout Shift من **0.531** إلى أقل من **0.1** لتحسين أداء PageSpeed.
+
+## أسباب التغيّر (تحليل)
+- [x] عناصر أسعار العيارات (`#price-24k/21k/18k/14k/12k`) تبدأ فارغة ثم تُملأ بالأسعار
+- [x] قائمة العملات (`#currencyList`) تبدأ بـ 3 عناصر فقط ثم تُستبدل بعشرات العملات
+- [x] السعر الرئيسي للذهب `#mainGoldPrice` يتغير عرضه عند التحديث
+- [x] أيقونات FontAwesome تُحمَّل متأخرة (media="print") مما يغيّر التخطيط
+- [x] صور أعلام العملات بدون أبعاد محجوزة (width/height)
 
 ## الخطوات التفصيلية
-- [x] تعديل `index.html` — جميع الإشارات في JSON-LD
-- [x] تعديل `robots.txt` — سطر Sitemap
-- [x] تعديل `sitemap.xml` — جميع الروابط
-- [x] تعديل `app.js` — مراجع `goldcurrencyhub.com`
-- [x] تعديل `sw.js` — رفع إصدار الكاش إلى `gold-hub-v6`
+- [ ] إضافة CSS في `index.html` لحجز مساحات ثابتة:
+  - `min-height` لعناصر `[id^="price-"]`
+  - `min-height` لعناصر `[id^="making-"]`
+  - `min-height` لحاوية `#currencyList`
+  - `min-width` للسعر الرئيسي `#mainGoldPrice`
+  - `min-width: 1em` لأيقونات FontAwesome
+- [ ] إضافة `width` و `height` لصور أعلام العملات في `app.js`
+- [ ] التحقق من الشفرة بعد التعديل (اختبار محلي)
+- [ ] الرفع إلى GitHub (`main`)
 
-## خطوات ما بعد التعديل
-- [x] نشر التحديثات على GitHub Pages (push إلى main)
-- [ ] في Google Search Console: التحقق من الملكية للدومين `nexorastudio-eg.com`
-- [ ] إرسال `sitemap.xml` في Search Console
-- [ ] إعادة فحص الفهرس
