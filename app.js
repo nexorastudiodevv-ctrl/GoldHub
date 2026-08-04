@@ -501,7 +501,7 @@ function renderCurrencies() {
         return `
             <div class="flex items-center justify-between p-3 bg-slate-900/40 border border-slate-800 rounded-xl hover:border-cyan-500/30 transition-all group">
                 <div class="flex items-center gap-2.5">
-                    <img src="${flagUrl}" class="w-8 h-6 rounded object-cover shadow-sm" alt="${code}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/272/272525.png'">
+<img src="${flagUrl}" class="w-8 h-6 rounded object-cover shadow-sm" alt="${code}" width="32" height="24" loading="lazy" onerror="this.src='https://cdn-icons-png.flaticon.com/512/272/272525.png'">
                     <div>
                         <div class="text-xs font-bold text-slate-100">${code}</div>
                         <div class="flex items-center gap-1.5 text-[9px] text-emerald-500/90 font-bold uppercase tracking-wider">
@@ -948,7 +948,7 @@ onValue(articlesRef, (snapshot) => {
     const articleHTML = (id, art) => `
         <div class="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden hover:border-cyan-500/50 transition-all cursor-pointer group" onclick="openArticleModal('${id}')">
             <div class="relative overflow-hidden h-48">
-                <img src="${art.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="${art.title}">
+                <img src="${art.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="${art.title}" width="600" height="300" loading="lazy">
             </div>
             <div class="p-6">
                 <h3 class="text-xl font-bold mb-2 text-slate-100">${art.title}</h3>

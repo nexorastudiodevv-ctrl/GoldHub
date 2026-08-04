@@ -350,7 +350,7 @@
         -webkit-font-smoothing: antialiased;
       }
 
-      /* إصلاحات الخريطة للشاشات الصغيرة */
+/* إصلاحات الخريطة للشاشات الصغيرة */
       .leaflet-control-container .leaflet-top,
       .leaflet-control-container .leaflet-bottom {
         z-index: 20 !important; /* أقل من شريط التنقل السفلي والتبويبات */
@@ -360,6 +360,40 @@
         line-height: 1;
         background: rgba(15, 23, 42, 0.6) !important;
         color: #94a3b8 !important;
+      }
+
+      /* ===== إصلاحات CLS (تغيّر التخطيط) ===== */
+      /* 1. حجز مساحة ثابتة لعناصر الأسعار حتى لا يتغيّر التخطيط عند ملئها */
+      [id^="price-"] {
+        min-height: 1.75rem;
+        display: flex;
+        align-items: center;
+      }
+      /* 2. حجز مساحة لعناصر المصنعية */
+      [id^="making-"] {
+        min-height: 1.25rem;
+      }
+      /* 3. حجز مساحة لقائمة العملات قبل تعبئتها برمجياً */
+      #currencyList {
+        min-height: 320px;
+      }
+      /* 4. حجز مساحة السعر الرئيسي للذهب */
+      #mainGoldPrice {
+        min-width: 140px;
+        display: inline-block;
+      }
+      /* 5. حجز مساحة لأيقونات FontAwesome لمنع تغيّر التخطيط عند تحميل الخط */
+      .fa-solid,
+      .fa-regular,
+      .fa-brands {
+        min-width: 1em;
+        text-align: center;
+      }
+      /* 6. حجز مساحة لأيقونات الأعلام في قائمة العملات */
+      #currencyList img {
+        width: 32px;
+        height: 24px;
+        object-fit: cover;
       }
     </style>
 
@@ -1325,6 +1359,9 @@
                       src="https://cdn-icons-png.flaticon.com/512/8065/8065406.png"
                       class="w-5 h-5 rounded-full object-contain bg-white p-0.5"
                       alt="حديد عز"
+                      width="20"
+                      height="20"
+                      loading="lazy"
                     />
                     <p class="text-xs text-slate-400" data-i18n="iron_ezz">
                       حديد عز (طن)
@@ -1355,6 +1392,9 @@
                       src="https://cdn-icons-png.flaticon.com/512/261/261906.png"
                       class="w-5 h-5 rounded-full object-contain bg-white p-0.5"
                       alt="حديد المصريين"
+                      width="20"
+                      height="20"
+                      loading="lazy"
                     />
                     <p
                       class="text-xs text-slate-400"
@@ -1388,6 +1428,9 @@
                       src="https://www.garhysteel.com/favicon.ico"
                       class="w-5 h-5 rounded-full object-contain bg-white p-0.5"
                       alt="حديد الجارحي"
+                      width="20"
+                      height="20"
+                      loading="lazy"
                     />
                     <p class="text-xs text-slate-400" data-i18n="iron_garhy">
                       حديد الجارحي (طن)
