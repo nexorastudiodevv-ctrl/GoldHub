@@ -954,6 +954,28 @@ onValue(articlesRef, (snapshot) => {
             <div class="p-6">
                 <h3 class="text-xl font-bold mb-2 text-slate-100">${art.title}</h3>
                 <p class="text-slate-400 text-sm line-clamp-2">${art.summary || 'اقرأ المزيد حول هذا الموضوع...'}</p>
+                <!-- أزرار المشاركة على بطاقة المقال -->
+                <div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-800" onclick="event.stopPropagation()">
+                    <span class="text-[9px] text-slate-500 font-bold">مشاركة:</span>
+                    <button onclick="shareArticle('${id}', 'facebook')" class="text-[#1877F2] hover:bg-[#1877F2]/10 p-1.5 rounded-lg transition" title="مشاركة على فيسبوك">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </button>
+                    <button onclick="shareArticle('${id}', 'twitter')" class="text-slate-400 hover:bg-slate-600/20 p-1.5 rounded-lg transition" title="مشاركة على تويتر">
+                        <i class="fa-brands fa-x-twitter"></i>
+                    </button>
+                    <button onclick="shareArticle('${id}', 'linkedin')" class="text-[#0A66C2] hover:bg-[#0A66C2]/10 p-1.5 rounded-lg transition" title="مشاركة على لينكدإن">
+                        <i class="fa-brands fa-linkedin-in"></i>
+                    </button>
+                    <button onclick="shareArticle('${id}', 'whatsapp')" class="text-green-400 hover:bg-green-600/10 p-1.5 rounded-lg transition" title="مشاركة عبر واتساب">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </button>
+                    <button onclick="shareArticle('${id}', 'telegram')" class="text-[#229ED9] hover:bg-[#229ED9]/10 p-1.5 rounded-lg transition" title="مشاركة عبر تيليجرام">
+                        <i class="fa-brands fa-telegram"></i>
+                    </button>
+                    <button onclick="shareArticle('${id}', 'copy')" class="text-cyan-400 hover:bg-cyan-500/10 p-1.5 rounded-lg transition" title="نسخ الرابط">
+                        <i class="fa-solid fa-link"></i>
+                    </button>
+                </div>
             </div>
         </div>`;
 
