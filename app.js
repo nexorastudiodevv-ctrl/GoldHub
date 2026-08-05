@@ -960,19 +960,19 @@ onValue(articlesRef, (snapshot) => {
 <button onclick="shareArticle('facebook', '${id}')" class="text-[#1877F2] hover:bg-[#1877F2]/10 p-1.5 rounded-lg transition" title="مشاركة على فيسبوك">
                         <i class="fa-brands fa-facebook-f"></i>
                     </button>
-                    <button onclick="shareArticle('${id}', 'twitter')" class="text-slate-400 hover:bg-slate-600/20 p-1.5 rounded-lg transition" title="مشاركة على تويتر">
+                    <button onclick="shareArticle('twitter', '${id}')" class="text-slate-400 hover:bg-slate-600/20 p-1.5 rounded-lg transition" title="مشاركة على تويتر">
                         <i class="fa-brands fa-x-twitter"></i>
                     </button>
-                    <button onclick="shareArticle('${id}', 'linkedin')" class="text-[#0A66C2] hover:bg-[#0A66C2]/10 p-1.5 rounded-lg transition" title="مشاركة على لينكدإن">
+                    <button onclick="shareArticle('linkedin', '${id}')" class="text-[#0A66C2] hover:bg-[#0A66C2]/10 p-1.5 rounded-lg transition" title="مشاركة على لينكدإن">
                         <i class="fa-brands fa-linkedin-in"></i>
                     </button>
-                    <button onclick="shareArticle('${id}', 'whatsapp')" class="text-green-400 hover:bg-green-600/10 p-1.5 rounded-lg transition" title="مشاركة عبر واتساب">
+                    <button onclick="shareArticle('whatsapp', '${id}')" class="text-green-400 hover:bg-green-600/10 p-1.5 rounded-lg transition" title="مشاركة عبر واتساب">
                         <i class="fa-brands fa-whatsapp"></i>
                     </button>
-                    <button onclick="shareArticle('${id}', 'telegram')" class="text-[#229ED9] hover:bg-[#229ED9]/10 p-1.5 rounded-lg transition" title="مشاركة عبر تيليجرام">
+                    <button onclick="shareArticle('telegram', '${id}')" class="text-[#229ED9] hover:bg-[#229ED9]/10 p-1.5 rounded-lg transition" title="مشاركة عبر تيليجرام">
                         <i class="fa-brands fa-telegram"></i>
                     </button>
-                    <button onclick="shareArticle('${id}', 'copy')" class="text-cyan-400 hover:bg-cyan-500/10 p-1.5 rounded-lg transition" title="نسخ الرابط">
+                    <button onclick="shareArticle('copy', '${id}')" class="text-cyan-400 hover:bg-cyan-500/10 p-1.5 rounded-lg transition" title="نسخ الرابط">
                         <i class="fa-solid fa-link"></i>
                     </button>
                 </div>
@@ -2059,16 +2059,18 @@ window.openArticleModal = (id) => {
 };
 
 // مشاركة المقال الحالي على منصات التواصل الاجتماعي (فيسبوك / تويتر)
-window.shareArticle = (platform) => {
-    const art = allArticlesData[currentArticleId];
+window.shareArticle = (platform, articleId) => {
+    // إذا تم تمرير معرف مقال (من أزرار البطاقة)، استخدمه؛ وإلا استخدم currentArticleId (من المودال)
+    const targetId = articleId || currentArticleId;
+    const art = allArticlesData[targetId];
     if (!art) {
         showToast("عذراً، لم يتم العثور على المقال المطلوب للمشاركة");
         return;
     }
 
-    // بناء رابط المقال (يشير إلى الصفحة الرئيسية مع معرّف المقال في التجزئة)
+// بناء رابط المقال (يشير إلى الصفحة الرئيسية مع معرّف المقال في التجزئة)
     const baseUrl = window.location.origin + (window.location.pathname.includes('index.html') ? '/index.html' : '/');
-    const articleUrl = encodeURIComponent(`${baseUrl}#article-${currentArticleId}`);
+    const articleUrl = encodeURIComponent(`${baseUrl}#article-${targetId}`);
     const articleTitle = encodeURIComponent(art.title);
     const shareText = encodeURIComponent(`📰 ${art.title}`);
     const hashtags = 'ذهب,Gold,أسعار_الذهب';
