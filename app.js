@@ -957,7 +957,7 @@ onValue(articlesRef, (snapshot) => {
                 <!-- أزرار المشاركة على بطاقة المقال -->
                 <div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-800" onclick="event.stopPropagation()">
                     <span class="text-[9px] text-slate-500 font-bold">مشاركة:</span>
-                    <button onclick="shareArticle('${id}', 'facebook')" class="text-[#1877F2] hover:bg-[#1877F2]/10 p-1.5 rounded-lg transition" title="مشاركة على فيسبوك">
+<button onclick="shareArticle('facebook', '${id}')" class="text-[#1877F2] hover:bg-[#1877F2]/10 p-1.5 rounded-lg transition" title="مشاركة على فيسبوك">
                         <i class="fa-brands fa-facebook-f"></i>
                     </button>
                     <button onclick="shareArticle('${id}', 'twitter')" class="text-slate-400 hover:bg-slate-600/20 p-1.5 rounded-lg transition" title="مشاركة على تويتر">
