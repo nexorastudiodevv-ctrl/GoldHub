@@ -403,9 +403,11 @@ html {
           top: calc(env(safe-area-inset-top, 0px));
         }
       }
-      @media (min-width: 768px) and (supports (top: env(safe-area-inset-top))) {
-        #marketTabs {
-          top: 1rem;
+      @media (min-width: 768px) {
+        @supports (top: env(safe-area-inset-top)) {
+          #marketTabs {
+            top: 1rem;
+          }
         }
       }
 
