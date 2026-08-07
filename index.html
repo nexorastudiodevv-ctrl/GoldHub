@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0"
     />
+
 
     <!-- فرض التحويل إلى HTTPS برمجياً لضمان الأمان وعمل الـ PWA -->
     <script>
@@ -38,7 +39,7 @@
     </title>
 
     <!-- تحسينات محركات البحث SEO -->
-    <!-- كود التحقق من Google Search Console -->
+      <p></p>
     <meta name="google-site-verification" content="koMNskUZdHnl7zPEWCdZLn-SY6LXB129msWgCkjRvQM" />
 
     <meta
@@ -393,11 +394,22 @@ html {
       #marketTabs {
         top: 0;
       }
+      @media (min-width: 768px) {
+        #marketTabs {
+          top: 1rem;
+        }
+      }
       @supports (top: env(safe-area-inset-top)) {
         #marketTabs {
           top: calc(env(safe-area-inset-top, 0px));
         }
       }
+      @media (min-width: 768px) and (supports (top: env(safe-area-inset-top))) {
+        #marketTabs {
+          top: 1rem;
+        }
+      }
+
       /* زر التنقل العائم يتفادى شريط التنقل السفلي والمنطقة الآمنة */
       #scrollToTopBottomBtn {
         bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
@@ -437,8 +449,14 @@ html {
 
       /* تحسين وضوح اللوجو على الشاشات عالية الدقة (High DPI) */
       .high-res-logo {
-        image-rendering: -webkit-optimize-contrast; /* لمتصفحات Chrome و Safari */
-        image-rendering: crisp-edges;
+        image-rendering: -webkit-optimize-contrast; /* لمتصفحات Chrome و Safari و Edge 79+ */
+        image-rendering:         <a
+          href="https://t.me/YourHandle"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10"
+          aria-label="قناتنا على تيليجرام"
+        >;
         -ms-interpolation-mode: bicubic; /* لمتصفحات Edge القديمة */
         backface-visibility: hidden;
         transform: translateZ(0); /* تفعيل تسريع العتاد للحصول على نعومة أفضل */
@@ -468,9 +486,13 @@ html {
       [id^="making-"] {
         min-height: 1.25rem;
       }
-      /* 3. حجز مساحة لقائمة العملات قبل تعبئتها برمجياً */
+      /* 3. حجز مساحة لقائمة العملات قبل تعبئتها برمجياً (مطابقة للحد الأقصى للقائمة) */
       #currencyList {
-        min-height: 320px;
+        min-height: 500px;
+      }
+      /* 3b. حجز مساحة ثابتة لصف العملة لتقليل تغيّر التخطيط عند إعادة الرسم */
+      #currencyList > div {
+        min-height: 54px;
       }
       /* 4. حجز مساحة السعر الرئيسي للذهب */
       #mainGoldPrice {
@@ -484,11 +506,49 @@ html {
         min-width: 1em;
         text-align: center;
       }
-      /* 6. حجز مساحة لأيقونات الأعلام في قائمة العملات */
+      /* 6. حجز مساحة لأيقونات الأعلام في قائمة العملات (منع تغيّر الأبعاد أثناء التحميل) */
       #currencyList img {
         width: 32px;
         height: 24px;
+        aspect-ratio: 4 / 3;
         object-fit: cover;
+      }
+      /* 7. حجز مساحة للصور الخارجية عموماً لمنع تغيّر التخطيط */
+      img[width][height] {
+        aspect-ratio: auto;
+      }
+      /* 8. إخفاء المحتوى الموجود تحت ثنية الشاشة (Below the Fold) عن المتصفح حتى الحاجة إليه */
+      #newsSection,
+      #articlesSection,
+      #latestArticlesHome,
+      #historicalSection,
+      #nearbySection,
+      #aboutSection,
+      #contactSection,
+      #privacySection,
+      #faqSection {
+        content-visibility: auto;
+        contain-intrinsic-size: auto 600px;
+      }
+      /* 9. حجز مساحة للقوائم الديناميكية المعبأة برمجياً */
+      #newsList,
+      #articlesList,
+      #latestArticlesList,
+      #historicalTableBody,
+      #adminArticlesList {
+        min-height: 120px;
+      }
+      /* 10. حجز مساحة للرسم البياني والخرائط قبل التحميل */
+      #goldChart {
+        min-height: 192px;
+      }
+      #map {
+        min-height: 300px;
+      }
+      /* 11. منع تغيّر التخطيط بسبب إخفاء/إظهار الأقسام عند تبديل التبويبات */
+      #currencyConverterContainer,
+      #currencyListContainer {
+        contain: layout style;
       }
     </style>
 
@@ -825,6 +885,9 @@ html {
               type="number"
               id="alertThreshold"
               placeholder="مثلاً 2355"
+              data-webmcp-tool="price_alert"
+              data-webmcp-field="threshold"
+              data-webmcp-label="قيمة تنبيه السعر"
               class="w-full bg-slate-900/80 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white focus:outline-none focus:border-cyan-500/40"
               aria-label="قيمة تنبيه السعر"
             />
@@ -884,6 +947,7 @@ html {
           >
             <i class="fa-brands fa-facebook-f text-lg"></i>
           </a>
+          
           <a
             href="https://twitter.com/yourprofile"
             href="https://x.com/YourHandle"
@@ -1009,6 +1073,8 @@ html {
                 type="text"
                 id="searchInput"
                 placeholder="ابحث عن عملة أو عيار..."
+                data-webmcp-field="search_query"
+                data-webmcp-label="البحث عن عملة أو عيار"
                 class="w-full bg-slate-900/60 border border-slate-800 rounded-xl py-2 ps-10 pe-4 text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition"
               />
             </div>
@@ -1195,7 +1261,7 @@ html {
                 ></span>
                 <button id="unitToggleBtn" class="ms-4 text-[11px] bg-slate-800/40 px-2 py-1 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800/60">عرض بالجرام</button>
               </p>
-              <div class="flex items-baseline gap-4 mb-6">
+              <div class="flex items-baseline gap-4 mb-
                 <span
                   id="mainGoldPrice"
                   class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight transition-all duration-500"
@@ -1653,6 +1719,9 @@ html {
                     type="number"
                     id="amountInput"
                     value="1000"
+                    data-webmcp-tool="currency_converter"
+                    data-webmcp-field="amount"
+                    data-webmcp-label="المبلغ المراد تحويله"
                     class="w-full bg-slate-900/80 border border-slate-800 rounded-xl py-2 px-3 text-sm text-white font-mono focus:outline-none focus:border-cyan-500/40"
                     aria-label="المبلغ المراد تحويله"
                   />
@@ -1667,6 +1736,8 @@ html {
                   >
                   <select
                     id="targetCurrency"
+                    data-webmcp-field="target_currency"
+                    data-webmcp-label="العملة المستهدفة للتحويل"
                     class="w-full bg-slate-900/80 border border-slate-800 rounded-xl py-2 px-3 text-sm text-slate-300 focus:outline-none focus:border-cyan-500/40"
                     aria-label="العملة المستهدفة للتحويل"
                   >
@@ -2223,7 +2294,8 @@ html {
       aria-modal="true"
       aria-labelledby="mobileMoreModalTitle"
     >
-      <div class="glass-panel w-full p-6 rounded-t-3xl space-y-4 animate-slide-up">
+      <div class="glass-panel w-full p-6 rounded-t-3xl space-y-4 animate-slide-up safe-bottom-modal">
+
         <div class="flex justify-between items-center border-b border-slate-800 pb-4">
           <h2 id="mobileMoreModalTitle" class="text-xl font-bold text-white">المزيد من الخيارات</h2>
           <button
@@ -2858,13 +2930,20 @@ html {
             يرجى تسجيل الدخول لتعديل الأسعار
           </p>
         </div>
-        <form id="loginForm" class="space-y-4">
+        <form
+          id="loginForm"
+          class="space-y-4"
+          data-webmcp-tool="login_admin"
+          data-webmcp-name="تسجيل دخول المدير"
+        >
           <label for="loginEmail" class="sr-only">البريد الإلكتروني</label>
           <input
             type="email"
             id="loginEmail"
             placeholder="البريد الإلكتروني"
             required
+            data-webmcp-field="email"
+            data-webmcp-label="البريد الإلكتروني"
             class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white outline-none focus:border-cyan-500/50"
           />
           <label for="loginPassword" class="sr-only">كلمة المرور</label>
@@ -2873,6 +2952,8 @@ html {
             id="loginPassword"
             placeholder="كلمة المرور"
             required
+            data-webmcp-field="password"
+            data-webmcp-label="كلمة المرور"
             class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white outline-none focus:border-cyan-500/50"
           />
           <div class="text-right">

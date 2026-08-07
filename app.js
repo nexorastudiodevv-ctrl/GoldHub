@@ -515,8 +515,14 @@ function renderCurrencies() {
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button class="text-lg p-1 focus:outline-none" onclick="toggleFavoriteCurrency('${code}')">
-                        <i class="${starIconClass}"></i>
+                    <button
+                        class="text-lg p-1 focus:outline-none"
+                        onclick="toggleFavoriteCurrency('${code}')"
+                        aria-label="${isFavorite ? `إزالة ${code} من المفضلة` : `إضافة ${code} إلى المفضلة`}"
+                        aria-pressed="${isFavorite}"
+                        title="${isFavorite ? `إزالة ${code} من المفضلة` : `إضافة ${code} إلى المفضلة`}"
+                    >
+                        <i class="${starIconClass}" aria-hidden="true"></i>
                     </button>
                     <div class="text-sm font-mono font-bold text-cyan-400 group-hover:scale-105 transition-transform">${rate.toFixed(2)}</div>
                 </div>
