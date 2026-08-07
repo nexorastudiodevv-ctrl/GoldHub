@@ -840,6 +840,37 @@ function updateChart(newPrice) {
     goldChart.update('none'); // تحديث الرسم بدون أنميشن (Mode: none) لتوفير موارد الجهاز
 }
 
+// دالة تحديث معاينة المقال المباشرة (تُستدعى عند الكتابة أو عند تحديث الأسعار)
+function updateLivePreview() {
+    const container = domElements.articlePreviewContainer;
+    if (!container) return;
+
+    const title = document.getElementById('articleTitle')?.value || "";
+    const image = document.getElementById('articleImage')?.value || "";
+    const content = (typeof quill !== 'undefined' && quill) ? quill.getText(0, 150).trim() : "";
+
+    // إن لم توجد بيانات مقال، نعرض رسالة توجيهية
+    if (!title && !content) {
+        container.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-6">اكتب عنواناً ومحتوى المقال لعرض المعاينة هنا...</p>`;
+        return;
+    }
+
+    const summary = content ? (content.slice(0, 120) + (content.length > 120 ? "..." : "")) : "اقرأ المزيد حول هذا الموضوع...";
+    container.innerHTML = `
+        <div class="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden hover:border-cyan-500/50 transition-all group">
+            <div class="relative overflow-hidden h-40">
+                ${image
+                    ? `<img src="${image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="${title}" loading="lazy" onerror="this.onerror=null;this.outerHTML='<div class="w-full h-full flex items-center justify-center bg-slate-800/40"><span class="text-4xl">📰</span></div>'">`
+                    : `<div class="w-full h-full flex items-center justify-center bg-slate-800/40"><span class="text-4xl">📰</span></div>`}
+            </div>
+            <div class="p-5">
+                <h4 class="text-base font-bold mb-2 text-slate-100">${title || "عنوان المقال"}</h4>
+                <p class="text-slate-400 text-xs leading-relaxed">${summary}</p>
+            </div>
+        </div>
+    `;
+}
+
 // مستمع Firebase لقراءة سعر الأونصة اليدوي وتطبيقه على الموقع
 // يعرض السعر الأحدث حسب التوقيت بين الـ API واليدوي
 onValue(pricesRef, (snapshot) => {
@@ -1722,7 +1753,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     [{ 'direction': 'rtl' }]]
             }
         });
+
+        // تحديث المعاينة الحية فوراً عند تغيير محتوى المحرر
+        quill.on('text-change', updateLivePreview);
     }
+
+    // تحديث المعاينة الحية أثناء كتابة عنوان المقال أو تغيير صورته
+    document.getElementById('articleTitle')?.addEventListener('input', updateLivePreview);
+    document.getElementById('articleImage')?.addEventListener('input', updateLivePreview);
 
     // معالجة تسجيل الدخول للمدير
     document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
