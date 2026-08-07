@@ -28,6 +28,8 @@
   "browserslist": [
     "defaults",
     "not ie 11",
-    "not edge <= 147"
+    "not edge <= 147",
+    "not ios_saf <= 26.5",
+    "not safari <= 26.5"
   ]
 }

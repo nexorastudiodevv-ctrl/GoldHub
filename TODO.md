@@ -1,11 +1,10 @@
-# AI Agent Audit Fixes - Progress Tracker
+# TODO - إصلاح أخطاء HTML في index.html
 
-## Steps
-
-- [ ] 1. Fix CLS (Cumulative Layout Shift) in index.html CSS
-- [ ] 2. Fix Accessibility: favorite button aria-label in app.js
-- [ ] 3. Fix Accessibility: duplicate href attributes in index.html
-- [ ] 4. Add WebMCP form annotations to index.html
-- [ ] 5. Add WebMCP attributes to dynamic content in app.js
-- [ ] 6. Create `.well-known/webmcp.json` manifest
-- [ ] 7. Create `llms.txt` file
+## المهام
+- [ ] 1. إزالة وسم `<p></p>` العائم داخل `<head>`
+- [ ] 2. إصلاح CSS المكسور في `.high-res-logo` (تابع `<a>` داخل خاصية image-rendering)
+- [ ] 3. إصلاح سمة الفئة غير المكتملة `mb-` في `<div>` سعر الذهب
+- [ ] 4. إزالة سمات `href` المكررة في روابط تويتر/X في الشريط الجانبي
+- [ ] 5. إزالة سمات `href` المكررة في روابط تيليجرام في الشريط الجانبي
+- [ ] 6. إزالة سمات `href` المكررة في روابط تويتر/X في التذييل
+- [ ] 7. إزالة سمات `href` المكررة في روابط تيليجرام في التذييل
