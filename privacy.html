@@ -2,7 +2,10 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0"
+    />
     <title>سياسة الخصوصية | GoldHub</title>
     <meta
       name="description"
@@ -21,13 +24,16 @@
         --accent: #06b6d4;
         --border: rgba(148, 163, 184, 0.2);
       }
-      * { box-sizing: border-box; }
+* { box-sizing: border-box; }
+      html { overflow-x: hidden; }
       body {
         margin: 0;
+        min-height: 100dvh;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         background: linear-gradient(135deg, var(--bg) 0%, #05070c 100%);
         color: var(--text);
         line-height: 1.8;
+        overflow-x: hidden;
       }
       .container {
         max-width: 900px;
@@ -40,6 +46,50 @@
         border-radius: 24px;
         padding: 32px;
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+      }
+      @media (max-width: 480px) {
+        .container { padding: 32px 16px 64px; }
+        .card { padding: 20px; border-radius: 18px; }
+        a { word-break: break-all; }
+      }
+
+      /* ===== تحسينات شاملة لشاشات الهواتف ===== */
+      html {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+      a, button {
+        touch-action: manipulation;
+      }
+      /* أهداف لمس مريحة للروابط على الهواتف */
+      .back, a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+      }
+      .back { margin-top: 0; }
+      /* دعم المنطقة الآمنة للهواتف ذات النوتش وشريط اللمس */
+      .container {
+        padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+      }
+      @media (min-width: 768px) {
+        .container { padding-bottom: 80px; }
+      }
+      /* تحسين قراءة النصوص على الشاشات الصغيرة */
+      @media (max-width: 480px) {
+        body { font-size: 15px; }
+        h1 { font-size: 22px; }
+        h2 { font-size: 18px; }
+      }
+      /* شاشات صغيرة جداً (أقل من 360 بكسل) */
+      @media (max-width: 359px) {
+        .container { padding: 24px 12px 56px; }
+        .card { padding: 16px; border-radius: 16px; }
+        h1 { font-size: 20px; }
+        h2 { font-size: 17px; }
       }
       h1, h2 { color: #fff; }
       a { color: var(--accent); }

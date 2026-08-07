@@ -1,10 +1,10 @@
-# TODO - إضافة أزرار مشاركة المقالات (فيسبوك، تويتر، لينكدإن، واتساب، تيليجرام، نسخ الرابط)
+# TODO: تحسين استجابة الموقع لجميع شاشات الهواتف (Mobile Responsiveness)
 
 ## Steps
-
-1. [x] Edit `index.html`: Add share buttons row (فيسبوك، تويتر، لينكدإن، واتساب، تيليجرام، نسخ الرابط) inside the article modal `#articleModal`.
-2. [x] Edit `app.js`:
-   - Add `currentArticleId` variable.
-   - Update `openArticleModal` to store the current article ID and display image/date.
-   - Add `window.shareArticle(platform)` function that opens the appropriate share popup/link with the article title & URL.
-3. [ ] Test the share buttons in the browser.
+- [x] 1. إضافة breakpoint `xs: 480px` في `tailwind.config.js`
+- [x] 2. إضافة CSS للهواتف في `<style>` داخل `index.html` (المناطق الآمنة، أحجام اللمس، منع التجاوز)
+- [x] 3. تحسين استجابة الهيدر (h1 + أدوات التحكم + البحث) على الهواتف
+- [x] 4. تحسين شريط التنقل السفلي للهواتف (الحجم + المنطقة الآمنة)
+- [x] 5. تحسين شريط التبويبات الثابت وأحجام أزرار اللمس
+- [x] 6. ضبط زر التنقل للأعلى/للأسفل ليتفادى شريط التنقل السفلي
+- [x] 7. تحسينات بسيطة لـ `contact.html` و `privacy.html` للشاشات الصغيرة

@@ -308,7 +308,7 @@
         }
       }
       .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
-      /* تحسينات إضافية للهواتف الصغيرة جداً */
+/* تحسينات إضافية للهواتف الصغيرة جداً */
       @media (max-width: 380px) {
         .mobile-nav-text {
           display: none;
@@ -321,6 +321,101 @@
           padding-right: 1rem;
         }
       }
+
+      /* ===== تحسينات شاملـة لجميع شاشات الهواتف (Mobile-First) ===== */
+html {
+        overflow-x: hidden;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+      body {
+        min-height: 100dvh;
+      }
+      /* إزالة التمييز الأزرق عند النقر على الهواتف */
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+      button, a, select, input, [role="button"] {
+        touch-action: manipulation;
+      }
+      /* منع تجاوز المحتوى أفقياً على الهواتف */
+      img, canvas, video, svg {
+        max-width: 100%;
+        height: auto;
+      }
+
+      /* تصغير فقاعات الخلفية المتحركة على الهواتف لتقليل الحمل ومنع التجاوز */
+      @media (max-width: 640px) {
+        .bg-blob {
+          width: 250px;
+          height: 250px;
+          filter: blur(60px);
+        }
+      }
+
+      /* تحسينات الشاشات الصغيرة جداً (أقل من 320 بكسل) */
+      @media (max-width: 359px) {
+        .container-pad {
+          padding-left: 0.75rem !important;
+          padding-right: 0.75rem !important;
+        }
+        [id^="price-"] {
+          font-size: 1rem !important;
+        }
+      }
+
+      /* ضمان ارتفاع كافٍ لأزرار اللمس على الهواتف */
+      @media (max-width: 640px) {
+        .market-tab-btn {
+          min-height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        #mobileBottomNav a,
+        #mobileBottomNav button {
+          min-height: 48px;
+        }
+        .mobile-nav-icon {
+          font-size: 1.4rem;
+        }
+      }
+
+      /* دعم المنطقة الآمنة (Safe Area) للهواتف ذات النوتش وشريط اللمس */
+      .safe-bottom {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        #mobileBottomNav {
+          padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+        }
+      }
+      #marketTabs {
+        top: 0;
+      }
+      @supports (top: env(safe-area-inset-top)) {
+        #marketTabs {
+          top: calc(env(safe-area-inset-top, 0px));
+        }
+      }
+      /* زر التنقل العائم يتفادى شريط التنقل السفلي والمنطقة الآمنة */
+      #scrollToTopBottomBtn {
+        bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+      }
+      @media (min-width: 768px) {
+        #scrollToTopBottomBtn {
+          bottom: 2rem;
+        }
+      }
+      /* نافذة التنبيه المنبثقة تتجنب المنطقة الآمنة العلوية */
+      #alertToast {
+        top: calc(0.75rem + env(safe-area-inset-top, 0px));
+      }
+      /* تحسين نافذة المزيد للهواتف مع المنطقة الآمنة */
+      .safe-bottom-modal {
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+      }
+
       .hide-scrollbar::-webkit-scrollbar {
         display: none;
       }
@@ -850,15 +945,15 @@
         <header
           class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 py-2 sm:pb-4 border-b border-slate-800"
         >
-          <div>
-            <h1 class="text-2xl font-bold text-white">سوق المال المباشر - أسعار الذهب والعملات اليوم</h1>
+<div>
+            <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-white leading-snug">سوق المال المباشر - أسعار الذهب والعملات اليوم</h1>
             <p class="text-xs text-slate-400 mt-1">
               تحديثات فورية لأسعار الذهب العالمية والمعادن مقابل العملات
             </p>
           </div>
-          <div class="flex items-center gap-4 w-full sm:w-auto">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
             <!-- اختيار عملة العرض والتحديد التلقائي -->
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
               <!-- زر تبديل اللغة -->
               <button
                 id="langToggle"
@@ -2079,7 +2174,8 @@
 
     <!-- 3. شريط التنقل السفلي للهواتف (Mobile Bottom Nav) -->
     <!-- يظهر فقط في الشاشات الصغيرة لضمان سهولة الوصول للروابط -->
-    <nav
+<nav
+      id="mobileBottomNav"
       class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-800 z-50 flex justify-around items-center py-2 px-1 shadow-2xl overflow-x-auto hide-scrollbar"
     >
       <a
