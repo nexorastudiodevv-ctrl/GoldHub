@@ -121,27 +121,12 @@
     <!-- تحسينات الأداء المتقدمة -->
     <link rel="dns-prefetch" href="https://open.er-api.com" />
     <link rel="dns-prefetch" href="https://www.gstatic.com" />
-<!-- تضمين مكتبة أيقونات FontAwesome (تحميل غير مانع للعرض) -->
-    <link
-      rel="preload"
-      as="style"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
+<!-- تضمين مكتبة أيقونات FontAwesome (رابط واحد مبسّط) -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       crossorigin="anonymous"
-      media="print"
-      onload="this.media='all'"
     />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        crossorigin="anonymous"
-      />
-    </noscript>
     <!-- كود Google AdSense الرئيسي (استبدل CA-PUB-ID بمعرفك الخاص) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4360758752869014" crossorigin="anonymous"></script>
 
@@ -570,15 +555,31 @@
           <div
             class="w-10 h-10 shrink-0 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/30 text-cyan-400 text-xl glow-cyan"
           >
-            <img
-              src="icon.webp"
-              alt="شعار GoldHub - أسعار الذهب والعملات الحية"
-              class="w-6 h-6 object-contain high-res-logo"
+<svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 64 64"
+              class="w-6 h-6 high-res-logo"
               width="24"
               height="24"
-              decoding="async"
-              fetchpriority="high"
-            />
+              role="img"
+              aria-label="شعار GoldHub - أسعار الذهب والعملات الحية"
+            >
+              <defs>
+                <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#fbbf24"/>
+                  <stop offset="0.5" stop-color="#f59e0b"/>
+                  <stop offset="1" stop-color="#d97706"/>
+                </linearGradient>
+                <linearGradient id="coinGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#fde68a"/>
+                  <stop offset="1" stop-color="#f59e0b"/>
+                </linearGradient>
+              </defs>
+              <circle cx="32" cy="32" r="28" fill="url(#coinGrad)" stroke="url(#goldGrad)" stroke-width="3"/>
+              <circle cx="32" cy="32" r="20" fill="none" stroke="#b45309" stroke-width="1.5" opacity="0.6"/>
+              <path d="M37 24a9 9 0 1 0 0 14" fill="none" stroke="#92400e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M37 24h5v5" fill="none" stroke="#92400e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </div>
           <div
             class="sidebar-text overflow-hidden transition-opacity duration-300"

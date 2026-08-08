@@ -1,23 +1,18 @@
-# TODO — إصلاح مشكلة تغيّر التخطيط (CLS)
+# Performance Optimization TODO
 
-## الهدف
-تقليل نتيجة Cumulative Layout Shift من **0.531** إلى أقل من **0.1** لتحسين أداء PageSpeed.
+## Step 1 — Logo / FontAwesome / Service Worker (in progress)
+- [ ] 1. Create lightweight `icon.svg` (replace 2MB `icon.webp`)
+- [ ] 2. Update `index.html`:
+  - [ ] Embed inline SVG logo in sidebar (replace `icon.webp`)
+  - [ ] Remove duplicate FontAwesome `<link>` tags; keep one non-render-blocking
+  - [ ] Clean up unused legacy scripts
+- [ ] 3. Update `sw.js`:
+  - [ ] Fix stale `dist/output.css` → `styles.css`
+  - [ ] Stale-While-Revalidate caching strategy for static assets
 
-## أسباب التغيّر (تحليل)
-- [x] عناصر أسعار العيارات (`#price-24k/21k/18k/14k/12k`) تبدأ فارغة ثم تُملأ بالأسعار
-- [x] قائمة العملات (`#currencyList`) تبدأ بـ 3 عناصر فقط ثم تُستبدل بعشرات العملات
-- [x] السعر الرئيسي للذهب `#mainGoldPrice` يتغير عرضه عند التحديث
-- [x] أيقونات FontAwesome تُحمَّل متأخرة (media="print") مما يغيّر التخطيط
-- [x] صور أعلام العملات بدون أبعاد محجوزة (width/height)
+## Step 2 — Cache headers & reflow
+- [ ] 4. Add cache headers in `firebase.json`
+- [ ] 5. Fix forced reflow in `app.js` (`switchMarketTab`)
 
-## الخطوات التفصيلية
-- [ ] إضافة CSS في `index.html` لحجز مساحات ثابتة:
-  - `min-height` لعناصر `[id^="price-"]`
-  - `min-height` لعناصر `[id^="making-"]`
-  - `min-height` لحاوية `#currencyList`
-  - `min-width` للسعر الرئيسي `#mainGoldPrice`
-  - `min-width: 1em` لأيقونات FontAwesome
-- [ ] إضافة `width` و `height` لصور أعلام العملات في `app.js`
-- [ ] التحقق من الشفرة بعد التعديل (اختبار محلي)
-- [ ] الرفع إلى GitHub (`main`)
-
+## Step 3 — Lazy-load heavy libraries
+- [ ] 6. Lazy-load Leaflet & Quill only when sections open
