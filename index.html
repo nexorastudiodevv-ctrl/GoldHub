@@ -23,8 +23,8 @@
     <!-- سياسة أمان المحتوى (CSP) للحماية من هجمات XSS ورفع مستوى الأمان -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self' https:;
-      script-src 'self' https://pagead2.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://cdn.tailwindcss.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com https://*.google.com https://ep2.adtrafficquality.google 'unsafe-inline' 'unsafe-eval'; 
+content="default-src 'self' https:;
+      script-src 'self' https://pagead2.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com https://*.google.com https://ep2.adtrafficquality.google 'unsafe-inline' 'unsafe-eval';
       style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline'; 
       img-src 'self' data: blob: https: https://pagead2.googlesyndication.com; 
       connect-src 'self' https: wss: https://*.firebaseio.com wss://*.firebaseio.com; 
@@ -113,8 +113,9 @@
     <link rel="apple-touch-icon" href="./icon.png" />
     <link rel="shortcut icon" href="./icon.png" type="image/png" />
     
-<!-- استخدام Tailwind CDN لضمان عمل التنسيق مباشرة في بيئة التطوير -->
-    <script src="https://cdn.tailwindcss.com" defer></script>
+<!-- ملف CSS المولد النهائي (Tailwind v4) مع التحميل المسبق لتحسين الرندر -->
+    <link rel="preload" href="dist/output.css" as="style" />
+    <link rel="stylesheet" href="dist/output.css" />
 
     <meta name="theme-color" content="#090f1c" />
 
@@ -325,8 +326,7 @@
       /* ===== تحسينات شاملـة لجميع شاشات الهواتف (Mobile-First) ===== */
 html {
         overflow-x: hidden;
-        -webkit-text-size-adjust: 100%;
-        text-size-adjust: 100%;
+-webkit-text-size-adjust: 100%;
       }
       body {
         min-height: 100dvh;

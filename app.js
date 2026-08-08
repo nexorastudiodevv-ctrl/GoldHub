@@ -35,6 +35,14 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const analytics = getAnalytics(app);
 const messaging = getMessaging(app);
+
+// إتاحة أدوات Firebase للوصول العام حتى تعمل السكربتات المُستدعاة ديناميكياً مع قاعدة البيانات
+window.firebaseApp = app;
+window.auth = auth;
+window.db = db;
+window.messaging = messaging;
+window.firebaseConfig = firebaseConfig;
+
 const pricesRef = ref(db, 'market_prices');
 const historyRef = ref(db, 'price_history');
 const articlesRef = ref(db, 'articles');
@@ -772,6 +780,94 @@ function updateCaratPrices(ozPrice) {
     };
 }
 
+// ===== أدوات التحميل الديناميكي (Lazy Loading) =====
+const LAZY_LIBS = {
+    chartJs:   'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js',
+    leafletJs: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+    leafletCss: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+    quillJs:   'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js',
+    quillCss:  'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css'
+};
+
+/** تحميل سكربت واحد ديناميكياً مع منع التكرار */
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[data-lazy-src="${src}"]`)) return resolve();
+        const script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+        script.setAttribute('data-lazy-src', src);
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('فشل تحميل: ' + src));
+        document.head.appendChild(script);
+    });
+}
+
+/** تحميل ورقة أنماط واحدة ديناميكياً مع منع التكرار */
+function loadStyle(src) {
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`link[data-lazy-href="${src}"]`)) return resolve();
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = src;
+        link.setAttribute('data-lazy-href', src);
+        link.onload = () => resolve();
+        link.onerror = () => reject(new Error('فشل تحميل Style: ' + src));
+        document.head.appendChild(link);
+    });
+}
+
+/** تهيئة الرسم البياني فقط عند اقتراب المستخدم من قسم الذهب */
+function initChartLazy() {
+    const chartCanvas = document.getElementById('goldChart');
+    if (!chartCanvas) return;
+
+    // في حال عدم دعم IntersectionObserver، قم بالتحميل الفوري
+    if (typeof IntersectionObserver === 'undefined') {
+        if (typeof Chart !== 'undefined') { try { initChart(); } catch (e) { console.error('⚠️ Chart init:', e); } }
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                loadScript(LAZY_LIBS.chartJs)
+                    .then(() => { if (typeof Chart !== 'undefined') initChart(); })
+                    .catch(err => console.error('⚠️ فشل تحميل Chart.js:', err));
+                observer.disconnect();
+            }
+        });
+    }, { rootMargin: '200px' });
+    observer.observe(chartCanvas);
+}
+
+/** مساعد: تحميل Leaflet ثم تهيئة الخريطة (يُستدعى عند فتح قسم "صرافة قريبة") */
+function ensureLeaflet() {
+    return Promise.all([
+        loadStyle(LAZY_LIBS.leafletCss),
+        loadScript(LAZY_LIBS.leafletJs)
+    ]).then(() => {
+        if (typeof L !== 'undefined') initMap();
+    }).catch(err => console.error('⚠️ فشل تحميل Leaflet:', err));
+}
+
+/** تهيئة الخريطة فقط عند ظهور حاوية الخريطة على الشاشة */
+function initMapLazy() {
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
+    if (typeof IntersectionObserver === 'undefined') { ensureLeaflet(); return; }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                ensureLeaflet();
+                observer.disconnect();
+            }
+        });
+    }, { rootMargin: '300px' });
+    observer.observe(mapEl);
+}
+
 function initChart() {
     const ctx = document.getElementById('goldChart').getContext('2d');
     const gradient = ctx.createLinearGradient(0, 0, 0, 200);
@@ -1251,8 +1347,8 @@ const sections = ['goldSection', 'currencySection', 'articlesSection', 'aboutSec
         document.getElementById('latestArticlesHome')?.classList.add('hidden');
     }
 
-    if (sectionName === 'nearby') {
-        initMap();
+if (sectionName === 'nearby') {
+        ensureLeaflet();
     }
 
     // تحديث الحالة النشطة في أزرار التنقل للهواتف
@@ -1314,14 +1410,18 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c; // المسافة بالكيلومتر
 }
 
-// تعريف أيقونة مخصصة لمكاتب الصرافة
-const exchangeIcon = L.divIcon({
-    className: 'custom-exchange-icon', // يمكن استخدام هذه الفئة لتخصيص إضافي في CSS
-    html: '<div class="bg-cyan-500/80 border border-cyan-500 rounded-full w-8 h-8 flex items-center justify-center text-white text-sm shadow-lg"><i class="fa-solid fa-money-bill-transfer"></i></div>',
-    iconSize: [32, 32], // حجم الأيقونة
-    iconAnchor: [16, 32], // نقطة ارتكاز الأيقونة (أسفل المنتصف)
-    popupAnchor: [0, -32] // نقطة ظهور النافذة المنبثقة بالنسبة لنقطة الارتكاز
-});
+// أيقونة مخصصة لمكاتب الصرافة — تُنشأ بشكل كسول بعد تحميل Leaflet
+let exchangeIcon = null;
+function initExchangeIcon() {
+    if (exchangeIcon || typeof L === 'undefined') return;
+    exchangeIcon = L.divIcon({
+        className: 'custom-exchange-icon', // يمكن استخدام هذه الفئة لتخصيص إضافي في CSS
+        html: '<div class="bg-cyan-500/80 border border-cyan-500 rounded-full w-8 h-8 flex items-center justify-center text-white text-sm shadow-lg"><i class="fa-solid fa-money-bill-transfer"></i></div>',
+        iconSize: [32, 32], // حجم الأيقونة
+        iconAnchor: [16, 32], // نقطة ارتكاز الأيقونة (أسفل المنتصف)
+        popupAnchor: [0, -32] // نقطة ظهور النافذة المنبثقة بالنسبة لنقطة الارتكاز
+    });
+}
 // --- منطق الخريطة ---
 let initialUserLat = 0; // لتخزين خط العرض الأولي للمستخدم/مصر
 let initialUserLon = 0; // لتخزين خط الطول الأولي للمستخدم/مصر
@@ -1359,6 +1459,8 @@ async function initMap() {
 }
 
 function setupMap(lat, lon, zoom = 14) {
+    // تهيئة أيقونة مكاتب الصرافة بعد تحميل Leaflet
+    initExchangeIcon();
     leafletMap = L.map('map', { scrollWheelZoom: false }).setView([lat, lon], zoom);
     // إنشاء pane مخصص لطبقة التسميات لضمان ظهورها فوق كل شيء آخر (بما في ذلك العلامات)
     leafletMap.createPane('labelsPane');
@@ -1534,8 +1636,10 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTranslations();
         // 1. بناء القوائم أولاً
         renderConverterOptions();
-        // 2. تهيئة الرسم البياني
-        if (typeof Chart !== 'undefined') initChart();
+        // 2. تهيئة الرسم البياني بشكل كسول (لا يُحمَّل Chart.js حتى يظهر الرسم)
+        initChartLazy();
+        // تهيئة الخريطة بشكل كسول (لا يُحمَّل Leaflet حتى تدخل حاوية الخريطة الشاشة)
+        initMapLazy();
         // 3. تحديث واجهة المستخدم والحسابات
         updateUI();
         handleScrollToTopBottom();
@@ -1919,7 +2023,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('map').innerHTML = "";
         if (domElements.nearbyExchangesList) domElements.nearbyExchangesList.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-10">جاري البحث عن مكاتب قريبة...</p>';
         // إعادة تهيئة الخريطة والبحث عن المكاتب في الموقع الأولي
-        initMap();
+        ensureLeaflet();
     });
 
     // حفظ الأسعار يدوياً إلى Firebase

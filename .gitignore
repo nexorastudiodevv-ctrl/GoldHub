@@ -1,5 +1,66 @@
-# ملفات وإعدادات VS Code
-.vscode/
+# ===== Node.js / npm =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# ملفات مؤقتة أو مكررة (إذا كانت Icon.png مجرد تكرار)
+# ===== ملفات CSS المُولّدة (اختياري) =====
+# لاحظ: dist/output.css يُنشأ من input.css عبر Tailwind CLI v4
+# يجب رفعه إلى المستودع لأن الموقع static يعتمد عليه مباشرة
+# *.css.map
+
+# ===== ملفات وإعدادات VS Code =====
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ===== أنظمة التشغيل =====
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.dll
+*.exe
+*.msi
+
+# ===== ملفات مؤقتة أو مكررة =====
 Icon.png
+Icon.webp
+*.log
+*.tmp
+*.temp
+*.bak
+.~lock.*#
+
+# ===== Firebase / FCM =====
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+config/firebase/
+serviceAccountKey.json
+service-account.json
+*.serviceaccount.json
+
+# ===== PWA / Service Worker caches =====
+workbox-config.js
+workbox-*.js
+sw-precache*
+precache-manifest.*
+
+# ===== ملفات البيئة والحساسة =====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# ===== أدوات التحليل والتقارير =====
+pagespeed_after_optimization.html
+WEBSITE_REPORT.md
+COMPLETION_REPORT.md
+</content>
