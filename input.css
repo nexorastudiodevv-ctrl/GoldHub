@@ -1,28 +1,5 @@
-/* Tailwind CSS v4 - ملف الإدخال */
 @import "tailwindcss";
-
-/* ===== نقل إعدادات tailwind.config.js إلى @theme (نظام v4) ===== */
-@theme {
-  /* الشاشات المخصصة */
-  --breakpoint-xs: 480px;
-
-  /* الألوان المخصصة (إن وجدت مستقبلاً) */
-  /* مثال:
-  --color-brand: #06b6d4;
-  */
-}
-
-/* ===== إعدادات مخصصة إضافية ===== */
-@layer base {
-html {
-    -webkit-text-size-adjust: 100%;
-    -moz-text-size-adjust: 100%;
-    scroll-behavior: smooth;
-  }
-
-  /* ضمان عدم اختفاء الخطوط أثناء التحميل - font-display: swap */
-  body {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  }
-}
-
+@source "./index.html";
+@source "./app.js";
+@source "./contact.html";
+@source "./privacy.html";
