@@ -1,0 +1,12 @@
+سبب الخطأ:
+- الكود يستورد firebase-admin/app لكن الحزمة غير موجودة داخل dependencies.
+- عند النشر (Vercel/Serverless) لا تكون الحزم غير المُضافة في package.json متاحة، فيفشل الاستيراد.
+
+الإصلاح المقترح:
+1) إضافة firebase-admin إلى package.json ضمن dependencies.
+2) تشغيل npm install لتحديث package-lock.json.
+3) إعادة النشر.
+
+ملاحظة مهمة:
+- في حال كان مشروعك يستخدم النوع "type": "commonjs" فبعض إعدادات التوافق قد تحتاج مراجعة، لكن الخطأ الحالي أساسًا بسبب عدم وجود firebase-admin.
+

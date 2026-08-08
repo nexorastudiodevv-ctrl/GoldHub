@@ -1,0 +1,37 @@
+{
+  "rules": {
+    "market_prices": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'alfaydahmd02@gmail.com' && auth.token.email_verified === true",
+      ".validate": "newData.hasChildren(['gold', 'silver', 'rates', 'lastUpdated'])",
+      "gold": {
+        ".validate": "newData.isNumber() && newData.val() > 0"
+      },
+      "silver": {
+        ".validate": "newData.isNumber() && newData.val() > 0"
+      },
+      "silverCarats": {
+        "s999": { ".validate": "newData.isNumber() && newData.val() > 0" },
+        "s925": { ".validate": "newData.isNumber() && newData.val() > 0" },
+        "s900": { ".validate": "newData.isNumber() && newData.val() > 0" },
+        "s800": { ".validate": "newData.isNumber() && newData.val() > 0" }
+      },
+      "lastUpdated": {
+        ".validate": "newData.isNumber()"
+      },
+      "rates": {
+        "$currency": {
+          ".validate": "newData.isNumber() && newData.val() > 0"
+        }
+      }
+    },
+    "articles": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'alfaydahmd02@gmail.com' && auth.token.email_verified === true",
+      "$article_id": {
+        ".validate": "newData.hasChildren(['title', 'content', 'date'])"
+      }
+    },
+    "$other": { ".read": false, ".write": false }
+  }
+}
