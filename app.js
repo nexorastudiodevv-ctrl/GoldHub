@@ -35,10 +35,19 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const analytics = getAnalytics(app);
 const messaging = getMessaging(app);
+
+// إتاحة أدوات Firebase للوصول العام حتى تعمل السكربتات المُستدعاة ديناميكياً مع قاعدة البيانات
+window.firebaseApp = app;
+window.auth = auth;
+window.db = db;
+window.messaging = messaging;
+window.firebaseConfig = firebaseConfig;
+
 const pricesRef = ref(db, 'market_prices');
 const historyRef = ref(db, 'price_history');
 const articlesRef = ref(db, 'articles');
 let editArticleId = null;
+let currentArticleId = null;
 let allArticlesData = {};
 let quill;
 
@@ -514,8 +523,14 @@ function renderCurrencies() {
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button class="text-lg p-1 focus:outline-none" onclick="toggleFavoriteCurrency('${code}')">
-                        <i class="${starIconClass}"></i>
+                    <button
+                        class="text-lg p-1 focus:outline-none"
+                        onclick="toggleFavoriteCurrency('${code}')"
+                        aria-label="${isFavorite ? `إزالة ${code} من المفضلة` : `إضافة ${code} إلى المفضلة`}"
+                        aria-pressed="${isFavorite}"
+                        title="${isFavorite ? `إزالة ${code} من المفضلة` : `إضافة ${code} إلى المفضلة`}"
+                    >
+                        <i class="${starIconClass}" aria-hidden="true"></i>
                     </button>
                     <div class="text-sm font-mono font-bold text-cyan-400 group-hover:scale-105 transition-transform">${rate.toFixed(2)}</div>
                 </div>
@@ -765,6 +780,94 @@ function updateCaratPrices(ozPrice) {
     };
 }
 
+// ===== أدوات التحميل الديناميكي (Lazy Loading) =====
+const LAZY_LIBS = {
+    chartJs:   'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js',
+    leafletJs: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+    leafletCss: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+    quillJs:   'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js',
+    quillCss:  'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css'
+};
+
+/** تحميل سكربت واحد ديناميكياً مع منع التكرار */
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[data-lazy-src="${src}"]`)) return resolve();
+        const script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+        script.setAttribute('data-lazy-src', src);
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('فشل تحميل: ' + src));
+        document.head.appendChild(script);
+    });
+}
+
+/** تحميل ورقة أنماط واحدة ديناميكياً مع منع التكرار */
+function loadStyle(src) {
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`link[data-lazy-href="${src}"]`)) return resolve();
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = src;
+        link.setAttribute('data-lazy-href', src);
+        link.onload = () => resolve();
+        link.onerror = () => reject(new Error('فشل تحميل Style: ' + src));
+        document.head.appendChild(link);
+    });
+}
+
+/** تهيئة الرسم البياني فقط عند اقتراب المستخدم من قسم الذهب */
+function initChartLazy() {
+    const chartCanvas = document.getElementById('goldChart');
+    if (!chartCanvas) return;
+
+    // في حال عدم دعم IntersectionObserver، قم بالتحميل الفوري
+    if (typeof IntersectionObserver === 'undefined') {
+        if (typeof Chart !== 'undefined') { try { initChart(); } catch (e) { console.error('⚠️ Chart init:', e); } }
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                loadScript(LAZY_LIBS.chartJs)
+                    .then(() => { if (typeof Chart !== 'undefined') initChart(); })
+                    .catch(err => console.error('⚠️ فشل تحميل Chart.js:', err));
+                observer.disconnect();
+            }
+        });
+    }, { rootMargin: '200px' });
+    observer.observe(chartCanvas);
+}
+
+/** مساعد: تحميل Leaflet ثم تهيئة الخريطة (يُستدعى عند فتح قسم "صرافة قريبة") */
+function ensureLeaflet() {
+    return Promise.all([
+        loadStyle(LAZY_LIBS.leafletCss),
+        loadScript(LAZY_LIBS.leafletJs)
+    ]).then(() => {
+        if (typeof L !== 'undefined') initMap();
+    }).catch(err => console.error('⚠️ فشل تحميل Leaflet:', err));
+}
+
+/** تهيئة الخريطة فقط عند ظهور حاوية الخريطة على الشاشة */
+function initMapLazy() {
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
+    if (typeof IntersectionObserver === 'undefined') { ensureLeaflet(); return; }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                ensureLeaflet();
+                observer.disconnect();
+            }
+        });
+    }, { rootMargin: '300px' });
+    observer.observe(mapEl);
+}
+
 function initChart() {
     const ctx = document.getElementById('goldChart').getContext('2d');
     const gradient = ctx.createLinearGradient(0, 0, 0, 200);
@@ -837,6 +940,37 @@ function updateChart(newPrice) {
     timeLabels.push(new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }));
     if (priceHistory.length > 20) { priceHistory.shift(); timeLabels.shift(); }
     goldChart.update('none'); // تحديث الرسم بدون أنميشن (Mode: none) لتوفير موارد الجهاز
+}
+
+// دالة تحديث معاينة المقال المباشرة (تُستدعى عند الكتابة أو عند تحديث الأسعار)
+function updateLivePreview() {
+    const container = domElements.articlePreviewContainer;
+    if (!container) return;
+
+    const title = document.getElementById('articleTitle')?.value || "";
+    const image = document.getElementById('articleImage')?.value || "";
+    const content = (typeof quill !== 'undefined' && quill) ? quill.getText(0, 150).trim() : "";
+
+    // إن لم توجد بيانات مقال، نعرض رسالة توجيهية
+    if (!title && !content) {
+        container.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-6">اكتب عنواناً ومحتوى المقال لعرض المعاينة هنا...</p>`;
+        return;
+    }
+
+    const summary = content ? (content.slice(0, 120) + (content.length > 120 ? "..." : "")) : "اقرأ المزيد حول هذا الموضوع...";
+    container.innerHTML = `
+        <div class="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden hover:border-cyan-500/50 transition-all group">
+            <div class="relative overflow-hidden h-40">
+                ${image
+                    ? `<img src="${image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="${title}" loading="lazy" onerror="this.onerror=null;this.outerHTML='<div class="w-full h-full flex items-center justify-center bg-slate-800/40"><span class="text-4xl">📰</span></div>'">`
+                    : `<div class="w-full h-full flex items-center justify-center bg-slate-800/40"><span class="text-4xl">📰</span></div>`}
+            </div>
+            <div class="p-5">
+                <h4 class="text-base font-bold mb-2 text-slate-100">${title || "عنوان المقال"}</h4>
+                <p class="text-slate-400 text-xs leading-relaxed">${summary}</p>
+            </div>
+        </div>
+    `;
 }
 
 // مستمع Firebase لقراءة سعر الأونصة اليدوي وتطبيقه على الموقع
@@ -953,6 +1087,28 @@ onValue(articlesRef, (snapshot) => {
             <div class="p-6">
                 <h3 class="text-xl font-bold mb-2 text-slate-100">${art.title}</h3>
                 <p class="text-slate-400 text-sm line-clamp-2">${art.summary || 'اقرأ المزيد حول هذا الموضوع...'}</p>
+                <!-- أزرار المشاركة على بطاقة المقال -->
+                <div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-800" onclick="event.stopPropagation()">
+                    <span class="text-[9px] text-slate-500 font-bold">مشاركة:</span>
+<button onclick="shareArticle('facebook', '${id}')" class="text-[#1877F2] hover:bg-[#1877F2]/10 p-1.5 rounded-lg transition" title="مشاركة على فيسبوك">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </button>
+                    <button onclick="shareArticle('twitter', '${id}')" class="text-slate-400 hover:bg-slate-600/20 p-1.5 rounded-lg transition" title="مشاركة على تويتر">
+                        <i class="fa-brands fa-x-twitter"></i>
+                    </button>
+                    <button onclick="shareArticle('linkedin', '${id}')" class="text-[#0A66C2] hover:bg-[#0A66C2]/10 p-1.5 rounded-lg transition" title="مشاركة على لينكدإن">
+                        <i class="fa-brands fa-linkedin-in"></i>
+                    </button>
+                    <button onclick="shareArticle('whatsapp', '${id}')" class="text-green-400 hover:bg-green-600/10 p-1.5 rounded-lg transition" title="مشاركة عبر واتساب">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </button>
+                    <button onclick="shareArticle('telegram', '${id}')" class="text-[#229ED9] hover:bg-[#229ED9]/10 p-1.5 rounded-lg transition" title="مشاركة عبر تيليجرام">
+                        <i class="fa-brands fa-telegram"></i>
+                    </button>
+                    <button onclick="shareArticle('copy', '${id}')" class="text-cyan-400 hover:bg-cyan-500/10 p-1.5 rounded-lg transition" title="نسخ الرابط">
+                        <i class="fa-solid fa-link"></i>
+                    </button>
+                </div>
             </div>
         </div>`;
 
@@ -1191,8 +1347,8 @@ const sections = ['goldSection', 'currencySection', 'articlesSection', 'aboutSec
         document.getElementById('latestArticlesHome')?.classList.add('hidden');
     }
 
-    if (sectionName === 'nearby') {
-        initMap();
+if (sectionName === 'nearby') {
+        ensureLeaflet();
     }
 
     // تحديث الحالة النشطة في أزرار التنقل للهواتف
@@ -1254,14 +1410,18 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c; // المسافة بالكيلومتر
 }
 
-// تعريف أيقونة مخصصة لمكاتب الصرافة
-const exchangeIcon = L.divIcon({
-    className: 'custom-exchange-icon', // يمكن استخدام هذه الفئة لتخصيص إضافي في CSS
-    html: '<div class="bg-cyan-500/80 border border-cyan-500 rounded-full w-8 h-8 flex items-center justify-center text-white text-sm shadow-lg"><i class="fa-solid fa-money-bill-transfer"></i></div>',
-    iconSize: [32, 32], // حجم الأيقونة
-    iconAnchor: [16, 32], // نقطة ارتكاز الأيقونة (أسفل المنتصف)
-    popupAnchor: [0, -32] // نقطة ظهور النافذة المنبثقة بالنسبة لنقطة الارتكاز
-});
+// أيقونة مخصصة لمكاتب الصرافة — تُنشأ بشكل كسول بعد تحميل Leaflet
+let exchangeIcon = null;
+function initExchangeIcon() {
+    if (exchangeIcon || typeof L === 'undefined') return;
+    exchangeIcon = L.divIcon({
+        className: 'custom-exchange-icon', // يمكن استخدام هذه الفئة لتخصيص إضافي في CSS
+        html: '<div class="bg-cyan-500/80 border border-cyan-500 rounded-full w-8 h-8 flex items-center justify-center text-white text-sm shadow-lg"><i class="fa-solid fa-money-bill-transfer"></i></div>',
+        iconSize: [32, 32], // حجم الأيقونة
+        iconAnchor: [16, 32], // نقطة ارتكاز الأيقونة (أسفل المنتصف)
+        popupAnchor: [0, -32] // نقطة ظهور النافذة المنبثقة بالنسبة لنقطة الارتكاز
+    });
+}
 // --- منطق الخريطة ---
 let initialUserLat = 0; // لتخزين خط العرض الأولي للمستخدم/مصر
 let initialUserLon = 0; // لتخزين خط الطول الأولي للمستخدم/مصر
@@ -1299,6 +1459,8 @@ async function initMap() {
 }
 
 function setupMap(lat, lon, zoom = 14) {
+    // تهيئة أيقونة مكاتب الصرافة بعد تحميل Leaflet
+    initExchangeIcon();
     leafletMap = L.map('map', { scrollWheelZoom: false }).setView([lat, lon], zoom);
     // إنشاء pane مخصص لطبقة التسميات لضمان ظهورها فوق كل شيء آخر (بما في ذلك العلامات)
     leafletMap.createPane('labelsPane');
@@ -1474,8 +1636,10 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTranslations();
         // 1. بناء القوائم أولاً
         renderConverterOptions();
-        // 2. تهيئة الرسم البياني
-        if (typeof Chart !== 'undefined') initChart();
+        // 2. تهيئة الرسم البياني بشكل كسول (لا يُحمَّل Chart.js حتى يظهر الرسم)
+        initChartLazy();
+        // تهيئة الخريطة بشكل كسول (لا يُحمَّل Leaflet حتى تدخل حاوية الخريطة الشاشة)
+        initMapLazy();
         // 3. تحديث واجهة المستخدم والحسابات
         updateUI();
         handleScrollToTopBottom();
@@ -1699,7 +1863,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     [{ 'direction': 'rtl' }]]
             }
         });
+
+        // تحديث المعاينة الحية فوراً عند تغيير محتوى المحرر
+        quill.on('text-change', updateLivePreview);
     }
+
+    // تحديث المعاينة الحية أثناء كتابة عنوان المقال أو تغيير صورته
+    document.getElementById('articleTitle')?.addEventListener('input', updateLivePreview);
+    document.getElementById('articleImage')?.addEventListener('input', updateLivePreview);
 
     // معالجة تسجيل الدخول للمدير
     document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
@@ -1852,7 +2023,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('map').innerHTML = "";
         if (domElements.nearbyExchangesList) domElements.nearbyExchangesList.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-10">جاري البحث عن مكاتب قريبة...</p>';
         // إعادة تهيئة الخريطة والبحث عن المكاتب في الموقع الأولي
-        initMap();
+        ensureLeaflet();
     });
 
     // حفظ الأسعار يدوياً إلى Firebase
@@ -2011,13 +2182,95 @@ function updateArticleSchema(article) {
 window.openArticleModal = (id) => {
     const art = allArticlesData[id];
     if (art) {
+        currentArticleId = id;
         domElements.articleModalTitle.textContent = art.title;
+
+        // ضبط صورة المقال وتاريخه إن وجدا
+        if (domElements.articleModalImage) {
+            if (art.image) {
+                domElements.articleModalImage.src = art.image;
+                domElements.articleModalImage.classList.remove('hidden');
+            } else {
+                domElements.articleModalImage.classList.add('hidden');
+            }
+        }
+        if (domElements.articleModalDate) {
+            domElements.articleModalDate.textContent = art.date || new Date(art.timestamp).toLocaleDateString('ar-EG') || "";
+        }
+
         domElements.articleModalContent.innerHTML = art.content;
         domElements.articleModal.classList.remove('hidden');
 
         // تحديث البيانات المهيكلة (JSON-LD) فور فتح المقال
         updateArticleSchema(art);
     }
+};
+
+// مشاركة المقال الحالي على منصات التواصل الاجتماعي (فيسبوك / تويتر)
+window.shareArticle = (platform, articleId) => {
+    // إذا تم تمرير معرف مقال (من أزرار البطاقة)، استخدمه؛ وإلا استخدم currentArticleId (من المودال)
+    const targetId = articleId || currentArticleId;
+    const art = allArticlesData[targetId];
+    if (!art) {
+        showToast("عذراً، لم يتم العثور على المقال المطلوب للمشاركة");
+        return;
+    }
+
+// بناء رابط المقال (يشير إلى الصفحة الرئيسية مع معرّف المقال في التجزئة)
+    const baseUrl = window.location.origin + (window.location.pathname.includes('index.html') ? '/index.html' : '/');
+    const articleUrl = encodeURIComponent(`${baseUrl}#article-${targetId}`);
+    const articleTitle = encodeURIComponent(art.title);
+    const shareText = encodeURIComponent(`📰 ${art.title}`);
+    const hashtags = 'ذهب,Gold,أسعار_الذهب';
+
+    let shareUrl = "";
+    if (platform === 'facebook') {
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${articleUrl}`;
+    } else if (platform === 'twitter') {
+        shareUrl = `https://twitter.com/intent/tweet?url=${articleUrl}&text=${shareText}&hashtags=${hashtags}`;
+    } else if (platform === 'linkedin') {
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${articleUrl}`;
+    } else if (platform === 'whatsapp') {
+        shareUrl = `https://api.whatsapp.com/send?text=${shareText}%20${articleUrl}`;
+    } else if (platform === 'telegram') {
+        shareUrl = `https://t.me/share/url?url=${articleUrl}&text=${shareText}`;
+    } else if (platform === 'copy') {
+        // نسخ الرابط مباشرة إلى الحافظة
+        const finalUrl = decodeURIComponent(articleUrl);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(finalUrl).then(() => {
+                showToast("تم نسخ رابط المقال ✅");
+            }).catch(() => {
+                showToast("تعذر نسخ الرابط، انسخه يدوياً: " + finalUrl);
+            });
+        } else {
+            // طريقة بديلة للنسخ في المتصفحات القديمة
+            const tempInput = document.createElement('textarea');
+            tempInput.value = finalUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast("تم نسخ رابط المقال ✅");
+        }
+        return;
+    }
+
+    if (!shareUrl) {
+        showToast("منصة المشاركة غير مدعومة");
+        return;
+    }
+
+    // فتح نافذة المشاركة المنبثقة بحجم مناسب
+    const width = 600;
+    const height = 500;
+    const left = (window.screen.width - width) / 2;
+    const top = (window.screen.height - height) / 2;
+    window.open(
+        shareUrl,
+        'shareArticle',
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    );
 };
 
 function renderAdminArticles(filter = "") {
