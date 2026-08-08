@@ -25,16 +25,16 @@ try {
     console.error("⚠️ Failed to initialize Firebase Messaging in SW:", err);
 }
 
-const CACHE_NAME = 'gold-hub-v6';
+const CACHE_NAME = 'gold-hub-v8';
 const ASSETS = [
     'index.html',
-    'manifest.json',
+    'site.webmanifest',
     'app.js',
     'dist/output.css',
     'icon.png',
     'icon.webp',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    'https://cdn.jsdelivr.net/npm/chart.js',
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
     'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css'

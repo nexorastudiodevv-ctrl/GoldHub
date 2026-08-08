@@ -1,27 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
    <url>
       <loc>https://nexorastudio-eg.com/</loc>
-      <lastmod>2026-05-20</lastmod>
-      <changefreq>always</changefreq>
-      <priority>1.0</priority>
+      <lastmod>2026-08-08</lastmod>
+      <changefreq>hourly</changefreq>
+      <priority>1.00</priority>
    </url>
    <url>
-      <loc>https://nexorastudio-eg.com/?lang=ar</loc>
-      <lastmod>2026-05-20</lastmod>
-      <changefreq>daily</changefreq>
-      <priority>0.8</priority>
+      <loc>https://nexorastudio-eg.com/privacy.html</loc>
+      <lastmod>2026-08-08</lastmod>
+      <changefreq>monthly</changefreq>
+      <priority>0.80</priority>
    </url>
    <url>
-      <loc>https://nexorastudio-eg.com/?lang=en</loc>
-      <lastmod>2026-05-20</lastmod>
-      <changefreq>daily</changefreq>
-      <priority>0.8</priority>
+      <loc>https://nexorastudio-eg.com/terms.html</loc>
+      <lastmod>2026-08-08</lastmod>
+      <changefreq>monthly</changefreq>
+      <priority>0.80</priority>
    </url>
    <url>
-      <loc>https://nexorastudio-eg.com/icon.png</loc>
-      <image:image>
-         <image:loc>https://nexorastudio-eg.com/icon.png</image:loc>
-      </image:image>
+      <loc>https://nexorastudio-eg.com/contact.html</loc>
+      <lastmod>2026-08-08</lastmod>
+      <changefreq>monthly</changefreq>
+      <priority>0.80</priority>
+   </url>
+   <url>
+      <loc>https://nexorastudio-eg.com/qr_visit.html</loc>
+      <lastmod>2026-08-08</lastmod>
+      <changefreq>monthly</changefreq>
+      <priority>0.50</priority>
    </url>
 </urlset>

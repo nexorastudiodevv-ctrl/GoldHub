@@ -1,23 +1,18 @@
-# TODO — إصلاح مشكلة تغيّر التخطيط (CLS)
+# TODO - خطة تحسين أداء الموقع (Tailwind v4 + Lazy Loading)
 
-## الهدف
-تقليل نتيجة Cumulative Layout Shift من **0.531** إلى أقل من **0.1** لتحسين أداء PageSpeed.
+## الخطوات
 
-## أسباب التغيّر (تحليل)
-- [x] عناصر أسعار العيارات (`#price-24k/21k/18k/14k/12k`) تبدأ فارغة ثم تُملأ بالأسعار
-- [x] قائمة العملات (`#currencyList`) تبدأ بـ 3 عناصر فقط ثم تُستبدل بعشرات العملات
-- [x] السعر الرئيسي للذهب `#mainGoldPrice` يتغير عرضه عند التحديث
-- [x] أيقونات FontAwesome تُحمَّل متأخرة (media="print") مما يغيّر التخطيط
-- [x] صور أعلام العملات بدون أبعاد محجوزة (width/height)
-
-## الخطوات التفصيلية
-- [ ] إضافة CSS في `index.html` لحجز مساحات ثابتة:
-  - `min-height` لعناصر `[id^="price-"]`
-  - `min-height` لعناصر `[id^="making-"]`
-  - `min-height` لحاوية `#currencyList`
-  - `min-width` للسعر الرئيسي `#mainGoldPrice`
-  - `min-width: 1em` لأيقونات FontAwesome
-- [ ] إضافة `width` و `height` لصور أعلام العملات في `app.js`
-- [ ] التحقق من الشفرة بعد التعديل (اختبار محلي)
-- [ ] الرفع إلى GitHub (`main`)
-
+- [ ] 1. تحديث `input.css` إلى صيغة Tailwind v4 مع نقل إعدادات `tailwind.config.js` إلى `@theme`
+- [ ] 2. توليد ملف `dist/output.css` النهائي المصغّر بأمر CLI
+- [ ] 3. تعديل `index.html`:
+  - [ ] استبدال سكريبت Tailwind CDN بـ `<link preload>` + `<link stylesheet>`
+  - [ ] إضافة أبعاد ثابتة (min-height/aspect-ratio) لحاويات الخرائط والرسوم البيانية والبطاقات
+  - [ ] تحميل FontAwesome بشكل غير حاجب مع `font-display: swap`
+  - [ ] حذف وسوم CDN لـ Leaflet و Quill (سيتم تحميلها ديناميكياً)
+- [ ] 4. تعديل `app.js`:
+  - [ ] إضافة `loadScript()` و `loadStyle()`
+  - [ ] تحميل Chart.js ديناميكياً بعد أول عرض
+  - [ ] تحميل Leaflet عبر Intersection Observer عند اقتراب قسم الخريطة
+  - [ ] تحويل Firebase Auth إلى Dynamic `import()`
+- [ ] 5. تحديث `sw.js` لمصفوفة الكاش الجديدة (dist/output.css، حذف القديم)
+- [ ] 6. اختبار الموقع محلياً وإعادة قياس الأداء
