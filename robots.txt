@@ -1,7 +1,5 @@
 User-agent: *
 Allow: /
-Allow: /contact.html
-Allow: /privacy.html
 Disallow: /admin/
 Disallow: /temp/
 

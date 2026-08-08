@@ -13,10 +13,10 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "serve": "^14.2.0",
-    "tailwindcss": "^4.3.0"
+    "tailwindcss": "^4.3.0",
+    "serve": "^14.2.0"
   },
   "dependencies": {
-    "@tailwindcss/cli": "^4.3.3"
+    "@tailwindcss/cli": "^4.3.1"
   }
 }
