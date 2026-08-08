@@ -4,9 +4,8 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
     />
-
 
     <!-- فرض التحويل إلى HTTPS برمجياً لضمان الأمان وعمل الـ PWA -->
     <script>
@@ -23,8 +22,8 @@
     <!-- سياسة أمان المحتوى (CSP) للحماية من هجمات XSS ورفع مستوى الأمان -->
     <meta
       http-equiv="Content-Security-Policy"
-content="default-src 'self' https:;
-      script-src 'self' https://pagead2.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com https://*.google.com https://ep2.adtrafficquality.google 'unsafe-inline' 'unsafe-eval';
+      content="default-src 'self' https:;
+      script-src 'self' https://pagead2.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://cdn.tailwindcss.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com https://*.firebaseio.com https://*.google.com https://ep2.adtrafficquality.google 'unsafe-inline' 'unsafe-eval'; 
       style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline'; 
       img-src 'self' data: blob: https: https://pagead2.googlesyndication.com; 
       connect-src 'self' https: wss: https://*.firebaseio.com wss://*.firebaseio.com; 
@@ -38,7 +37,8 @@ content="default-src 'self' https:;
       GoldHub | أسعار الذهب والفضة والعملات لحظة بلحظة - تحديث مباشر
     </title>
 
-<!-- تحسينات محركات البحث SEO -->
+    <!-- تحسينات محركات البحث SEO -->
+    <!-- كود التحقق من Google Search Console -->
     <meta name="google-site-verification" content="koMNskUZdHnl7zPEWCdZLn-SY6LXB129msWgCkjRvQM" />
 
     <meta
@@ -106,16 +106,15 @@ content="default-src 'self' https:;
       content="شعار GoldHub - أسعار الذهب والعملات الحية"
     />
 
-<link rel="manifest" href="site.webmanifest" />
+    <link rel="manifest" href="manifest.json" />
     <!-- الروابط المحسنة لأيقونة الموقع لضمان ظهورها في جوجل -->
     <link rel="icon" type="image/png" sizes="32x32" href="./icon.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="./icon.png" />
     <link rel="apple-touch-icon" href="./icon.png" />
     <link rel="shortcut icon" href="./icon.png" type="image/png" />
     
-<!-- ملف CSS المولد النهائي (Tailwind v4) مع التحميل المسبق لتحسين الرندر -->
-    <link rel="preload" href="dist/output.css" as="style" />
-    <link rel="stylesheet" href="dist/output.css" />
+<!-- استخدام Tailwind CDN لضمان عمل التنسيق مباشرة في بيئة التطوير -->
+    <script src="https://cdn.tailwindcss.com" defer></script>
 
     <meta name="theme-color" content="#090f1c" />
 
@@ -309,7 +308,7 @@ content="default-src 'self' https:;
         }
       }
       .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
-/* تحسينات إضافية للهواتف الصغيرة جداً */
+      /* تحسينات إضافية للهواتف الصغيرة جداً */
       @media (max-width: 380px) {
         .mobile-nav-text {
           display: none;
@@ -322,114 +321,6 @@ content="default-src 'self' https:;
           padding-right: 1rem;
         }
       }
-
-      /* ===== تحسينات شاملـة لجميع شاشات الهواتف (Mobile-First) ===== */
-html {
-        overflow-x: hidden;
--webkit-text-size-adjust: 100%;
-        -moz-text-size-adjust: 100%;
-      }
-      body {
-        min-height: 100dvh;
-      }
-      /* إزالة التمييز الأزرق عند النقر على الهواتف */
-      * {
-        -webkit-tap-highlight-color: transparent;
-      }
-      button, a, select, input, [role="button"] {
-        touch-action: manipulation;
-      }
-      /* منع تجاوز المحتوى أفقياً على الهواتف */
-      img, canvas, video, svg {
-        max-width: 100%;
-        height: auto;
-      }
-
-      /* تصغير فقاعات الخلفية المتحركة على الهواتف لتقليل الحمل ومنع التجاوز */
-      @media (max-width: 640px) {
-        .bg-blob {
-          width: 250px;
-          height: 250px;
-          filter: blur(60px);
-        }
-      }
-
-      /* تحسينات الشاشات الصغيرة جداً (أقل من 320 بكسل) */
-      @media (max-width: 359px) {
-        .container-pad {
-          padding-left: 0.75rem !important;
-          padding-right: 0.75rem !important;
-        }
-        [id^="price-"] {
-          font-size: 1rem !important;
-        }
-      }
-
-      /* ضمان ارتفاع كافٍ لأزرار اللمس على الهواتف */
-      @media (max-width: 640px) {
-        .market-tab-btn {
-          min-height: 44px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        #mobileBottomNav a,
-        #mobileBottomNav button {
-          min-height: 48px;
-        }
-        .mobile-nav-icon {
-          font-size: 1.4rem;
-        }
-      }
-
-      /* دعم المنطقة الآمنة (Safe Area) للهواتف ذات النوتش وشريط اللمس */
-      .safe-bottom {
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-      }
-      @supports (padding-bottom: env(safe-area-inset-bottom)) {
-        #mobileBottomNav {
-          padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
-        }
-      }
-      #marketTabs {
-        top: 0;
-      }
-      @media (min-width: 768px) {
-        #marketTabs {
-          top: 1rem;
-        }
-      }
-      @supports (top: env(safe-area-inset-top)) {
-        #marketTabs {
-          top: calc(env(safe-area-inset-top, 0px));
-        }
-      }
-      @media (min-width: 768px) {
-        @supports (top: env(safe-area-inset-top)) {
-          #marketTabs {
-            top: 1rem;
-          }
-        }
-      }
-
-      /* زر التنقل العائم يتفادى شريط التنقل السفلي والمنطقة الآمنة */
-      #scrollToTopBottomBtn {
-        bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
-      }
-      @media (min-width: 768px) {
-        #scrollToTopBottomBtn {
-          bottom: 2rem;
-        }
-      }
-      /* نافذة التنبيه المنبثقة تتجنب المنطقة الآمنة العلوية */
-      #alertToast {
-        top: calc(0.75rem + env(safe-area-inset-top, 0px));
-      }
-      /* تحسين نافذة المزيد للهواتف مع المنطقة الآمنة */
-      .safe-bottom-modal {
-        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
-      }
-
       .hide-scrollbar::-webkit-scrollbar {
         display: none;
       }
@@ -449,9 +340,9 @@ html {
         background: rgba(6, 182, 212, 0.4);
       }
 
-/* تحسين وضوح اللوجو على الشاشات عالية الدقة (High DPI) */
+      /* تحسين وضوح اللوجو على الشاشات عالية الدقة (High DPI) */
       .high-res-logo {
-        image-rendering: -webkit-optimize-contrast; /* لمتصفحات Chrome و Safari و Edge 79+ */
+        image-rendering: -webkit-optimize-contrast; /* لمتصفحات Chrome و Safari */
         image-rendering: crisp-edges;
         -ms-interpolation-mode: bicubic; /* لمتصفحات Edge القديمة */
         backface-visibility: hidden;
@@ -482,13 +373,9 @@ html {
       [id^="making-"] {
         min-height: 1.25rem;
       }
-      /* 3. حجز مساحة لقائمة العملات قبل تعبئتها برمجياً (مطابقة للحد الأقصى للقائمة) */
+      /* 3. حجز مساحة لقائمة العملات قبل تعبئتها برمجياً */
       #currencyList {
-        min-height: 500px;
-      }
-      /* 3b. حجز مساحة ثابتة لصف العملة لتقليل تغيّر التخطيط عند إعادة الرسم */
-      #currencyList > div {
-        min-height: 54px;
+        min-height: 320px;
       }
       /* 4. حجز مساحة السعر الرئيسي للذهب */
       #mainGoldPrice {
@@ -502,49 +389,11 @@ html {
         min-width: 1em;
         text-align: center;
       }
-      /* 6. حجز مساحة لأيقونات الأعلام في قائمة العملات (منع تغيّر الأبعاد أثناء التحميل) */
+      /* 6. حجز مساحة لأيقونات الأعلام في قائمة العملات */
       #currencyList img {
         width: 32px;
         height: 24px;
-        aspect-ratio: 4 / 3;
         object-fit: cover;
-      }
-      /* 7. حجز مساحة للصور الخارجية عموماً لمنع تغيّر التخطيط */
-      img[width][height] {
-        aspect-ratio: auto;
-      }
-      /* 8. إخفاء المحتوى الموجود تحت ثنية الشاشة (Below the Fold) عن المتصفح حتى الحاجة إليه */
-      #newsSection,
-      #articlesSection,
-      #latestArticlesHome,
-      #historicalSection,
-      #nearbySection,
-      #aboutSection,
-      #contactSection,
-      #privacySection,
-      #faqSection {
-        content-visibility: auto;
-        contain-intrinsic-size: auto 600px;
-      }
-      /* 9. حجز مساحة للقوائم الديناميكية المعبأة برمجياً */
-      #newsList,
-      #articlesList,
-      #latestArticlesList,
-      #historicalTableBody,
-      #adminArticlesList {
-        min-height: 120px;
-      }
-      /* 10. حجز مساحة للرسم البياني والخرائط قبل التحميل */
-      #goldChart {
-        min-height: 192px;
-      }
-      #map {
-        min-height: 300px;
-      }
-      /* 11. منع تغيّر التخطيط بسبب إخفاء/إظهار الأقسام عند تبديل التبويبات */
-      #currencyConverterContainer,
-      #currencyListContainer {
-        contain: layout style;
       }
     </style>
 
@@ -810,7 +659,7 @@ html {
           </button>
 </nav>
 
-<!-- مساحة إعلانية في الشريط الجانبي (وحدة AdSense عمودية) -->
+        <!-- مساحة إعلانية في الشريط الجانبي -->
         <div class="mt-8 sidebar-text">
           <div
             class="glass-panel rounded-xl p-2 border-dashed border-cyan-500/30 text-center"
@@ -818,18 +667,15 @@ html {
             <p class="text-[9px] text-slate-500 mb-2 uppercase tracking-widest">
               إعلان
             </p>
-            <!-- وحدة AdSense - استبدل رقم الفتحة برقم وحدتك من لوحة تحكم Google AdSense -->
-            <ins
-              class="adsbygoogle"
-              style="display:block"
-              data-ad-client="ca-pub-4360758752869014"
-              data-ad-slot="0000000000"
-              data-ad-format="auto"
-              data-full-width-responsive="true"
-            ></ins>
-            <script>
-              (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
+            <div
+              class="bg-slate-900/50 h-40 flex items-center justify-center rounded-lg border border-slate-800"
+              role="img"
+              aria-label="مساحة إعلانية عمودية"
+            >
+              <span class="text-[10px] text-slate-600"
+                >مساحة إعلانية عمودية</span
+              >
+            </div>
           </div>
         </div>
       </div>
@@ -884,9 +730,6 @@ html {
               type="number"
               id="alertThreshold"
               placeholder="مثلاً 2355"
-              data-webmcp-tool="price_alert"
-              data-webmcp-field="threshold"
-              data-webmcp-label="قيمة تنبيه السعر"
               class="w-full bg-slate-900/80 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white focus:outline-none focus:border-cyan-500/40"
               aria-label="قيمة تنبيه السعر"
             />
@@ -946,9 +789,9 @@ html {
           >
             <i class="fa-brands fa-facebook-f text-lg"></i>
           </a>
-          
-<a
+          <a
             href="https://twitter.com/yourprofile"
+            href="https://x.com/YourHandle"
             target="_blank"
             title="تويتر"
             class="text-slate-500 hover:text-cyan-400 transition-all transform hover:scale-110"
@@ -956,8 +799,9 @@ html {
           >
             <i class="fa-brands fa-x-twitter text-lg"></i>
           </a>
-<a
+          <a
             href="https://t.me/yourchannel"
+            href="https://t.me/YourHandle"
             target="_blank"
             title="تيليجرام"
             class="text-slate-500 hover:text-cyan-400 transition-all transform hover:scale-110"
@@ -1006,15 +850,15 @@ html {
         <header
           class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 py-2 sm:pb-4 border-b border-slate-800"
         >
-<div>
-            <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-white leading-snug">سوق المال المباشر - أسعار الذهب والعملات اليوم</h1>
+          <div>
+            <h1 class="text-2xl font-bold text-white">سوق المال المباشر - أسعار الذهب والعملات اليوم</h1>
             <p class="text-xs text-slate-400 mt-1">
               تحديثات فورية لأسعار الذهب العالمية والمعادن مقابل العملات
             </p>
           </div>
-          <div class="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
+          <div class="flex items-center gap-4 w-full sm:w-auto">
             <!-- اختيار عملة العرض والتحديد التلقائي -->
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center gap-2">
               <!-- زر تبديل اللغة -->
               <button
                 id="langToggle"
@@ -1070,8 +914,6 @@ html {
                 type="text"
                 id="searchInput"
                 placeholder="ابحث عن عملة أو عيار..."
-                data-webmcp-field="search_query"
-                data-webmcp-label="البحث عن عملة أو عيار"
                 class="w-full bg-slate-900/60 border border-slate-800 rounded-xl py-2 ps-10 pe-4 text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition"
               />
             </div>
@@ -1258,7 +1100,7 @@ html {
                 ></span>
                 <button id="unitToggleBtn" class="ms-4 text-[11px] bg-slate-800/40 px-2 py-1 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800/60">عرض بالجرام</button>
               </p>
-<div class="flex items-baseline gap-4 mb-1">
+              <div class="flex items-baseline gap-4 mb-6">
                 <span
                   id="mainGoldPrice"
                   class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight transition-all duration-500"
@@ -1382,42 +1224,36 @@ html {
                 </span>
               </div>
 
-<!-- إعلان علوي عريض للموبايل والديسكطوب (وحدة AdSense مستجيبة) -->
+            <!-- إعلان علوي عريض للموبايل والديسكطوب (تم نقله للأسفل في الترتيب البصري) -->
             <div
               class="glass-panel rounded-2xl p-2 text-center border-dashed border-cyan-500/20 order-4"
             >
               <p class="text-[8px] text-slate-500 mb-1">إعلان</p>
-              <!-- وحدة AdSense - استبدل رقم الفتحة برقم وحدتك من لوحة تحكم Google AdSense -->
-              <ins
-                class="adsbygoogle"
-                style="display:block"
-                data-ad-client="ca-pub-4360758752869014"
-                data-ad-slot="0000000000"
-                data-ad-format="auto"
-                data-full-width-responsive="true"
-              ></ins>
-              <script>
-                (adsbygoogle = window.adsbygoogle || []).push({});
-              </script>
+              <div
+                class="w-full bg-slate-900/40 h-16 sm:h-24 flex items-center justify-center rounded-xl border border-slate-800"
+                role="img"
+                aria-label="إعلان مستجيب"
+              >
+                <span class="text-xs text-slate-600"
+                  >إعلان مستجيب (Responsive Ad)</span
+                >
+              </div>
             </div>
 
-<!-- إعلان إضافي تحت أسعار العيارات (وحدة AdSense) -->
+              <!-- إعلان إضافي تحت أسعار العيارات -->
               <div
                 class="sm:col-span-2 md:col-span-3 xl:grid-cols-5 glass-panel rounded-xl p-2 text-center border-dashed border-cyan-500/10"
               >
                 <p class="text-[8px] text-slate-500">إعلان</p>
-                <!-- وحدة AdSense - استبدل رقم الفتحة برقم وحدتك من لوحة تحكم Google AdSense -->
-                <ins
-                  class="adsbygoogle"
-                  style="display:block"
-                  data-ad-client="ca-pub-4360758752869014"
-                  data-ad-slot="0000000000"
-                  data-ad-format="auto"
-                  data-full-width-responsive="true"
-                ></ins>
-                <script>
-                  (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
+                <div
+                  class="w-full bg-slate-900/30 h-16 flex items-center justify-center rounded-lg border border-slate-800"
+                  role="img"
+                  aria-label="إعلان نصي أو صوري"
+                >
+                  <span class="text-[10px] text-slate-600"
+                    >إعلان نصي أو صوري</span
+                  >
+                </div>
               </div>
             </div>
 
@@ -1615,23 +1451,20 @@ html {
                 </span>
               </div>
 
-<!-- إعلان إضافي تحت أسعار المعادن (وحدة AdSense ممتدة) -->
+              <!-- إعلان إضافي تحت أسعار المعادن (ممتد على عرض الشبكة) -->
               <div
                 class="sm:col-span-2 glass-panel rounded-xl p-2 text-center border-dashed border-cyan-500/10"
               >
                 <p class="text-[8px] text-slate-500">إعلان</p>
-                <!-- وحدة AdSense - استبدل رقم الفتحة برقم وحدتك من لوحة تحكم Google AdSense -->
-                <ins
-                  class="adsbygoogle"
-                  style="display:block"
-                  data-ad-client="ca-pub-4360758752869014"
-                  data-ad-slot="0000000000"
-                  data-ad-format="auto"
-                  data-full-width-responsive="true"
-                ></ins>
-                <script>
-                  (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
+                <div
+                  class="w-full bg-slate-900/30 h-16 flex items-center justify-center rounded-lg border border-slate-800"
+                  role="img"
+                  aria-label="إعلان نصي أو صوري"
+                >
+                  <span class="text-[10px] text-slate-600"
+                    >إعلان نصي أو صوري</span
+                  >
+                </div>
               </div>
             </div>
           </div>
@@ -1725,9 +1558,6 @@ html {
                     type="number"
                     id="amountInput"
                     value="1000"
-                    data-webmcp-tool="currency_converter"
-                    data-webmcp-field="amount"
-                    data-webmcp-label="المبلغ المراد تحويله"
                     class="w-full bg-slate-900/80 border border-slate-800 rounded-xl py-2 px-3 text-sm text-white font-mono focus:outline-none focus:border-cyan-500/40"
                     aria-label="المبلغ المراد تحويله"
                   />
@@ -1742,8 +1572,6 @@ html {
                   >
                   <select
                     id="targetCurrency"
-                    data-webmcp-field="target_currency"
-                    data-webmcp-label="العملة المستهدفة للتحويل"
                     class="w-full bg-slate-900/80 border border-slate-800 rounded-xl py-2 px-3 text-sm text-slate-300 focus:outline-none focus:border-cyan-500/40"
                     aria-label="العملة المستهدفة للتحويل"
                   >
@@ -2073,7 +1901,7 @@ html {
                   <i class="fa-solid fa-shield-halved text-cyan-400"></i> سياسة
                   الخصوصية
                 </h3>
-<p class="text-slate-400 mt-2 text-sm">آخر تحديث: 4 أغسطس 2026</p>
+                <p class="text-slate-400 mt-2 text-sm">آخر تحديث: مايو 2024</p>
               </div>
               <div class="space-y-6 text-slate-300 text-sm leading-relaxed">
                 <section class="space-y-3">
@@ -2202,16 +2030,18 @@ html {
             >
               <i class="fa-brands fa-facebook-f text-xl"></i>
             </a>
-<a
+            <a
               href="https://twitter.com/goldhub"
+              href="https://x.com/YourHandle"
               target="_blank"
               class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10"
               aria-label="حسابنا على تويتر"
             >
               <i class="fa-brands fa-x-twitter text-xl"></i>
             </a>
-<a
+            <a
               href="https://t.me/goldhub"
+              href="https://t.me/YourHandle"
               target="_blank"
               class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10"
               aria-label="قناتنا على تيليجرام"
@@ -2228,17 +2058,20 @@ html {
             <p class="text-[10px] text-slate-600 tracking-wider">
               &copy; 2026 جميع الحقوق محفوظة
             </p>
-<div class="flex justify-center gap-3 text-[10px]">
+            <div class="flex justify-center gap-3 text-[10px]">
               <a href="privacy.html" class="text-cyan-400 hover:underline">
                 سياسة الخصوصية
-              </a>
-              <a href="terms.html" class="text-cyan-400 hover:underline">
-                شروط الاستخدام
               </a>
               <a href="contact.html" class="text-cyan-400 hover:underline">
                 اتصل بنا
               </a>
             </div>
+            <a
+              href="privacy.html"
+              class="text-[10px] text-cyan-400 hover:underline"
+            >
+              سياسة الخصوصية
+            </a>
           </div>
         </footer>
       </div>
@@ -2246,8 +2079,7 @@ html {
 
     <!-- 3. شريط التنقل السفلي للهواتف (Mobile Bottom Nav) -->
     <!-- يظهر فقط في الشاشات الصغيرة لضمان سهولة الوصول للروابط -->
-<nav
-      id="mobileBottomNav"
+    <nav
       class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-800 z-50 flex justify-around items-center py-2 px-1 shadow-2xl overflow-x-auto hide-scrollbar"
     >
       <a
@@ -2295,8 +2127,7 @@ html {
       aria-modal="true"
       aria-labelledby="mobileMoreModalTitle"
     >
-      <div class="glass-panel w-full p-6 rounded-t-3xl space-y-4 animate-slide-up safe-bottom-modal">
-
+      <div class="glass-panel w-full p-6 rounded-t-3xl space-y-4 animate-slide-up">
         <div class="flex justify-between items-center border-b border-slate-800 pb-4">
           <h2 id="mobileMoreModalTitle" class="text-xl font-bold text-white">المزيد من الخيارات</h2>
           <button
@@ -2931,20 +2762,13 @@ html {
             يرجى تسجيل الدخول لتعديل الأسعار
           </p>
         </div>
-        <form
-          id="loginForm"
-          class="space-y-4"
-          data-webmcp-tool="login_admin"
-          data-webmcp-name="تسجيل دخول المدير"
-        >
+        <form id="loginForm" class="space-y-4">
           <label for="loginEmail" class="sr-only">البريد الإلكتروني</label>
           <input
             type="email"
             id="loginEmail"
             placeholder="البريد الإلكتروني"
             required
-            data-webmcp-field="email"
-            data-webmcp-label="البريد الإلكتروني"
             class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white outline-none focus:border-cyan-500/50"
           />
           <label for="loginPassword" class="sr-only">كلمة المرور</label>
@@ -2953,8 +2777,6 @@ html {
             id="loginPassword"
             placeholder="كلمة المرور"
             required
-            data-webmcp-field="password"
-            data-webmcp-label="كلمة المرور"
             class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white outline-none focus:border-cyan-500/50"
           />
           <div class="text-right">
@@ -3047,64 +2869,6 @@ html {
             aria-label="إغلاق نافذة المقال"
           >
             <i class="fa-solid fa-xmark text-2xl"></i>
-          </button>
-        </div>
-        <!-- أزرار مشاركة المقال على منصات التواصل الاجتماعي -->
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="text-xs text-slate-400 font-bold">مشاركة المقال:</span>
-          <button
-            onclick="shareArticle('facebook')"
-            class="flex items-center gap-2 text-[11px] font-bold text-white bg-[#1877F2]/20 border border-[#1877F2]/40 px-3 py-1.5 rounded-xl hover:bg-[#1877F2]/40 transition active:scale-95"
-            aria-label="مشاركة المقال على فيسبوك"
-            title="مشاركة على فيسبوك"
-          >
-            <i class="fa-brands fa-facebook-f text-[#1877F2]"></i>
-            فيسبوك
-          </button>
-          <button
-            onclick="shareArticle('twitter')"
-            class="flex items-center gap-2 text-[11px] font-bold text-white bg-slate-500/20 border border-slate-400/40 px-3 py-1.5 rounded-xl hover:bg-slate-500/40 transition active:scale-95"
-            aria-label="مشاركة المقال على تويتر"
-            title="مشاركة على تويتر (إكس)"
-          >
-            <i class="fa-brands fa-x-twitter text-slate-300"></i>
-            تويتر
-          </button>
-          <button
-            onclick="shareArticle('linkedin')"
-            class="flex items-center gap-2 text-[11px] font-bold text-white bg-[#0A66C2]/20 border border-[#0A66C2]/40 px-3 py-1.5 rounded-xl hover:bg-[#0A66C2]/40 transition active:scale-95"
-            aria-label="مشاركة المقال على لينكدإن"
-            title="مشاركة على لينكدإن"
-          >
-            <i class="fa-brands fa-linkedin-in text-[#0A66C2]"></i>
-            لينكدإن
-          </button>
-          <button
-            onclick="shareArticle('whatsapp')"
-            class="flex items-center gap-2 text-[11px] font-bold text-white bg-green-600/20 border border-green-500/40 px-3 py-1.5 rounded-xl hover:bg-green-600/40 transition active:scale-95"
-            aria-label="مشاركة المقال عبر واتساب"
-            title="مشاركة عبر واتساب"
-          >
-            <i class="fa-brands fa-whatsapp text-green-400"></i>
-            واتساب
-          </button>
-          <button
-            onclick="shareArticle('telegram')"
-            class="flex items-center gap-2 text-[11px] font-bold text-white bg-[#229ED9]/20 border border-[#229ED9]/40 px-3 py-1.5 rounded-xl hover:bg-[#229ED9]/40 transition active:scale-95"
-            aria-label="مشاركة المقال عبر تيليجرام"
-            title="مشاركة عبر تيليجرام"
-          >
-            <i class="fa-brands fa-telegram text-[#229ED9]"></i>
-            تيليجرام
-          </button>
-          <button
-            onclick="shareArticle('copy')"
-            class="flex items-center gap-2 text-[11px] font-bold text-white bg-cyan-500/10 border border-cyan-500/40 px-3 py-1.5 rounded-xl hover:bg-cyan-500/30 transition active:scale-95"
-            aria-label="نسخ رابط المقال"
-            title="نسخ رابط المقال"
-          >
-            <i class="fa-solid fa-link text-cyan-400"></i>
-            نسخ الرابط
           </button>
         </div>
         <div class="flex-1 overflow-y-auto px-2 space-y-6">

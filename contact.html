@@ -4,10 +4,7 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>اتصل بنا | GoldHub</title>
     <meta
       name="description"
@@ -26,16 +23,13 @@
         --accent: #06b6d4;
         --border: rgba(148, 163, 184, 0.2);
       }
-* { box-sizing: border-box; }
-      html { overflow-x: hidden; }
+      * { box-sizing: border-box; }
       body {
         margin: 0;
-        min-height: 100dvh;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         background: linear-gradient(135deg, var(--bg) 0%, #05070c 100%);
         color: var(--text);
         line-height: 1.8;
-        overflow-x: hidden;
       }
       .container {
         max-width: 900px;
@@ -48,50 +42,6 @@
         border-radius: 24px;
         padding: 32px;
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
-      }
-      @media (max-width: 480px) {
-        .container { padding: 32px 16px 64px; }
-        .card { padding: 20px; border-radius: 18px; }
-        a { word-break: break-all; }
-      }
-
-      /* ===== تحسينات شاملة لشاشات الهواتف ===== */
-html {
-        -webkit-text-size-adjust: 100%;
-        -moz-text-size-adjust: 100%;
-      }
-      * {
-        -webkit-tap-highlight-color: transparent;
-      }
-      a, button {
-        touch-action: manipulation;
-      }
-      /* أهداف لمس مريحة للروابط على الهواتف */
-      .back, .box a {
-        min-height: 44px;
-        display: inline-flex;
-        align-items: center;
-      }
-      .back { margin-top: 0; }
-      /* دعم المنطقة الآمنة للهواتف ذات النوتش وشريط اللمس */
-      .container {
-        padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-      }
-      @media (min-width: 768px) {
-        .container { padding-bottom: 80px; }
-      }
-      /* تحسين قراءة النصوص على الشاشات الصغيرة */
-      @media (max-width: 480px) {
-        body { font-size: 15px; }
-        h1 { font-size: 22px; }
-        h2 { font-size: 18px; }
-      }
-      /* شاشات صغيرة جداً (أقل من 360 بكسل) */
-      @media (max-width: 359px) {
-        .container { padding: 24px 12px 56px; }
-        .card { padding: 16px; border-radius: 16px; }
-        h1 { font-size: 20px; }
-        .box { padding: 12px 14px; }
       }
       h1, h2 { color: #fff; }
       a { color: var(--accent); }
@@ -125,29 +75,12 @@ html {
           نحن متاحون خلال ساعات العمل الرسمية للاستفسارات والدعم الفني والمحتوى.
         </div>
 
-<div class="box">
+        <div class="box">
           <strong>ملاحظات مهمة:</strong><br />
           إذا كانت رسالتك تتعلق بمحتوى أو إعلانات أو أي مشكلة تقنية، يرجى ذكر التفاصيل
           اللازمة حتى نتمكن من مساعدتك بشكل أسرع وأكثر دقة.
         </div>
       </div>
     </div>
-
-    <!-- تذييل الصفحة (Footer) -->
-    <footer class="bg-gray-900 border-t border-gray-800 py-10" dir="rtl">
-      <div class="max-w-900 mx-auto px-5 text-center space-y-6">
-        <p class="text-sm font-bold tracking-wider text-amber-500">GoldHub</p>
-        <nav class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
-          <a href="/" class="text-gray-400 hover:text-amber-500 transition-colors">الرئيسية</a>
-          <a href="privacy.html" class="text-gray-400 hover:text-amber-500 transition-colors">سياسة الخصوصية</a>
-          <a href="terms.html" class="text-gray-400 hover:text-amber-500 transition-colors">شروط الاستخدام</a>
-          <a href="contact.html" class="text-gray-400 hover:text-amber-500 transition-colors">اتصل بنا</a>
-        </nav>
-        <div class="pt-4 border-t border-gray-800 text-xs text-gray-500 space-y-1">
-          <p>&copy; 2026 GoldHub. جميع الحقوق محفوظة.</p>
-          <p>آخر تحديث للموقع: 4 أغسطس 2026</p>
-        </div>
-      </div>
-    </footer>
   </body>
 </html>
