@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // تهيئة محرر Quill
+// تهيئة محرر Quill
     if (document.getElementById('editor-container')) {
         quill = new Quill('#editor-container', {
             theme: 'snow',
@@ -1700,6 +1700,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // --- المعاينة المباشرة للمقال أثناء الكتابة ---
+    const updatePreviewListener = () => updateLivePreview();
+    document.getElementById('articleTitle')?.addEventListener('input', updatePreviewListener);
+    document.getElementById('articleImage')?.addEventListener('input', updatePreviewListener);
+    if (quill) {
+        quill.on('text-change', updatePreviewListener);
+    }
+    // عرض المعاينة الافتراضية عند فتح الصفحة
+    updateLivePreview();
 
     // معالجة تسجيل الدخول للمدير
     document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
@@ -2061,4 +2071,45 @@ function resetArticleForm() {
     quill.setContents([]);
     document.getElementById('cancelEditBtn').classList.add('hidden');
     document.getElementById('addArticleBtn').textContent = "نشر المقال الآن";
+    updateLivePreview();
+}
+
+// دالة المعاينة المباشرة للمقال أثناء الكتابة في لوحة التحكم
+function updateLivePreview() {
+    const previewContainer = domElements.articlePreviewContainer;
+    if (!previewContainer) return;
+
+    const title = document.getElementById('articleTitle')?.value.trim() || "";
+    const image = document.getElementById('articleImage')?.value.trim() || "";
+    // الحصول على محتوى محرر Quill إن وُجد
+    const contentHTML = (quill && typeof quill.getText === 'function')
+        ? quill.getText(0, 300).trim()
+        : "";
+
+    // في حال كون الحقول فارغة نعرض رسالة إرشادية
+    if (!title && !image && !contentHTML) {
+        previewContainer.innerHTML = `
+            <div class="text-center py-10 text-slate-500 italic text-xs">
+                <i class="fa-solid fa-eye mb-2 block text-xl text-cyan-500/50"></i>
+                اكتب عنوان المقال ورابط الصورة والمحتوى لعرض المعاينة المباشرة هنا
+            </div>`;
+        return;
+    }
+
+    const summary = contentHTML.length > 180 ? contentHTML.slice(0, 180) + "..." : contentHTML;
+
+    previewContainer.innerHTML = `
+        <div class="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden hover:border-cyan-500/50 transition-all group">
+            ${image ? `
+                <div class="relative overflow-hidden h-48">
+                    <img src="${image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="${title || 'معاينة المقال'}" onerror="this.closest('.relative').innerHTML = '<div class=\\'w-full h-full flex items-center justify-center bg-slate-800 text-slate-500 text-xs\\'><i class=\\'fa-solid fa-image text-2xl\\'></i></div>';">
+                </div>` : `
+                <div class="relative overflow-hidden h-48 bg-slate-800/60 flex items-center justify-center">
+                    <i class="fa-solid fa-newspaper text-4xl text-slate-600"></i>
+                </div>`}
+            <div class="p-6">
+                <h3 class="text-xl font-bold mb-2 text-slate-100">${title || 'عنوان المقال'}</h3>
+                <p class="text-slate-400 text-sm line-clamp-2">${summary || 'سيظهر ملخص المقال هنا تلقائياً...'}</p>
+            </div>
+        </div>`;
 }
