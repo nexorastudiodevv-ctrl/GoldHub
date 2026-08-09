@@ -139,8 +139,7 @@
     <!-- كود Google AdSense الرئيسي (استبدل CA-PUB-ID بمعرفك الخاص) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4360758752869014" crossorigin="anonymous"></script>
 
-<!-- تضمين مكتبة Chart.js للرسوم البيانية (تحميل غير مانع للعرض) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js" defer></script>
+  <!-- Chart.js سيتم تحميلها ديناميكيًا عند الحاجة لتقليل وقت التهيئة الأولي -->
     <!-- تضمين مكتبة Leaflet للخرائط (تحميل غير مانع للعرض) -->
     <link
       rel="preload"
@@ -432,6 +431,29 @@
         width: 32px;
         height: 24px;
         object-fit: cover;
+      }
+      /* تأكيد حجز عرض لقيم العملات داخل القائمة وتقليل تغير التخطيط عند التحديث */
+      #currencyList .text-sm.font-mono,
+      #currencyList .currency-rate,
+      #currencyList .currency-value {
+        min-width: 6.5rem;
+        display: inline-block;
+        text-align: right;
+      }
+      /* حجز ارتفاع افتراضي لعناصر القائمة الديناميكية */
+      #currencyList > div {
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      /* ضمان أن المربعات الإعلانية الداخلية لا تقفز عند تحميل محتوى الطرف الثالث */
+      .ad-slot > div {
+        min-height: 120px;
+        min-width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
     </style>
 

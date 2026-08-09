@@ -145,83 +145,88 @@ admin_panel: "لوحة التحكم", about: "من نحن", contact: "اتصل �
 
 let currentLang = localStorage.getItem('site_lang') || 'ar';
 
-// كاش لعناصر DOM
-const domElements = {
-    mainGoldPrice: document.getElementById('mainGoldPrice'),
-    price24k: document.getElementById('price-24k'),
-    price21k: document.getElementById('price-21k'),
-    price18k: document.getElementById('price-18k'),
-    price14k: document.getElementById('price-14k'),
-    price12k: document.getElementById('price-12k'),
-    making24kDisplay: document.getElementById('making-24k-display'),
-    making21kDisplay: document.getElementById('making-21k-display'),
-    making18kDisplay: document.getElementById('making-18k-display'),
-    copperPrice: document.getElementById('copperPrice'),
-    copperTrend: document.getElementById('copperTrend'),
-    manualRefreshBtn: document.getElementById('manualRefreshBtn'),
-    making14kDisplay: document.getElementById('making-14k-display'),
-    making12kDisplay: document.getElementById('making-12k-display'),
-    trend24k: document.getElementById('trend-24k'),
-    trend21k: document.getElementById('trend-21k'),
-    trend18k: document.getElementById('trend-18k'),
-    trend14k: document.getElementById('trend-14k'),
-    trend12k: document.getElementById('trend-12k'),
-    silverPrice: document.getElementById('silverPrice'),
-    platinumPrice: document.getElementById('platinumPrice'),
-    silverTrend: document.getElementById('silverTrend'),
-    platinumTrend: document.getElementById('platinumTrend'),
-    ironEzzPrice: document.getElementById('ironEzzPrice'),
-    ironEzzTrend: document.getElementById('ironEzzTrend'),
-    ironEgyptiansPrice: document.getElementById('ironEgyptiansPrice'),
-    ironEgyptiansTrend: document.getElementById('ironEgyptiansTrend'),
-    ironGarhyPrice: document.getElementById('ironGarhyPrice'),
-    ironGarhyTrend: document.getElementById('ironGarhyTrend'),
-    currencyList: document.getElementById('currencyList'),
-    historicalSection: document.getElementById('historicalSection'),
-    historicalTableBody: document.getElementById('historicalTableBody'),
-    marketTabs: document.getElementById('marketTabs'),
-    nearbySection: document.getElementById('nearbySection'),
-    nearbyExchangesList: document.getElementById('nearbyExchangesList'),
-    conversionResult: document.getElementById('conversionResult'),
-    amountInput: document.getElementById('amountInput'),
-    searchNewAreaBtn: document.getElementById('searchNewAreaBtn'),
-    searchNewAreaText: document.getElementById('searchNewAreaText'),
-    displayCurrency: document.getElementById('displayCurrency'),
-    targetCurrency: document.getElementById('targetCurrency'),
-    apiLogs: document.getElementById('apiLogs'),
-    articleModal: document.getElementById('articleModal'),
-    articleModalTitle: document.getElementById('articleModalTitle'),
-    articleModalImage: document.getElementById('articleModalImage'),
-    articleModalDate: document.getElementById('articleModalDate'),
-    articleModalContent: document.getElementById('articleModalContent'),
-    adminPanel: document.getElementById('adminPanel'),
-    loginModal: document.getElementById('loginModal'),
-    scrollToTopBottomBtn: document.getElementById('scrollToTopBottomBtn'),
-    scrollIcon: document.getElementById('scrollIcon'),
-    searchInput: document.getElementById('searchInput'),
-    notificationsBell: document.getElementById('notificationsBell'),
-    notificationsDropdown: document.getElementById('notificationsDropdown'),
-    notificationsList: document.getElementById('notificationsList'),
-    bellDot: document.getElementById('bellDot'),
-    lastUpdateTime: document.getElementById('lastUpdateTime'),
-    unitToggleBtn: document.getElementById('unitToggleBtn'),
-    goldPriceLabel: document.getElementById('goldPriceLabel'),
-    alertThreshold: document.getElementById('alertThreshold'),
-    setAlertBtn: document.getElementById('setAlertBtn'),
-    soundSelect: document.getElementById('soundSelect'),
-    alertDirection: document.getElementById('alertDirection'), // إضافة عنصر اتجاه التنبيه
-    editorContainer: document.getElementById('editor-container'),
-    articlePreviewContainer: document.getElementById('articlePreviewContainer'),
-    mobileMoreBtn: document.getElementById('mobileMoreBtn'),
-    mobileMoreModal: document.getElementById('mobileMoreModal'),
-    closeMobileMoreModalBtn: document.getElementById('closeMobileMoreModalBtn'),
-    mobileMoreNearbyLink: document.getElementById('mobileMoreNearbyLink'),
-    mobileMoreArticlesLink: document.getElementById('mobileMoreArticlesLink'),
-mobileMoreAdminBtn: document.getElementById('mobileMoreAdminBtn'),
-    mobileMoreFaqLink: document.getElementById('mobileMoreFaqLink'),
-    mobileMoreAboutLink: document.getElementById('mobileMoreAboutLink'),
-    mobileMoreContactLink: document.getElementById('mobileMoreContactLink')
-};
+// كاش لعناصر DOM (مُؤَجَّل لخفض وقت التقييم عند تحميل الوحدة)
+let domElements = {};
+
+function initDomElements() {
+    // تعبئة المرجع للعناصر المطلوبة؛ تستدعى عند DOMContentLoaded
+    domElements = {
+        mainGoldPrice: document.getElementById('mainGoldPrice'),
+        price24k: document.getElementById('price-24k'),
+        price21k: document.getElementById('price-21k'),
+        price18k: document.getElementById('price-18k'),
+        price14k: document.getElementById('price-14k'),
+        price12k: document.getElementById('price-12k'),
+        making24kDisplay: document.getElementById('making-24k-display'),
+        making21kDisplay: document.getElementById('making-21k-display'),
+        making18kDisplay: document.getElementById('making-18k-display'),
+        copperPrice: document.getElementById('copperPrice'),
+        copperTrend: document.getElementById('copperTrend'),
+        manualRefreshBtn: document.getElementById('manualRefreshBtn'),
+        making14kDisplay: document.getElementById('making-14k-display'),
+        making12kDisplay: document.getElementById('making-12k-display'),
+        trend24k: document.getElementById('trend-24k'),
+        trend21k: document.getElementById('trend-21k'),
+        trend18k: document.getElementById('trend-18k'),
+        trend14k: document.getElementById('trend-14k'),
+        trend12k: document.getElementById('trend-12k'),
+        silverPrice: document.getElementById('silverPrice'),
+        platinumPrice: document.getElementById('platinumPrice'),
+        silverTrend: document.getElementById('silverTrend'),
+        platinumTrend: document.getElementById('platinumTrend'),
+        ironEzzPrice: document.getElementById('ironEzzPrice'),
+        ironEzzTrend: document.getElementById('ironEzzTrend'),
+        ironEgyptiansPrice: document.getElementById('ironEgyptiansPrice'),
+        ironEgyptiansTrend: document.getElementById('ironEgyptiansTrend'),
+        ironGarhyPrice: document.getElementById('ironGarhyPrice'),
+        ironGarhyTrend: document.getElementById('ironGarhyTrend'),
+        currencyList: document.getElementById('currencyList'),
+        historicalSection: document.getElementById('historicalSection'),
+        historicalTableBody: document.getElementById('historicalTableBody'),
+        marketTabs: document.getElementById('marketTabs'),
+        nearbySection: document.getElementById('nearbySection'),
+        nearbyExchangesList: document.getElementById('nearbyExchangesList'),
+        conversionResult: document.getElementById('conversionResult'),
+        amountInput: document.getElementById('amountInput'),
+        searchNewAreaBtn: document.getElementById('searchNewAreaBtn'),
+        searchNewAreaText: document.getElementById('searchNewAreaText'),
+        displayCurrency: document.getElementById('displayCurrency'),
+        targetCurrency: document.getElementById('targetCurrency'),
+        apiLogs: document.getElementById('apiLogs'),
+        articleModal: document.getElementById('articleModal'),
+        articleModalTitle: document.getElementById('articleModalTitle'),
+        articleModalImage: document.getElementById('articleModalImage'),
+        articleModalDate: document.getElementById('articleModalDate'),
+        articleModalContent: document.getElementById('articleModalContent'),
+        adminPanel: document.getElementById('adminPanel'),
+        loginModal: document.getElementById('loginModal'),
+        scrollToTopBottomBtn: document.getElementById('scrollToTopBottomBtn'),
+        scrollIcon: document.getElementById('scrollIcon'),
+        searchInput: document.getElementById('searchInput'),
+        notificationsBell: document.getElementById('notificationsBell'),
+        notificationsDropdown: document.getElementById('notificationsDropdown'),
+        notificationsList: document.getElementById('notificationsList'),
+        bellDot: document.getElementById('bellDot'),
+        lastUpdateTime: document.getElementById('lastUpdateTime'),
+        unitToggleBtn: document.getElementById('unitToggleBtn'),
+        goldPriceLabel: document.getElementById('goldPriceLabel'),
+        alertThreshold: document.getElementById('alertThreshold'),
+        setAlertBtn: document.getElementById('setAlertBtn'),
+        soundSelect: document.getElementById('soundSelect'),
+        alertDirection: document.getElementById('alertDirection'), // إضافة عنصر اتجاه التنبيه
+        editorContainer: document.getElementById('editor-container'),
+        articlePreviewContainer: document.getElementById('articlePreviewContainer'),
+        mobileMoreBtn: document.getElementById('mobileMoreBtn'),
+        mobileMoreModal: document.getElementById('mobileMoreModal'),
+        closeMobileMoreModalBtn: document.getElementById('closeMobileMoreModalBtn'),
+        mobileMoreNearbyLink: document.getElementById('mobileMoreNearbyLink'),
+        mobileMoreArticlesLink: document.getElementById('mobileMoreArticlesLink'),
+        mobileMoreAdminBtn: document.getElementById('mobileMoreAdminBtn'),
+        mobileMoreFaqLink: document.getElementById('mobileMoreFaqLink'),
+        mobileMoreAboutLink: document.getElementById('mobileMoreAboutLink'),
+        mobileMoreContactLink: document.getElementById('mobileMoreContactLink')
+    };
+}
 
 // تحسين الأداء: إنشاء كائنات تنسيق الأرقام مرة واحدة وإعادة استخدامها
 const formatters = {
@@ -342,6 +347,20 @@ window.switchMarketTab = (tabId) => {
 
     // إعادة رسم القوائم بناءً على الفلتر الجديد
     renderCurrencies();
+
+    // عند تفعيل تبويب الذهب، نضمن تحميل Chart.js وتهيئة الرسم البياني عند الحاجة
+    try {
+        if (tabId === 'gold') {
+            const goldSectionEl = document.getElementById('goldSection');
+            const isVisible = goldSectionEl && !goldSectionEl.classList.contains('hidden');
+            if (isVisible) {
+                // حاول التحميل أثناء فترة الخمول لتقليل التأثير على المسار الحرج
+                const schedule = () => ensureChartLoadedAndInit().catch(err => console.warn('⚠️ Chart init failed on tab switch:', err));
+                if (typeof requestIdleCallback === 'function') requestIdleCallback(schedule, { timeout: 3000 });
+                else setTimeout(schedule, 500);
+            }
+        }
+    } catch (e) { console.warn('⚠️ chart scheduling on tab switch failed', e); }
 };
 
 // دالة Debounce لتحسين أداء البحث والمدخلات
@@ -471,6 +490,28 @@ function addApiLog(msg) {
     if (placeholder) placeholder.remove();
     container.prepend(entry);
     if (container.children.length > 20) container.lastElementChild.remove();
+}
+
+// ===== Lazy-load Chart.js =====
+function loadChartJS() {
+    if (typeof Chart !== 'undefined') return Promise.resolve();
+    return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js';
+        s.async = true;
+        s.onload = () => resolve();
+        s.onerror = (e) => reject(new Error('Failed to load Chart.js'));
+        document.head.appendChild(s);
+    });
+}
+
+function ensureChartLoadedAndInit() {
+    if (goldChart) return Promise.resolve(goldChart);
+    return loadChartJS().then(() => {
+        if (typeof Chart === 'undefined') throw new Error('Chart not available after load');
+        try { initChart(); return goldChart; }
+        catch (e) { console.warn('⚠️ initChart failed', e); throw e; }
+    });
 }
 
 // تطبيق الترجمة على العناصر التي تحمل data-i18n
@@ -964,9 +1005,18 @@ onValue(pricesRef, (snapshot) => {
     updateLivePreview();
 });
 
-// تشغيل الـ APIs فوراً لضمان عرض الأسعار بدون انتظار Firebase
+// تشغيل الـAPIs بشكل مؤجّل حتى لا يحجب مسار التحميل الأساسي
+function deferFetchApiPrices() {
+    const schedule = () => {
+        try { fetchApiPrices().catch?.(err => console.warn('⚠️ fetchApiPrices failed:', err)); }
+        catch(e) { console.warn('⚠️ fetchApiPrices scheduling failed:', e); }
+    };
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(schedule, { timeout: 3000 });
+    else setTimeout(schedule, 1500);
+}
+
 if (!isManualMode) {
-    fetchApiPrices();
+    deferFetchApiPrices();
 }
 
 // دالة عرض جدول البيانات التاريخية (مقتبس من الموقع المطلوب)
@@ -1539,6 +1589,8 @@ window.openDirections = (lat, lon) => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // املأ مراجع عناصر DOM عند تحميل الـ DOM لتقليل وقت التقييم على المسار الحرج
+    try { initDomElements(); } catch (e) { console.warn('⚠️ initDomElements failed', e); }
     // تغليف التهيئة بـ try-catch لضمان عمل التنقل حتى لو فشل الرسم البياني
     try {
         // ===== إصلاح CLS: تعيين أبعاد ثابتة كخط دفاع إضافي لمنع تغيّر التخطيط =====
@@ -1554,8 +1606,8 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTranslations();
         // 1. بناء القوائم أولاً
         renderConverterOptions();
-        // 2. تهيئة الرسم البياني
-        if (typeof Chart !== 'undefined') initChart();
+        // 2. تهيئة الرسم البياني: لا نقوم بالتحميل التلقائي هنا لتجنب إضافة ثقل للمسار الحرج.
+        // سيتم تحميل Chart.js فقط عند تفعيل المستخدم لتبويب الذهب (انظر switchMarketTab).
         // 3. تحديث واجهة المستخدم والحسابات
         updateUI();
         handleScrollToTopBottom();
