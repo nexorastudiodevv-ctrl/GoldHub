@@ -121,7 +121,12 @@
     <!-- تحسينات الأداء المتقدمة -->
     <link rel="dns-prefetch" href="https://open.er-api.com" />
     <link rel="dns-prefetch" href="https://www.gstatic.com" />
-<!-- تضمين مكتبة أيقونات FontAwesome (تحميل غير مانع للعرض لتقليل زمن الحظر ~600ms)
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://unpkg.com" crossorigin />
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />
+    <!-- تضمين مكتبة أيقونات FontAwesome (تحميل غير مانع للعرض لتقليل زمن الحظر ~600ms)
           الاستراتيجية: preload يجلب الـ CSS مبكراً بلا حظر، ثم media="print" onload يحوّله إلى
           stylesheet فعلي بعد اكتمال التحميل، مع بديل <noscript> لضمان عمل الأيقونات عند تعطيل JS. -->
 <link
@@ -136,40 +141,9 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       />
     </noscript>
-    <!-- كود Google AdSense الرئيسي (استبدل CA-PUB-ID بمعرفك الخاص) -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4360758752869014" crossorigin="anonymous"></script>
-
-  <!-- Chart.js سيتم تحميلها ديناميكيًا عند الحاجة لتقليل وقت التهيئة الأولي -->
-    <!-- تضمين مكتبة Leaflet للخرائط (تحميل غير مانع للعرض) -->
-    <link
-      rel="preload"
-      as="style"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      crossorigin="anonymous"
-      media="print"
-      onload="this.media='all'"
-    />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-    <!-- تضمين مكتبة Quill.js لمحرر النصوص الغني (تحميل غير مانع للعرض) -->
-    <link
-      rel="preload"
-      as="style"
-      href="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css"
-      crossorigin="anonymous"
-      media="print"
-      onload="this.media='all'"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js" defer></script>
+    <!-- تحميل AdSense كسكريبت ثانوي بعد اكتمال التحميل الأساسي لتحسين الأداء -->
+    <!-- Chart.js سيتم تحميلها ديناميكيًا عند الحاجة لتقليل وقت التهيئة الأولي -->
+    <!-- تحميل Leaflet وQuill سيجري عند الحاجة فقط لتقليل وقت بلوغ الاستجابة الأولية -->
 
     <script>
       document.addEventListener('DOMContentLoaded', function () {

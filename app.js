@@ -495,14 +495,7 @@ function addApiLog(msg) {
 // ===== Lazy-load Chart.js =====
 function loadChartJS() {
     if (typeof Chart !== 'undefined') return Promise.resolve();
-    return new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js';
-        s.async = true;
-        s.onload = () => resolve();
-        s.onerror = (e) => reject(new Error('Failed to load Chart.js'));
-        document.head.appendChild(s);
-    });
+    return loadExternalScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js');
 }
 
 function ensureChartLoadedAndInit() {
@@ -512,6 +505,62 @@ function ensureChartLoadedAndInit() {
         try { initChart(); return goldChart; }
         catch (e) { console.warn('⚠️ initChart failed', e); throw e; }
     });
+}
+
+function loadExternalScript(src, attributes = {}) {
+    if (!src) return Promise.reject(new Error('Missing script source'));
+    return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        Object.entries(attributes).forEach(([key, value]) => {
+            if (value === true) s.setAttribute(key, '');
+            else if (value !== false) s.setAttribute(key, value);
+        });
+        s.onload = () => resolve();
+        s.onerror = (e) => reject(new Error(`Failed to load ${src}`));
+        document.head.appendChild(s);
+    });
+}
+
+function loadStylesheet(href) {
+    if (!href) return Promise.reject(new Error('Missing stylesheet href'));
+    return new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.crossOrigin = 'anonymous';
+        link.onload = () => resolve();
+        link.onerror = (e) => reject(new Error(`Failed to load ${href}`));
+        document.head.appendChild(link);
+    });
+}
+
+function loadLeafletResources() {
+    if (window.L) return Promise.resolve();
+    return Promise.all([
+        loadStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'),
+        loadExternalScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')
+    ]);
+}
+
+function loadQuillResources() {
+    if (window.Quill) return Promise.resolve();
+    return Promise.all([
+        loadStylesheet('https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css'),
+        loadExternalScript('https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js')
+    ]);
+}
+
+function loadAdSense() {
+    if (window.adsbygoogle || document.querySelector('script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]')) return Promise.resolve();
+    return loadExternalScript('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4360758752869014', { crossorigin: 'anonymous' });
+}
+
+function deferLoadAdSense() {
+    const schedule = () => loadAdSense().catch(err => console.warn('⚠️ Failed to load AdSense:', err));
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(schedule, { timeout: 5000 });
+    else window.addEventListener('load', schedule);
 }
 
 // تطبيق الترجمة على العناصر التي تحمل data-i18n
@@ -1312,7 +1361,52 @@ const sections = ['goldSection', 'currencySection', 'articlesSection', 'aboutSec
     }
 
     if (sectionName === 'nearby') {
-        initMap();
+        loadLeafletResources().then(initMap).catch(err => {
+            console.warn('⚠️ Failed to load Leaflet resources:', err);
+            showToast('تعذر تحميل الخريطة حالياً');
+        });
+    }
+
+    if (sectionName === 'articles') {
+        loadQuillResources().then(() => {
+            if (document.getElementById('editor-container') && !window.Quill) return;
+            // إذا كان المحرر موجودًا، قم بتهيئته قبل العرض
+            if (document.getElementById('editor-container') && !quill) {
+                try {
+                    if (window.Quill && typeof Quill.import === 'function') {
+                        var Tooltip = Quill.import('ui/tooltip');
+                        if (Tooltip && typeof Tooltip.TEMPLATE === 'string') {
+                            Tooltip.TEMPLATE = Tooltip.TEMPLATE
+                                .replace(/<a\b/gi, '<button type="button"')
+                                .replace(/<\/a>/gi, '</button>')
+                                .replace(/href=("[^"]*"|'[^']*')/gi, '');
+                        }
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Failed to patch Quill tooltip:', e);
+                }
+
+                quill = new Quill('#editor-container', {
+                    theme: 'snow',
+                    placeholder: 'اكتب محتوى المقال هنا...',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [2, 3, false] }],
+                            ['bold', 'italic', 'underline'],
+                            ['link', 'image'],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            [{ 'direction': 'rtl' }]
+                        ]
+                    }
+                });
+
+                if (quill) {
+                    quill.on('text-change', updateLivePreview);
+                }
+            }
+        }).catch(err => {
+            console.warn('⚠️ Failed to initialize Quill resources:', err);
+        });
     }
 
     // تحديث الحالة النشطة في أزرار التنقل للهواتف
@@ -1687,6 +1781,8 @@ document.addEventListener('DOMContentLoaded', () => {
             addApiLog("🔄 تم طلب تحديث يدوي للأسعار.");
         }
     });
+
+    deferLoadAdSense();
 
     setInterval(simulateMarket, 5000);
     // تحديث كل 5 دقائق (300,000ms) بدلاً من دقيقة واحدة لتوفير استهلاك الـ API
