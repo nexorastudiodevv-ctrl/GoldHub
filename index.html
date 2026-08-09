@@ -121,12 +121,21 @@
     <!-- تحسينات الأداء المتقدمة -->
     <link rel="dns-prefetch" href="https://open.er-api.com" />
     <link rel="dns-prefetch" href="https://www.gstatic.com" />
-<!-- تضمين مكتبة أيقونات FontAwesome (رابط واحد مبسّط) -->
-    <link
-      rel="stylesheet"
+<!-- تضمين مكتبة أيقونات FontAwesome (تحميل غير مانع للعرض لتقليل زمن الحظر ~600ms)
+          الاستراتيجية: preload يجلب الـ CSS مبكراً بلا حظر، ثم media="print" onload يحوّله إلى
+          stylesheet فعلي بعد اكتمال التحميل، مع بديل <noscript> لضمان عمل الأيقونات عند تعطيل JS. -->
+<link
+      rel="preload"
+      as="style"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      crossorigin="anonymous"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      />
+    </noscript>
     <!-- كود Google AdSense الرئيسي (استبدل CA-PUB-ID بمعرفك الخاص) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4360758752869014" crossorigin="anonymous"></script>
 
@@ -162,6 +171,38 @@
       onload="this.media='all'"
     />
     <script src="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js" defer></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        function fixAnchors(root) {
+          try {
+            (root.querySelectorAll || document.querySelectorAll)('a.ql-action, a.ql-remove').forEach(function (a) {
+              if (!a.hasAttribute('href')) a.setAttribute('href', '#');
+              a.setAttribute('role', 'button');
+              if (!a.hasAttribute('aria-label')) {
+                if (a.classList.contains('ql-action')) a.setAttribute('aria-label', 'Apply link');
+                if (a.classList.contains('ql-remove')) a.setAttribute('aria-label', 'Remove link');
+              }
+            });
+          } catch (e) {
+            // ignore
+          }
+        }
+
+        // initial pass
+        fixAnchors(document);
+
+        // handle dynamically-created Quill tooltips
+        var observer = new MutationObserver(function (mutations) {
+          mutations.forEach(function (m) {
+            m.addedNodes.forEach(function (node) {
+              if (node && node.querySelectorAll) fixAnchors(node);
+            });
+          });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      });
+    </script>
 
     <!-- تخصيص بعض المؤثرات البصرية للنيون والزجاج الخلفي -->
     <style>
@@ -2913,6 +2954,13 @@
       ></i>
     </button>
 
+<!--
+      استراتيجية تحميل Firebase (غير مانعة للعرض / LCP):
+      - هذا الملف يُحمَّل كـ ES Module (يتم تنفيذه بكسل لاحقاً بصفة غير متزامنة، فلا يمنع بناء DOM).
+      - داخل app.js يتم تحميل حزم Firebase الثقيلة (Auth, Analytics, Messaging) بشكل ديناميكي
+        (dynamic import) ومؤجَّل حتى اكتمال رسم الواجهة الأساسية، فلا يبدأ getProjectConfig
+        قبل اكتمال LCP. حِزمة firebase-database فقط تُحمَّل ثابتاً لأنها ضرورية لأسعار اللحظة.
+    -->
     <script type="module" src="app.js"></script>
   </body>
 </html>

@@ -1,9 +1,13 @@
 // استيراد مكتبات Firebase بشكل صحيح
+// ===== تحسين الأداء: تقسيم الحِزمة (Code Splitting) =====
+// نُبقي الاستيراد الثابت فقط للحِزم الأساسية الضرورية لأسعار اللحظة:
+//   - firebase-app: تهيئة التطبيق
+//   - firebase-database: قراءة/كتابة الأسعار والمقالات
+// الحِزم الثقيلة (Auth, Analytics, Messaging) تُحمَّل ديناميكياً داخل
+//   initLazyFirebaseServices() لأنها تبدأ طلب getProjectConfig المكلف،
+//   ولا نحتاجها إلا عند فتح لوحة التحكم أو تفعيل الإشعارات.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail, setPersistence, browserSessionPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
 // مراقب الأخطاء العالمي
 window.addEventListener('error', (event) => {
@@ -31,10 +35,66 @@ const firebaseConfig = {
 
 // تهيئة Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getDatabase(app);
-const analytics = getAnalytics(app);
-const messaging = getMessaging(app);
+
+// ===== تحسين الأداء: تأجيل تهيئة الخدمات الثقيلة (Auth, Analytics, Messaging) =====
+// هذه الحزم تُحمَّل ديناميكياً داخل initLazyFirebaseServices() وتُستدعى بعد
+// اكتمال رسم الواجهة الأساسية (عبر requestIdleCallback) حتى لا يبدأ طلب
+// getProjectConfig المكلف قبل اكتمال LCP.
+let auth = null;
+let analytics = null;
+let messaging = null;
+let lazyFirebaseReady = null; // Promise يُنتظر عند الحاجة لخدمات Auth/Messaging
+
+async function initLazyFirebaseServices() {
+    // منع التكرار: إذا كانت الخدمات جاهزة أو قيد التحميل نعيد نفس الوعد
+    if (lazyFirebaseReady) return lazyFirebaseReady;
+
+    lazyFirebaseReady = (async () => {
+        const start = performance.now();
+        console.log("⏳ جاري تحميل خدمات Firebase الإضافية (Auth/Analytics/Messaging)...");
+
+// تحميل الحزم الديناميكية عند الحاجة فقط
+        const [{ getAuth, signInWithEmailAndPassword, signOut }, { getAnalytics }, { getMessaging, getToken, onMessage }] = await Promise.all([
+            import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"),
+            import("https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js"),
+            import("https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js")
+        ]);
+
+        auth = getAuth(app);
+        try {
+            analytics = getAnalytics(app);
+        } catch (e) {
+            console.warn("⚠️ لم يتم تهيئة Analytics:", e.message);
+        }
+        try {
+            messaging = getMessaging(app);
+        } catch (e) {
+            console.warn("⚠️ لم يتم تهيئة Messaging:", e.message);
+        }
+
+        console.log(`✅ تم تحميل الخدمات الإضافية خلال ${Math.round(performance.now() - start)}ms`);
+        return { auth, analytics, messaging, getToken, onMessage, signInWithEmailAndPassword, signOut };
+    })();
+
+    return lazyFirebaseReady;
+}
+
+// تأجيل بدء تحميل الخدمات الثقيلة حتى فترة راحة المتصفح (بعد رسم الواجهة)
+function deferLazyFirebaseInit() {
+    const schedule = () => initLazyFirebaseServices().catch(err =>
+        console.warn("⚠️ فشل تحميل الخدمات الإضافية:", err?.message)
+    );
+if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(schedule, { timeout: 3000 });
+    } else {
+        setTimeout(schedule, 2000);
+    }
+}
+
+// بدء التحميل الكسول للخدمات الإضافية بعد اكتمال رسم الواجهة (LCP)
+deferLazyFirebaseInit();
+
 const pricesRef = ref(db, 'market_prices');
 const historyRef = ref(db, 'price_history');
 const articlesRef = ref(db, 'articles');
@@ -555,6 +615,9 @@ async function initPushNotifications(registration) {
                 return; // إخفاء التنبيه في القنصل لحين وضع المفتاح الحقيقي
             }
 
+            // ضمان تحميل خدمة Messaging قبل محاولة الحصول على التوكن
+            const { messaging, getToken } = await initLazyFirebaseServices();
+
             const token = await getToken(messaging, {
                 vapidKey: vapidKey,
                 serviceWorkerRegistration: registration
@@ -968,7 +1031,7 @@ onValue(articlesRef, (snapshot) => {
         latestList.innerHTML = articlesArray.slice(0, 3).map(([id, art]) => articleHTML(id, art)).join('');
     }
 
-    if (auth.currentUser?.email === ADMIN_EMAIL) renderAdminArticles();
+if (auth && auth.currentUser?.email === ADMIN_EMAIL) renderAdminArticles();
 });
 
 function calculateConversion() {
@@ -1471,6 +1534,16 @@ window.openDirections = (lat, lon) => {
 document.addEventListener('DOMContentLoaded', () => {
     // تغليف التهيئة بـ try-catch لضمان عمل التنقل حتى لو فشل الرسم البياني
     try {
+        // ===== إصلاح CLS: تعيين أبعاد ثابتة كخط دفاع إضافي لمنع تغيّر التخطيط =====
+        document.querySelectorAll('[id^="price-"]').forEach((el) => {
+            if (!el.style.minHeight) el.style.minHeight = '1.75rem';
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+        });
+        document.querySelectorAll('[id^="making-"]').forEach((el) => {
+            if (!el.style.minHeight) el.style.minHeight = '1.25rem';
+        });
+
         applyTranslations();
         // 1. بناء القوائم أولاً
         renderConverterOptions();
@@ -1612,9 +1685,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // إغلاق مودال المقال
     document.getElementById('closeArticleModalBtn')?.addEventListener('click', () => domElements.articleModal.classList.add('hidden'));
 
-    // وظيفة فتح لوحة التحكم المشتركة
-    const handleOpenAdmin = () => {
-        if (auth.currentUser?.email === ADMIN_EMAIL) {
+// وظيفة فتح لوحة التحكم المشتركة
+    const handleOpenAdmin = async () => {
+        // تحميل خدمات Auth بشكل كسول عند الحاجة فقط (لأنها لا تُحمَّل افتراضياً لتحسين الأداء)
+        const { auth: authInstance } = await initLazyFirebaseServices();
+        if (authInstance.currentUser?.email === ADMIN_EMAIL) {
             domElements.adminPanel.classList.remove('hidden');
             if (!domElements.loginModal.classList.contains('hidden')) {
                 domElements.loginModal.classList.add('hidden');
@@ -1723,10 +1798,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const spinner = document.getElementById('loginSpinner');
+const spinner = document.getElementById('loginSpinner');
         spinner.classList.remove('hidden');
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            // تحميل خدمات Auth بشكل كسول عند الحاجة فقط (لا تُحمَّل افتراضياً لتحسين الأداء)
+            const { auth: authInstance, signInWithEmailAndPassword: signIn } = await initLazyFirebaseServices();
+            const userCredential = await signIn(authInstance, email, password);
             if (userCredential.user.email === ADMIN_EMAIL) {
                 handleOpenAdmin(); // فتح اللوحة بعد التحقق
                 showToast("تم تسجيل الدخول بنجاح ✅");
@@ -1740,7 +1817,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // تسجيل الخروج
     document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-        await signOut(auth);
+        // تحميل خدمات Auth بشكل كسول عند الحاجة فقط (لا تُحمَّل افتراضياً لتحسين الأداء)
+        const { auth: authInstance, signOut: signOutFn } = await initLazyFirebaseServices();
+        await signOutFn(authInstance);
         domElements.adminPanel.classList.add('hidden');
         showToast("تم تسجيل الخروج");
     });

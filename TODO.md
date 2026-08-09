@@ -1,18 +1,33 @@
-# Performance Optimization TODO
+# TODO: Lighthouse Critical Request Chain Optimization
 
-## Step 1 — Logo / FontAwesome / Service Worker (in progress)
-- [ ] 1. Create lightweight `icon.svg` (replace 2MB `icon.webp`)
-- [ ] 2. Update `index.html`:
-  - [ ] Embed inline SVG logo in sidebar (replace `icon.webp`)
-  - [ ] Remove duplicate FontAwesome `<link>` tags; keep one non-render-blocking
-  - [ ] Clean up unused legacy scripts
-- [ ] 3. Update `sw.js`:
-  - [ ] Fix stale `dist/output.css` → `styles.css`
-  - [ ] Stale-While-Revalidate caching strategy for static assets
+## Goals
+- Reduce render-blocking from FontAwesome (~600ms).
+- Prevent heavy Firebase SDKs (Auth, Analytics, Messaging) from chain-loading and freezing LCP.
+- Prevent `getProjectConfig` from blocking the core UI render.
 
-## Step 2 — Cache headers & reflow
-- [ ] 4. Add cache headers in `firebase.json`
-- [ ] 5. Fix forced reflow in `app.js` (`switchMarketTab`)
+## Steps
 
-## Step 3 — Lazy-load heavy libraries
-- [ ] 6. Lazy-load Leaflet & Quill only when sections open
+### Step 1: `index.html` — Make FontAwesome non-blocking
+- [ ] Replace the render-blocking FontAwesome `<link rel="stylesheet">` with the `preload` + `media="print" onload` + `<noscript>` pattern.
+
+### Step 2: `index.html` — Document deferred ES-module imports
+- [ ] Add a comment near `<script type="module" src="app.js">` explaining Firebase is loaded via deferred ES-module/dynamic imports.
+
+### Step 3: `app.js` — Split Firebase loading
+- [ ] Keep static imports for `firebase-app` + `firebase-database`.
+- [ ] Convert `firebase-auth`, `firebase-analytics`, `firebase-messaging` to lazy dynamic `import()`.
+- [ ] Create `initLazyFirebaseServices()` triggered via `requestIdleCallback`/`setTimeout` after core UI renders.
+- [ ] Initialize `auth`, `analytics`, `messaging` as `null` initially.
+
+### Step 4: `app.js` — Update Auth/Messaging usages
+- [ ] Guard all `auth`/`messaging` usages with async awaits for `initLazyFirebaseServices()`:
+  - `initPushNotifications` (messaging)
+  - Admin-panel check (`auth.currentUser`)
+  - Login handler (`signInWithEmailAndPassword`)
+  - Logout handler (`signOut`)
+  - Articles listener (`auth.currentUser`)
+- [ ] Handle possibly-null `auth`/`messaging`.
+
+### Follow-up
+- [ ] Verify page loads fast and prices render quickly.
+- [ ] Confirm admin login still works.
