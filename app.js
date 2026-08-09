@@ -1,9 +1,13 @@
 // استيراد مكتبات Firebase بشكل صحيح
+// ===== تحسين الأداء: تقسيم الحِزمة (Code Splitting) =====
+// نُبقي الاستيراد الثابت فقط للحِزم الأساسية الضرورية لأسعار اللحظة:
+//   - firebase-app: تهيئة التطبيق
+//   - firebase-database: قراءة/كتابة الأسعار والمقالات
+// الحِزم الثقيلة (Auth, Analytics, Messaging) تُحمَّل ديناميكياً داخل
+//   initLazyFirebaseServices() لأنها تبدأ طلب getProjectConfig المكلف،
+//   ولا نحتاجها إلا عند فتح لوحة التحكم أو تفعيل الإشعارات.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail, setPersistence, browserSessionPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
 // مراقب الأخطاء العالمي
 window.addEventListener('error', (event) => {
@@ -31,10 +35,66 @@ const firebaseConfig = {
 
 // تهيئة Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getDatabase(app);
-const analytics = getAnalytics(app);
-const messaging = getMessaging(app);
+
+// ===== تحسين الأداء: تأجيل تهيئة الخدمات الثقيلة (Auth, Analytics, Messaging) =====
+// هذه الحزم تُحمَّل ديناميكياً داخل initLazyFirebaseServices() وتُستدعى بعد
+// اكتمال رسم الواجهة الأساسية (عبر requestIdleCallback) حتى لا يبدأ طلب
+// getProjectConfig المكلف قبل اكتمال LCP.
+let auth = null;
+let analytics = null;
+let messaging = null;
+let lazyFirebaseReady = null; // Promise يُنتظر عند الحاجة لخدمات Auth/Messaging
+
+async function initLazyFirebaseServices() {
+    // منع التكرار: إذا كانت الخدمات جاهزة أو قيد التحميل نعيد نفس الوعد
+    if (lazyFirebaseReady) return lazyFirebaseReady;
+
+    lazyFirebaseReady = (async () => {
+        const start = performance.now();
+        console.log("⏳ جاري تحميل خدمات Firebase الإضافية (Auth/Analytics/Messaging)...");
+
+// تحميل الحزم الديناميكية عند الحاجة فقط
+        const [{ getAuth, signInWithEmailAndPassword, signOut }, { getAnalytics }, { getMessaging, getToken, onMessage }] = await Promise.all([
+            import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"),
+            import("https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js"),
+            import("https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js")
+        ]);
+
+        auth = getAuth(app);
+        try {
+            analytics = getAnalytics(app);
+        } catch (e) {
+            console.warn("⚠️ لم يتم تهيئة Analytics:", e.message);
+        }
+        try {
+            messaging = getMessaging(app);
+        } catch (e) {
+            console.warn("⚠️ لم يتم تهيئة Messaging:", e.message);
+        }
+
+        console.log(`✅ تم تحميل الخدمات الإضافية خلال ${Math.round(performance.now() - start)}ms`);
+        return { auth, analytics, messaging, getToken, onMessage, signInWithEmailAndPassword, signOut };
+    })();
+
+    return lazyFirebaseReady;
+}
+
+// تأجيل بدء تحميل الخدمات الثقيلة حتى فترة راحة المتصفح (بعد رسم الواجهة)
+function deferLazyFirebaseInit() {
+    const schedule = () => initLazyFirebaseServices().catch(err =>
+        console.warn("⚠️ فشل تحميل الخدمات الإضافية:", err?.message)
+    );
+if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(schedule, { timeout: 3000 });
+    } else {
+        setTimeout(schedule, 2000);
+    }
+}
+
+// بدء التحميل الكسول للخدمات الإضافية بعد اكتمال رسم الواجهة (LCP)
+deferLazyFirebaseInit();
+
 const pricesRef = ref(db, 'market_prices');
 const historyRef = ref(db, 'price_history');
 const articlesRef = ref(db, 'articles');
@@ -85,83 +145,88 @@ admin_panel: "لوحة التحكم", about: "من نحن", contact: "اتصل �
 
 let currentLang = localStorage.getItem('site_lang') || 'ar';
 
-// كاش لعناصر DOM
-const domElements = {
-    mainGoldPrice: document.getElementById('mainGoldPrice'),
-    price24k: document.getElementById('price-24k'),
-    price21k: document.getElementById('price-21k'),
-    price18k: document.getElementById('price-18k'),
-    price14k: document.getElementById('price-14k'),
-    price12k: document.getElementById('price-12k'),
-    making24kDisplay: document.getElementById('making-24k-display'),
-    making21kDisplay: document.getElementById('making-21k-display'),
-    making18kDisplay: document.getElementById('making-18k-display'),
-    copperPrice: document.getElementById('copperPrice'),
-    copperTrend: document.getElementById('copperTrend'),
-    manualRefreshBtn: document.getElementById('manualRefreshBtn'),
-    making14kDisplay: document.getElementById('making-14k-display'),
-    making12kDisplay: document.getElementById('making-12k-display'),
-    trend24k: document.getElementById('trend-24k'),
-    trend21k: document.getElementById('trend-21k'),
-    trend18k: document.getElementById('trend-18k'),
-    trend14k: document.getElementById('trend-14k'),
-    trend12k: document.getElementById('trend-12k'),
-    silverPrice: document.getElementById('silverPrice'),
-    platinumPrice: document.getElementById('platinumPrice'),
-    silverTrend: document.getElementById('silverTrend'),
-    platinumTrend: document.getElementById('platinumTrend'),
-    ironEzzPrice: document.getElementById('ironEzzPrice'),
-    ironEzzTrend: document.getElementById('ironEzzTrend'),
-    ironEgyptiansPrice: document.getElementById('ironEgyptiansPrice'),
-    ironEgyptiansTrend: document.getElementById('ironEgyptiansTrend'),
-    ironGarhyPrice: document.getElementById('ironGarhyPrice'),
-    ironGarhyTrend: document.getElementById('ironGarhyTrend'),
-    currencyList: document.getElementById('currencyList'),
-    historicalSection: document.getElementById('historicalSection'),
-    historicalTableBody: document.getElementById('historicalTableBody'),
-    marketTabs: document.getElementById('marketTabs'),
-    nearbySection: document.getElementById('nearbySection'),
-    nearbyExchangesList: document.getElementById('nearbyExchangesList'),
-    conversionResult: document.getElementById('conversionResult'),
-    amountInput: document.getElementById('amountInput'),
-    searchNewAreaBtn: document.getElementById('searchNewAreaBtn'),
-    searchNewAreaText: document.getElementById('searchNewAreaText'),
-    displayCurrency: document.getElementById('displayCurrency'),
-    targetCurrency: document.getElementById('targetCurrency'),
-    apiLogs: document.getElementById('apiLogs'),
-    articleModal: document.getElementById('articleModal'),
-    articleModalTitle: document.getElementById('articleModalTitle'),
-    articleModalImage: document.getElementById('articleModalImage'),
-    articleModalDate: document.getElementById('articleModalDate'),
-    articleModalContent: document.getElementById('articleModalContent'),
-    adminPanel: document.getElementById('adminPanel'),
-    loginModal: document.getElementById('loginModal'),
-    scrollToTopBottomBtn: document.getElementById('scrollToTopBottomBtn'),
-    scrollIcon: document.getElementById('scrollIcon'),
-    searchInput: document.getElementById('searchInput'),
-    notificationsBell: document.getElementById('notificationsBell'),
-    notificationsDropdown: document.getElementById('notificationsDropdown'),
-    notificationsList: document.getElementById('notificationsList'),
-    bellDot: document.getElementById('bellDot'),
-    lastUpdateTime: document.getElementById('lastUpdateTime'),
-    unitToggleBtn: document.getElementById('unitToggleBtn'),
-    goldPriceLabel: document.getElementById('goldPriceLabel'),
-    alertThreshold: document.getElementById('alertThreshold'),
-    setAlertBtn: document.getElementById('setAlertBtn'),
-    soundSelect: document.getElementById('soundSelect'),
-    alertDirection: document.getElementById('alertDirection'), // إضافة عنصر اتجاه التنبيه
-    editorContainer: document.getElementById('editor-container'),
-    articlePreviewContainer: document.getElementById('articlePreviewContainer'),
-    mobileMoreBtn: document.getElementById('mobileMoreBtn'),
-    mobileMoreModal: document.getElementById('mobileMoreModal'),
-    closeMobileMoreModalBtn: document.getElementById('closeMobileMoreModalBtn'),
-    mobileMoreNearbyLink: document.getElementById('mobileMoreNearbyLink'),
-    mobileMoreArticlesLink: document.getElementById('mobileMoreArticlesLink'),
-mobileMoreAdminBtn: document.getElementById('mobileMoreAdminBtn'),
-    mobileMoreFaqLink: document.getElementById('mobileMoreFaqLink'),
-    mobileMoreAboutLink: document.getElementById('mobileMoreAboutLink'),
-    mobileMoreContactLink: document.getElementById('mobileMoreContactLink')
-};
+// كاش لعناصر DOM (مُؤَجَّل لخفض وقت التقييم عند تحميل الوحدة)
+let domElements = {};
+
+function initDomElements() {
+    // تعبئة المرجع للعناصر المطلوبة؛ تستدعى عند DOMContentLoaded
+    domElements = {
+        mainGoldPrice: document.getElementById('mainGoldPrice'),
+        price24k: document.getElementById('price-24k'),
+        price21k: document.getElementById('price-21k'),
+        price18k: document.getElementById('price-18k'),
+        price14k: document.getElementById('price-14k'),
+        price12k: document.getElementById('price-12k'),
+        making24kDisplay: document.getElementById('making-24k-display'),
+        making21kDisplay: document.getElementById('making-21k-display'),
+        making18kDisplay: document.getElementById('making-18k-display'),
+        copperPrice: document.getElementById('copperPrice'),
+        copperTrend: document.getElementById('copperTrend'),
+        manualRefreshBtn: document.getElementById('manualRefreshBtn'),
+        making14kDisplay: document.getElementById('making-14k-display'),
+        making12kDisplay: document.getElementById('making-12k-display'),
+        trend24k: document.getElementById('trend-24k'),
+        trend21k: document.getElementById('trend-21k'),
+        trend18k: document.getElementById('trend-18k'),
+        trend14k: document.getElementById('trend-14k'),
+        trend12k: document.getElementById('trend-12k'),
+        silverPrice: document.getElementById('silverPrice'),
+        platinumPrice: document.getElementById('platinumPrice'),
+        silverTrend: document.getElementById('silverTrend'),
+        platinumTrend: document.getElementById('platinumTrend'),
+        ironEzzPrice: document.getElementById('ironEzzPrice'),
+        ironEzzTrend: document.getElementById('ironEzzTrend'),
+        ironEgyptiansPrice: document.getElementById('ironEgyptiansPrice'),
+        ironEgyptiansTrend: document.getElementById('ironEgyptiansTrend'),
+        ironGarhyPrice: document.getElementById('ironGarhyPrice'),
+        ironGarhyTrend: document.getElementById('ironGarhyTrend'),
+        currencyList: document.getElementById('currencyList'),
+        historicalSection: document.getElementById('historicalSection'),
+        historicalTableBody: document.getElementById('historicalTableBody'),
+        marketTabs: document.getElementById('marketTabs'),
+        nearbySection: document.getElementById('nearbySection'),
+        nearbyExchangesList: document.getElementById('nearbyExchangesList'),
+        conversionResult: document.getElementById('conversionResult'),
+        amountInput: document.getElementById('amountInput'),
+        searchNewAreaBtn: document.getElementById('searchNewAreaBtn'),
+        searchNewAreaText: document.getElementById('searchNewAreaText'),
+        displayCurrency: document.getElementById('displayCurrency'),
+        targetCurrency: document.getElementById('targetCurrency'),
+        apiLogs: document.getElementById('apiLogs'),
+        articleModal: document.getElementById('articleModal'),
+        articleModalTitle: document.getElementById('articleModalTitle'),
+        articleModalImage: document.getElementById('articleModalImage'),
+        articleModalDate: document.getElementById('articleModalDate'),
+        articleModalContent: document.getElementById('articleModalContent'),
+        adminPanel: document.getElementById('adminPanel'),
+        loginModal: document.getElementById('loginModal'),
+        scrollToTopBottomBtn: document.getElementById('scrollToTopBottomBtn'),
+        scrollIcon: document.getElementById('scrollIcon'),
+        searchInput: document.getElementById('searchInput'),
+        notificationsBell: document.getElementById('notificationsBell'),
+        notificationsDropdown: document.getElementById('notificationsDropdown'),
+        notificationsList: document.getElementById('notificationsList'),
+        bellDot: document.getElementById('bellDot'),
+        lastUpdateTime: document.getElementById('lastUpdateTime'),
+        unitToggleBtn: document.getElementById('unitToggleBtn'),
+        goldPriceLabel: document.getElementById('goldPriceLabel'),
+        alertThreshold: document.getElementById('alertThreshold'),
+        setAlertBtn: document.getElementById('setAlertBtn'),
+        soundSelect: document.getElementById('soundSelect'),
+        alertDirection: document.getElementById('alertDirection'), // إضافة عنصر اتجاه التنبيه
+        editorContainer: document.getElementById('editor-container'),
+        articlePreviewContainer: document.getElementById('articlePreviewContainer'),
+        mobileMoreBtn: document.getElementById('mobileMoreBtn'),
+        mobileMoreModal: document.getElementById('mobileMoreModal'),
+        closeMobileMoreModalBtn: document.getElementById('closeMobileMoreModalBtn'),
+        mobileMoreNearbyLink: document.getElementById('mobileMoreNearbyLink'),
+        mobileMoreArticlesLink: document.getElementById('mobileMoreArticlesLink'),
+        mobileMoreAdminBtn: document.getElementById('mobileMoreAdminBtn'),
+        mobileMoreFaqLink: document.getElementById('mobileMoreFaqLink'),
+        mobileMoreAboutLink: document.getElementById('mobileMoreAboutLink'),
+        mobileMoreContactLink: document.getElementById('mobileMoreContactLink')
+    };
+}
 
 // تحسين الأداء: إنشاء كائنات تنسيق الأرقام مرة واحدة وإعادة استخدامها
 const formatters = {
@@ -282,6 +347,20 @@ window.switchMarketTab = (tabId) => {
 
     // إعادة رسم القوائم بناءً على الفلتر الجديد
     renderCurrencies();
+
+    // عند تفعيل تبويب الذهب، نضمن تحميل Chart.js وتهيئة الرسم البياني عند الحاجة
+    try {
+        if (tabId === 'gold') {
+            const goldSectionEl = document.getElementById('goldSection');
+            const isVisible = goldSectionEl && !goldSectionEl.classList.contains('hidden');
+            if (isVisible) {
+                // حاول التحميل أثناء فترة الخمول لتقليل التأثير على المسار الحرج
+                const schedule = () => ensureChartLoadedAndInit().catch(err => console.warn('⚠️ Chart init failed on tab switch:', err));
+                if (typeof requestIdleCallback === 'function') requestIdleCallback(schedule, { timeout: 3000 });
+                else setTimeout(schedule, 500);
+            }
+        }
+    } catch (e) { console.warn('⚠️ chart scheduling on tab switch failed', e); }
 };
 
 // دالة Debounce لتحسين أداء البحث والمدخلات
@@ -413,6 +492,77 @@ function addApiLog(msg) {
     if (container.children.length > 20) container.lastElementChild.remove();
 }
 
+// ===== Lazy-load Chart.js =====
+function loadChartJS() {
+    if (typeof Chart !== 'undefined') return Promise.resolve();
+    return loadExternalScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js');
+}
+
+function ensureChartLoadedAndInit() {
+    if (goldChart) return Promise.resolve(goldChart);
+    return loadChartJS().then(() => {
+        if (typeof Chart === 'undefined') throw new Error('Chart not available after load');
+        try { initChart(); return goldChart; }
+        catch (e) { console.warn('⚠️ initChart failed', e); throw e; }
+    });
+}
+
+function loadExternalScript(src, attributes = {}) {
+    if (!src) return Promise.reject(new Error('Missing script source'));
+    return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        Object.entries(attributes).forEach(([key, value]) => {
+            if (value === true) s.setAttribute(key, '');
+            else if (value !== false) s.setAttribute(key, value);
+        });
+        s.onload = () => resolve();
+        s.onerror = (e) => reject(new Error(`Failed to load ${src}`));
+        document.head.appendChild(s);
+    });
+}
+
+function loadStylesheet(href) {
+    if (!href) return Promise.reject(new Error('Missing stylesheet href'));
+    return new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.crossOrigin = 'anonymous';
+        link.onload = () => resolve();
+        link.onerror = (e) => reject(new Error(`Failed to load ${href}`));
+        document.head.appendChild(link);
+    });
+}
+
+function loadLeafletResources() {
+    if (window.L) return Promise.resolve();
+    return Promise.all([
+        loadStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'),
+        loadExternalScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')
+    ]);
+}
+
+function loadQuillResources() {
+    if (window.Quill) return Promise.resolve();
+    return Promise.all([
+        loadStylesheet('https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css'),
+        loadExternalScript('https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js')
+    ]);
+}
+
+function loadAdSense() {
+    if (window.adsbygoogle || document.querySelector('script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]')) return Promise.resolve();
+    return loadExternalScript('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4360758752869014', { crossorigin: 'anonymous' });
+}
+
+function deferLoadAdSense() {
+    const schedule = () => loadAdSense().catch(err => console.warn('⚠️ Failed to load AdSense:', err));
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(schedule, { timeout: 5000 });
+    else window.addEventListener('load', schedule);
+}
+
 // تطبيق الترجمة على العناصر التي تحمل data-i18n
 window.applyTranslations = () => {
     document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -514,10 +664,17 @@ function renderCurrencies() {
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button class="text-lg p-1 focus:outline-none" onclick="toggleFavoriteCurrency('${code}')">
-                        <i class="${starIconClass}"></i>
+                    <button
+                        class="text-lg p-1 focus:outline-none"
+                        onclick="toggleFavoriteCurrency('${code}')"
+                        aria-label="${isFavorite ? 'أزل من المفضلة' : 'أضف إلى المفضلة'} ${code}"
+                        aria-pressed="${isFavorite}"
+                        title="${isFavorite ? 'مفضلة' : 'أضف إلى المفضلة'}: ${code}"
+                    >
+                        <i class="${starIconClass}" aria-hidden="true"></i>
+                        <span class="sr-only">${isFavorite ? 'أزيلت من المفضلة' : 'أُضيفت إلى المفضلة'} ${code}</span>
                     </button>
-                    <div class="text-sm font-mono font-bold text-cyan-400 group-hover:scale-105 transition-transform">${rate.toFixed(2)}</div>
+                    <div class="text-sm font-mono font-bold text-cyan-400 group-hover:scale-105 transition-transform currency-rate">${rate.toFixed(2)}</div>
                 </div>
             </div>
         `;
@@ -554,6 +711,9 @@ async function initPushNotifications(registration) {
             if (vapidKey === 'REPLACE_WITH_YOUR_ACTUAL_KEY') {
                 return; // إخفاء التنبيه في القنصل لحين وضع المفتاح الحقيقي
             }
+
+            // ضمان تحميل خدمة Messaging قبل محاولة الحصول على التوكن
+            const { messaging, getToken } = await initLazyFirebaseServices();
 
             const token = await getToken(messaging, {
                 vapidKey: vapidKey,
@@ -894,9 +1054,18 @@ onValue(pricesRef, (snapshot) => {
     updateLivePreview();
 });
 
-// تشغيل الـ APIs فوراً لضمان عرض الأسعار بدون انتظار Firebase
+// تشغيل الـAPIs بشكل مؤجّل حتى لا يحجب مسار التحميل الأساسي
+function deferFetchApiPrices() {
+    const schedule = () => {
+        try { fetchApiPrices().catch?.(err => console.warn('⚠️ fetchApiPrices failed:', err)); }
+        catch(e) { console.warn('⚠️ fetchApiPrices scheduling failed:', e); }
+    };
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(schedule, { timeout: 3000 });
+    else setTimeout(schedule, 1500);
+}
+
 if (!isManualMode) {
-    fetchApiPrices();
+    deferFetchApiPrices();
 }
 
 // دالة عرض جدول البيانات التاريخية (مقتبس من الموقع المطلوب)
@@ -968,7 +1137,7 @@ onValue(articlesRef, (snapshot) => {
         latestList.innerHTML = articlesArray.slice(0, 3).map(([id, art]) => articleHTML(id, art)).join('');
     }
 
-    if (auth.currentUser?.email === ADMIN_EMAIL) renderAdminArticles();
+if (auth && auth.currentUser?.email === ADMIN_EMAIL) renderAdminArticles();
 });
 
 function calculateConversion() {
@@ -1192,7 +1361,52 @@ const sections = ['goldSection', 'currencySection', 'articlesSection', 'aboutSec
     }
 
     if (sectionName === 'nearby') {
-        initMap();
+        loadLeafletResources().then(initMap).catch(err => {
+            console.warn('⚠️ Failed to load Leaflet resources:', err);
+            showToast('تعذر تحميل الخريطة حالياً');
+        });
+    }
+
+    if (sectionName === 'articles') {
+        loadQuillResources().then(() => {
+            if (document.getElementById('editor-container') && !window.Quill) return;
+            // إذا كان المحرر موجودًا، قم بتهيئته قبل العرض
+            if (document.getElementById('editor-container') && !quill) {
+                try {
+                    if (window.Quill && typeof Quill.import === 'function') {
+                        var Tooltip = Quill.import('ui/tooltip');
+                        if (Tooltip && typeof Tooltip.TEMPLATE === 'string') {
+                            Tooltip.TEMPLATE = Tooltip.TEMPLATE
+                                .replace(/<a\b/gi, '<button type="button"')
+                                .replace(/<\/a>/gi, '</button>')
+                                .replace(/href=("[^"]*"|'[^']*')/gi, '');
+                        }
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Failed to patch Quill tooltip:', e);
+                }
+
+                quill = new Quill('#editor-container', {
+                    theme: 'snow',
+                    placeholder: 'اكتب محتوى المقال هنا...',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [2, 3, false] }],
+                            ['bold', 'italic', 'underline'],
+                            ['link', 'image'],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            [{ 'direction': 'rtl' }]
+                        ]
+                    }
+                });
+
+                if (quill) {
+                    quill.on('text-change', updateLivePreview);
+                }
+            }
+        }).catch(err => {
+            console.warn('⚠️ Failed to initialize Quill resources:', err);
+        });
     }
 
     // تحديث الحالة النشطة في أزرار التنقل للهواتف
@@ -1469,13 +1683,25 @@ window.openDirections = (lat, lon) => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // املأ مراجع عناصر DOM عند تحميل الـ DOM لتقليل وقت التقييم على المسار الحرج
+    try { initDomElements(); } catch (e) { console.warn('⚠️ initDomElements failed', e); }
     // تغليف التهيئة بـ try-catch لضمان عمل التنقل حتى لو فشل الرسم البياني
     try {
+        // ===== إصلاح CLS: تعيين أبعاد ثابتة كخط دفاع إضافي لمنع تغيّر التخطيط =====
+        document.querySelectorAll('[id^="price-"]').forEach((el) => {
+            if (!el.style.minHeight) el.style.minHeight = '1.75rem';
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+        });
+        document.querySelectorAll('[id^="making-"]').forEach((el) => {
+            if (!el.style.minHeight) el.style.minHeight = '1.25rem';
+        });
+
         applyTranslations();
         // 1. بناء القوائم أولاً
         renderConverterOptions();
-        // 2. تهيئة الرسم البياني
-        if (typeof Chart !== 'undefined') initChart();
+        // 2. تهيئة الرسم البياني: لا نقوم بالتحميل التلقائي هنا لتجنب إضافة ثقل للمسار الحرج.
+        // سيتم تحميل Chart.js فقط عند تفعيل المستخدم لتبويب الذهب (انظر switchMarketTab).
         // 3. تحديث واجهة المستخدم والحسابات
         updateUI();
         handleScrollToTopBottom();
@@ -1556,6 +1782,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    deferLoadAdSense();
+
     setInterval(simulateMarket, 5000);
     // تحديث كل 5 دقائق (300,000ms) بدلاً من دقيقة واحدة لتوفير استهلاك الـ API
     setInterval(() => { if (!isManualMode) fetchApiPrices(); }, 300000);
@@ -1612,9 +1840,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // إغلاق مودال المقال
     document.getElementById('closeArticleModalBtn')?.addEventListener('click', () => domElements.articleModal.classList.add('hidden'));
 
-    // وظيفة فتح لوحة التحكم المشتركة
-    const handleOpenAdmin = () => {
-        if (auth.currentUser?.email === ADMIN_EMAIL) {
+// وظيفة فتح لوحة التحكم المشتركة
+    const handleOpenAdmin = async () => {
+        // تحميل خدمات Auth بشكل كسول عند الحاجة فقط (لأنها لا تُحمَّل افتراضياً لتحسين الأداء)
+        const { auth: authInstance } = await initLazyFirebaseServices();
+        if (authInstance.currentUser?.email === ADMIN_EMAIL) {
             domElements.adminPanel.classList.remove('hidden');
             if (!domElements.loginModal.classList.contains('hidden')) {
                 domElements.loginModal.classList.add('hidden');
@@ -1685,8 +1915,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // تهيئة محرر Quill
+// تهيئة محرر Quill
     if (document.getElementById('editor-container')) {
+        // تحويل قالب Tooltip الافتراضي في Quill لاستخدام عناصر <button> بدل <a>
+        // هذا يحسّن الدلالة الحقيقية للعناصر ويمنع فقدان الاستماع للأحداث لأننا نعدّل القالب قبل التهيئة
+        try {
+            if (window.Quill && typeof Quill.import === 'function') {
+                var Tooltip = Quill.import('ui/tooltip');
+                if (Tooltip && typeof Tooltip.TEMPLATE === 'string') {
+                    Tooltip.TEMPLATE = Tooltip.TEMPLATE
+                        .replace(/<a\b/gi, '<button type="button"')
+                        .replace(/<\/a>/gi, '</button>')
+                        .replace(/href=("[^"]*"|'[^']*')/gi, '');
+                }
+            }
+        } catch (e) {
+            // إذا فشل التغيير لا نريد كسر الصفحة — نكمل بتهيئة Quill الافتراضية
+        }
         quill = new Quill('#editor-container', {
             theme: 'snow',
             placeholder: 'اكتب محتوى المقال هنا...',
@@ -1701,6 +1946,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- المعاينة المباشرة للمقال أثناء الكتابة ---
+    const updatePreviewListener = () => updateLivePreview();
+    document.getElementById('articleTitle')?.addEventListener('input', updatePreviewListener);
+    document.getElementById('articleImage')?.addEventListener('input', updatePreviewListener);
+    if (quill) {
+        quill.on('text-change', updatePreviewListener);
+    }
+    // عرض المعاينة الافتراضية عند فتح الصفحة
+    updateLivePreview();
+
     // معالجة تسجيل الدخول للمدير
     document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -1713,10 +1968,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const spinner = document.getElementById('loginSpinner');
+const spinner = document.getElementById('loginSpinner');
         spinner.classList.remove('hidden');
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            // تحميل خدمات Auth بشكل كسول عند الحاجة فقط (لا تُحمَّل افتراضياً لتحسين الأداء)
+            const { auth: authInstance, signInWithEmailAndPassword: signIn } = await initLazyFirebaseServices();
+            const userCredential = await signIn(authInstance, email, password);
             if (userCredential.user.email === ADMIN_EMAIL) {
                 handleOpenAdmin(); // فتح اللوحة بعد التحقق
                 showToast("تم تسجيل الدخول بنجاح ✅");
@@ -1730,7 +1987,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // تسجيل الخروج
     document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-        await signOut(auth);
+        // تحميل خدمات Auth بشكل كسول عند الحاجة فقط (لا تُحمَّل افتراضياً لتحسين الأداء)
+        const { auth: authInstance, signOut: signOutFn } = await initLazyFirebaseServices();
+        await signOutFn(authInstance);
         domElements.adminPanel.classList.add('hidden');
         showToast("تم تسجيل الخروج");
     });
@@ -2061,4 +2320,45 @@ function resetArticleForm() {
     quill.setContents([]);
     document.getElementById('cancelEditBtn').classList.add('hidden');
     document.getElementById('addArticleBtn').textContent = "نشر المقال الآن";
+    updateLivePreview();
+}
+
+// دالة المعاينة المباشرة للمقال أثناء الكتابة في لوحة التحكم
+function updateLivePreview() {
+    const previewContainer = domElements.articlePreviewContainer;
+    if (!previewContainer) return;
+
+    const title = document.getElementById('articleTitle')?.value.trim() || "";
+    const image = document.getElementById('articleImage')?.value.trim() || "";
+    // الحصول على محتوى محرر Quill إن وُجد
+    const contentHTML = (quill && typeof quill.getText === 'function')
+        ? quill.getText(0, 300).trim()
+        : "";
+
+    // في حال كون الحقول فارغة نعرض رسالة إرشادية
+    if (!title && !image && !contentHTML) {
+        previewContainer.innerHTML = `
+            <div class="text-center py-10 text-slate-500 italic text-xs">
+                <i class="fa-solid fa-eye mb-2 block text-xl text-cyan-500/50"></i>
+                اكتب عنوان المقال ورابط الصورة والمحتوى لعرض المعاينة المباشرة هنا
+            </div>`;
+        return;
+    }
+
+    const summary = contentHTML.length > 180 ? contentHTML.slice(0, 180) + "..." : contentHTML;
+
+    previewContainer.innerHTML = `
+        <div class="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden hover:border-cyan-500/50 transition-all group">
+            ${image ? `
+                <div class="relative overflow-hidden h-48">
+                    <img src="${image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="${title || 'معاينة المقال'}" onerror="this.closest('.relative').innerHTML = '<div class=\\'w-full h-full flex items-center justify-center bg-slate-800 text-slate-500 text-xs\\'><i class=\\'fa-solid fa-image text-2xl\\'></i></div>';">
+                </div>` : `
+                <div class="relative overflow-hidden h-48 bg-slate-800/60 flex items-center justify-center">
+                    <i class="fa-solid fa-newspaper text-4xl text-slate-600"></i>
+                </div>`}
+            <div class="p-6">
+                <h3 class="text-xl font-bold mb-2 text-slate-100">${title || 'عنوان المقال'}</h3>
+                <p class="text-slate-400 text-sm line-clamp-2">${summary || 'سيظهر ملخص المقال هنا تلقائياً...'}</p>
+            </div>
+        </div>`;
 }

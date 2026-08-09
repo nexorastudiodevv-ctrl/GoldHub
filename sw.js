@@ -25,19 +25,23 @@ try {
     console.error("⚠️ Failed to initialize Firebase Messaging in SW:", err);
 }
 
-const CACHE_NAME = 'gold-hub-v6';
+const CACHE_NAME = 'gold-hub-v8';
+
+// المسار الصحيح لـ styles.css (نسبي مع './')
 const ASSETS = [
-    'index.html',
-    'manifest.json',
-    'app.js',
-    'dist/output.css',
-    'icon.png',
-    'icon.webp',
+    './',
+    './index.html',
+    './styles.css',
+    './app.js',
+    './manifest.json',
+    './icon.png',
+    './icon.webp',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    'https://cdn.jsdelivr.net/npm/chart.js',
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-    'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css'
+    'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css',
+    'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js'
 ];
 
 // تثبيت الـ Service Worker وتخزين الملفات الأساسية
@@ -66,10 +70,12 @@ self.addEventListener('activate', (e) => {
     self.clients.claim();
 });
 
-// استراتيجية الاستجابة: حاول الشبكة أولاً، إذا فشلت استخدم التخزين المؤقت
+// استراتيجية الاستجابة: Cache-First (أعد النسخة المخزنة فوراً، وحدّثها في الخلفية)
 self.addEventListener('fetch', (e) => {
     // تجاهل الطلبات التي ليست من نوع GET (مثل رفع الصور عبر POST) لأن التخزين المؤقت لا يدعمها
-    if (e.request.method !== 'GET' || e.request.url.includes('firebaseio.com')) return;
+    if (e.request.method !== 'GET') return;
+    if (e.request.url.includes('firebaseio.com')) return;
+    if (e.request.url.includes('firebase.google.com')) return;
 
     e.respondWith(
         caches.match(e.request).then((cachedResponse) => {
@@ -91,9 +97,9 @@ self.addEventListener('fetch', (e) => {
 
                 return response;
             }).catch(() => {
-                // في حالة فشل الإنترنت تماماً وعدم وجود كاش
+// في حالة فشل الإنترنت تماماً وعدم وجود كاش
                 if (e.request.mode === 'navigate') {
-                    return caches.match('index.html');
+                    return caches.match('./index.html');
                 }
                 return new Response("Offline", { status: 503 });
             });
@@ -108,8 +114,8 @@ if (messaging) {
         const notificationTitle = payload?.notification?.title || "تحديث من GoldHub";
         const notificationOptions = {
             body: payload?.notification?.body || "توجد تحديثات جديدة في أسعار السوق.",
-            icon: payload?.notification?.icon || 'icon.png',
-            badge: 'icon.png'
+icon: payload?.notification?.icon || './icon.png',
+            badge: './icon.png'
         };
         self.registration.showNotification(notificationTitle, notificationOptions);
     });
