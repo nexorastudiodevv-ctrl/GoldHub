@@ -409,6 +409,12 @@
         min-width: 6.5rem; /* يكفي لعرض قيم مثل 12345.67 */
         text-align: right;
       }
+      /* محتوى رئيسي، بطاقات، وشبكات: حجز ارتفاع افتراضي لتقليل CLS */
+      main { min-height: 640px; }
+      #marketGrid { min-height: 360px; }
+      .glass-panel { min-height: 96px; }
+      /* مساحات إعلانية: احجز نسبة أبعاد ومساحة لتجنب القفز */
+      .ad-slot { min-height: 120px; aspect-ratio: 6 / 1; display:flex; align-items:center; justify-content:center }
       /* 4. حجز مساحة السعر الرئيسي للذهب */
       #mainGoldPrice {
         min-width: 140px;
@@ -709,9 +715,9 @@
 
         <!-- مساحة إعلانية في الشريط الجانبي -->
         <div class="mt-8 sidebar-text">
-          <div
-            class="glass-panel rounded-xl p-2 border-dashed border-cyan-500/30 text-center"
-          >
+            <div
+              class="glass-panel rounded-xl p-2 border-dashed border-cyan-500/30 text-center ad-slot"
+            >
             <p class="text-[9px] text-slate-500 mb-2 uppercase tracking-widest">
               إعلان
             </p>
@@ -1165,6 +1171,8 @@
               <div class="w-full h-48 mt-4 relative">
                 <canvas
                   id="goldChart"
+                  width="800"
+                  height="192"
                   role="img"
                   aria-label="رسم بياني لسعر الذهب"
                 ></canvas>
@@ -1274,7 +1282,7 @@
 
             <!-- إعلان علوي عريض للموبايل والديسكطوب (تم نقله للأسفل في الترتيب البصري) -->
             <div
-              class="glass-panel rounded-2xl p-2 text-center border-dashed border-cyan-500/20 order-4"
+              class="glass-panel rounded-2xl p-2 text-center border-dashed border-cyan-500/20 order-4 ad-slot"
             >
               <p class="text-[8px] text-slate-500 mb-1">إعلان</p>
               <div
@@ -1290,7 +1298,7 @@
 
               <!-- إعلان إضافي تحت أسعار العيارات -->
               <div
-                class="sm:col-span-2 md:col-span-3 xl:grid-cols-5 glass-panel rounded-xl p-2 text-center border-dashed border-cyan-500/10"
+                class="sm:col-span-2 md:col-span-3 xl:grid-cols-5 glass-panel rounded-xl p-2 text-center border-dashed border-cyan-500/10 ad-slot"
               >
                 <p class="text-[8px] text-slate-500">إعلان</p>
                 <div
