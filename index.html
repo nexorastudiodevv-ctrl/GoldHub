@@ -403,6 +403,12 @@
       #currencyList {
         min-height: 320px;
       }
+      /* حجز عرض ثابت لقيم الأسعار لتقليل تغيّر التخطيط (CLS) */
+      .currency-rate {
+        display: inline-block;
+        min-width: 6.5rem; /* يكفي لعرض قيم مثل 12345.67 */
+        text-align: right;
+      }
       /* 4. حجز مساحة السعر الرئيسي للذهب */
       #mainGoldPrice {
         min-width: 140px;
