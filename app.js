@@ -1762,6 +1762,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // تهيئة محرر Quill
     if (document.getElementById('editor-container')) {
+        // تحويل قالب Tooltip الافتراضي في Quill لاستخدام عناصر <button> بدل <a>
+        // هذا يحسّن الدلالة الحقيقية للعناصر ويمنع فقدان الاستماع للأحداث لأننا نعدّل القالب قبل التهيئة
+        try {
+            if (window.Quill && typeof Quill.import === 'function') {
+                var Tooltip = Quill.import('ui/tooltip');
+                if (Tooltip && typeof Tooltip.TEMPLATE === 'string') {
+                    Tooltip.TEMPLATE = Tooltip.TEMPLATE
+                        .replace(/<a\b/gi, '<button type="button"')
+                        .replace(/<\/a>/gi, '</button>')
+                        .replace(/href=("[^"]*"|'[^']*')/gi, '');
+                }
+            }
+        } catch (e) {
+            // إذا فشل التغيير لا نريد كسر الصفحة — نكمل بتهيئة Quill الافتراضية
+        }
         quill = new Quill('#editor-container', {
             theme: 'snow',
             placeholder: 'اكتب محتوى المقال هنا...',
