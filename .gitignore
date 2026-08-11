@@ -1,5 +1,6 @@
 # ملفات وإعدادات VS Code
 .vscode/
+node_modules/
 
 # ملفات مؤقتة أو مكررة (إذا كانت Icon.png مجرد تكرار)
 Icon.png

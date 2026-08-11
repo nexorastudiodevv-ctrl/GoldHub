@@ -51,27 +51,37 @@
     />
     <meta name="author" content="GoldHub" />
     <meta name="robots" content="index, follow" />
-<link rel="canonical" href="https://nexorastudio-eg.com/" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <link rel="canonical" href="https://nexorastudio-eg.com/" />
 
-<!-- روابط اللغة الدولية (Hreflang) للظهور العالمي -->
-    <link rel="alternate" hreflang="ar" href="https://nexorastudio-eg.com/?lang=ar" />
-    <link rel="alternate" hreflang="en" href="https://nexorastudio-eg.com/?lang=en" />
-    <link rel="alternate" hreflang="x-default" href="https://nexorastudio-eg.com/" />
-    <link
-      rel="alternate"
-      hreflang="ar"
-      href="https://nexorastudio-eg.com/?lang=ar"
-    />
-    <link
-      rel="alternate"
-      hreflang="en"
-      href="https://nexorastudio-eg.com/?lang=en"
-    />
-    <link
-      rel="alternate"
-      hreflang="x-default"
-      href="https://nexorastudio-eg.com/"
-    />
+    <!-- بيانات منظمة تساعد Google على تعريف الموقع واسمه وشعاره في نتائج البحث. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://nexorastudio-eg.com/#website",
+            "url": "https://nexorastudio-eg.com/",
+            "name": "GoldHub",
+            "alternateName": "جولد هب",
+            "description": "منصة لمتابعة أسعار الذهب والفضة والعملات لحظة بلحظة.",
+            "inLanguage": "ar-EG",
+            "publisher": { "@id": "https://nexorastudio-eg.com/#organization" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://nexorastudio-eg.com/#organization",
+            "name": "GoldHub",
+            "url": "https://nexorastudio-eg.com/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://nexorastudio-eg.com/icon.png"
+            }
+          }
+        ]
+      }
+    </script>
 
     <!-- وسائل التواصل الاجتماعي (Open Graph) -->
     <meta
@@ -113,8 +123,8 @@
     <link rel="apple-touch-icon" href="./icon.png" />
     <link rel="shortcut icon" href="./icon.png" type="image/png" />
     
-<!-- استخدام Tailwind CDN لضمان عمل التنسيق مباشرة في بيئة التطوير -->
-    <script src="https://cdn.tailwindcss.com" defer></script>
+    <!-- أنماط Tailwind مصغّرة ومحلية: تجنب بناء CSS داخل متصفح الزائر. -->
+    <link rel="stylesheet" href="styles.css" />
 
     <meta name="theme-color" content="#090f1c" />
 
@@ -126,7 +136,6 @@
       rel="preload"
       as="style"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      onload="this.onload=null;this.rel='stylesheet'"
     />
     <link
       rel="stylesheet"
@@ -142,41 +151,7 @@
         crossorigin="anonymous"
       />
     </noscript>
-    <!-- كود Google AdSense الرئيسي (استبدل CA-PUB-ID بمعرفك الخاص) -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4360758752869014" crossorigin="anonymous"></script>
-
-<!-- تضمين مكتبة Chart.js للرسوم البيانية (تحميل غير مانع للعرض) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js" defer></script>
-    <!-- تضمين مكتبة Leaflet للخرائط (تحميل غير مانع للعرض) -->
-    <link
-      rel="preload"
-      as="style"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      crossorigin="anonymous"
-      media="print"
-      onload="this.media='all'"
-    />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-    <!-- تضمين مكتبة Quill.js لمحرر النصوص الغني (تحميل غير مانع للعرض) -->
-    <link
-      rel="preload"
-      as="style"
-      href="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css"
-      crossorigin="anonymous"
-      media="print"
-      onload="this.media='all'"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js" defer></script>
+    <!-- Chart.js والخريطة والمحرر تُحمّل من app.js عند الحاجة فقط. -->
 
     <!-- تخصيص بعض المؤثرات البصرية للنيون والزجاج الخلفي -->
     <style>
@@ -396,106 +371,6 @@
         object-fit: cover;
       }
     </style>
-
-    <!-- وسم WebSite لتمكين ظهور اسم الموقع ومربع البحث في جوجل -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "GoldHub",
-        "alternateName": ["جولد هوب", "Gold & Currency Hub"],
-        "url": "https://nexorastudio-eg.com/",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": "https://nexorastudio-eg.com/?q={search_term_string}",
-          "query-input": "required name=search_term_string"
-        }
-      }
-    </script>
-
-    <!-- وسم BreadcrumbList لتحسين مظهر الروابط (Breadcrumbs) في نتائج بحث الموبايل -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-          {
-            "@type": "ListItem",
-            "position": 1,
-            "name": "الرئيسية",
-            "item": "https://nexorastudio-eg.com/"
-          },
-          {
-            "@type": "ListItem",
-            "position": 2,
-            "name": "أسواق الذهب",
-            "item": "https://nexorastudio-eg.com/#goldMarkets"
-          },
-          {
-            "@type": "ListItem",
-            "position": 3,
-            "name": "أسعار العملات",
-            "item": "https://nexorastudio-eg.com/#currencyMarkets"
-          }
-        ]
-      }
-    </script>
-
-    <!-- البيانات المنظمة (Structured Data) لمساعدة جوجل في فهم محتوى الموقع -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "FinancialService",
-        "name": "GoldHub",
-        "description": "منصة عالمية لمتابعة أسعار الذهب والفضة والمعادن الثمينة والعملات في الوقت الفعلي.",
-        "url": "https://nexorastudio-eg.com/",
-        "image": "https://nexorastudio-eg.com/icon.png",
-        "priceRange": "$$$",
-        "currenciesAccepted": "USD, EGP, SAR, EUR",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://nexorastudio-eg.com/icon.png"
-        }
-      }
-    </script>
-
-    <!-- بيانات مهيكلة إضافية لـ ImageObject لتحسين ظهور الصور في بحث جوجل -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "ImageObject",
-        "contentUrl": "icon.png",
-        "creator": {
-          "@type": "Organization",
-          "name": "GoldHub"
-        },
-        "name": "شعار GoldHub - أسعار الذهب والفضة والعملات",
-        "description": "شعار موقع GoldHub الرسمي، يمثل أسعار الذهب والفضة والعملات الحية.",
-        "encodingFormat": "image/png",
-        "creditText": "GoldHub",
-        "license": "https://nexorastudio-eg.com/license",
-        "copyrightNotice": "© 2026 GoldHub. All rights reserved.",
-        "acquireLicensePage": "https://nexorastudio-eg.com/contact"
-      }
-    </script>
-
-    <!-- بيانات مهيكلة لقسم المدونة (Blog) لربط المقالات بكيان الموقع -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Blog",
-        "name": "GoldHub Insights",
-        "description": "أحدث التحليلات والتقارير المالية حول أسواق الذهب والفضة والعملات.",
-        "publisher": {
-          "@type": "Organization",
-          "name": "GoldHub",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://nexorastudio-eg.com/icon.png"
-          }
-        }
-      }
-    </script>
 
     <!-- بيانات مهيكلة FAQPage لتحسين الظهور في نتائج البحث -->
     <script type="application/ld+json">

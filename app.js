@@ -394,6 +394,66 @@ let makingCharges = { k24: 0, k21: 0, k18: 0, k14: 0, k12: 0 };
 let priceHistory = [goldPrice];
 let timeLabels = [new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })];
 let goldChart;
+
+function loadScriptOnce(id, src) {
+    const existing = document.getElementById(id);
+    if (existing) return existing.dataset.loaded === 'true'
+        ? Promise.resolve()
+        : new Promise((resolve, reject) => {
+            existing.addEventListener('load', resolve, { once: true });
+            existing.addEventListener('error', reject, { once: true });
+        });
+
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.id = id;
+        script.src = src;
+        script.async = true;
+        script.onload = () => { script.dataset.loaded = 'true'; resolve(); };
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+function loadStyleOnce(id, href) {
+    if (document.getElementById(id)) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.id = id;
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.onload = resolve;
+        link.onerror = reject;
+        document.head.appendChild(link);
+    });
+}
+
+async function loadChart() {
+    if (goldChart) return;
+    await loadScriptOnce('chartjs-script', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js');
+    initChart();
+}
+
+async function initQuillEditor() {
+    if (quill || !document.getElementById('editor-container')) return;
+    await Promise.all([
+        loadStyleOnce('quill-style', 'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css'),
+        loadScriptOnce('quill-script', 'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js')
+    ]);
+    quill = new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: 'اكتب محتوى المقال هنا...',
+        modules: {
+            toolbar: [
+                [{ 'header': [2, 3, false] }],
+                ['bold', 'italic', 'underline'],
+                ['link', 'image'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                [{ 'direction': 'rtl' }]
+            ]
+        }
+    });
+}
 let previousGoldPrice = goldPrice;
 let previousCaratPrices = { k24: 0, k21: 0, k18: 0, k14: 0, k12: 0 };
 // وحدة العرض الافتراضية: 'oz' للأونصة أو 'g' للجرام
@@ -766,6 +826,7 @@ function updateCaratPrices(ozPrice) {
 }
 
 function initChart() {
+    if (goldChart || typeof Chart === 'undefined') return;
     const ctx = document.getElementById('goldChart').getContext('2d');
     const gradient = ctx.createLinearGradient(0, 0, 0, 200);
     gradient.addColorStop(0, 'rgba(6, 182, 212, 0.3)');
@@ -1254,14 +1315,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c; // المسافة بالكيلومتر
 }
 
-// تعريف أيقونة مخصصة لمكاتب الصرافة
-const exchangeIcon = L.divIcon({
-    className: 'custom-exchange-icon', // يمكن استخدام هذه الفئة لتخصيص إضافي في CSS
-    html: '<div class="bg-cyan-500/80 border border-cyan-500 rounded-full w-8 h-8 flex items-center justify-center text-white text-sm shadow-lg"><i class="fa-solid fa-money-bill-transfer"></i></div>',
-    iconSize: [32, 32], // حجم الأيقونة
-    iconAnchor: [16, 32], // نقطة ارتكاز الأيقونة (أسفل المنتصف)
-    popupAnchor: [0, -32] // نقطة ظهور النافذة المنبثقة بالنسبة لنقطة الارتكاز
-});
 // --- منطق الخريطة ---
 let initialUserLat = 0; // لتخزين خط العرض الأولي للمستخدم/مصر
 let initialUserLon = 0; // لتخزين خط الطول الأولي للمستخدم/مصر
@@ -1271,6 +1324,19 @@ let currentSearchCenterMarker = null; // العلامة التي تشير إلى
 // كائنات الخريطة والعلامات
 let leafletMap = null;
 let mapMarkers = [];
+let exchangeIcon = null;
+let leafletResourcesPromise = null;
+
+function loadLeafletResources() {
+    if (window.L) return Promise.resolve();
+    if (!leafletResourcesPromise) {
+        leafletResourcesPromise = Promise.all([
+            loadStyleOnce('leaflet-style', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'),
+            loadScriptOnce('leaflet-script', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')
+        ]);
+    }
+    return leafletResourcesPromise;
+}
 
 async function initMap() {
     if (!document.getElementById('map')) return;
@@ -1279,6 +1345,12 @@ async function initMap() {
     if (leafletMap) return;
 
     addApiLog("🗺️ جاري تهيئة الخريطة...");
+    try {
+        await loadLeafletResources();
+    } catch (error) {
+        addApiLog("❌ تعذر تحميل الخريطة.");
+        return;
+    }
 
     // إحداثيات وسط جمهورية مصر العربية للعرض الشامل
     const egyptLat = 26.8206;
@@ -1299,6 +1371,13 @@ async function initMap() {
 }
 
 function setupMap(lat, lon, zoom = 14) {
+    exchangeIcon = L.divIcon({
+        className: 'custom-exchange-icon',
+        html: '<div class="bg-cyan-500/80 border border-cyan-500 rounded-full w-8 h-8 flex items-center justify-center text-white text-sm shadow-lg"><i class="fa-solid fa-money-bill-transfer"></i></div>',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    });
     leafletMap = L.map('map', { scrollWheelZoom: false }).setView([lat, lon], zoom);
     // إنشاء pane مخصص لطبقة التسميات لضمان ظهورها فوق كل شيء آخر (بما في ذلك العلامات)
     leafletMap.createPane('labelsPane');
@@ -1474,8 +1553,13 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTranslations();
         // 1. بناء القوائم أولاً
         renderConverterOptions();
-        // 2. تهيئة الرسم البياني
-        if (typeof Chart !== 'undefined') initChart();
+        // 2. تحميل الرسم بعد أول شاشة حتى لا يؤخر ظهور المحتوى الرئيسي.
+        const scheduleChart = () => loadChart().catch(() => console.warn('تعذر تحميل الرسم البياني.'));
+        if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(scheduleChart, { timeout: 2500 });
+        } else {
+            window.setTimeout(scheduleChart, 800);
+        }
         // 3. تحديث واجهة المستخدم والحسابات
         updateUI();
         handleScrollToTopBottom();
@@ -1616,6 +1700,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleOpenAdmin = () => {
         if (auth.currentUser?.email === ADMIN_EMAIL) {
             domElements.adminPanel.classList.remove('hidden');
+            initQuillEditor().catch(() => showToast('تعذر تحميل محرر المقالات.'));
             if (!domElements.loginModal.classList.contains('hidden')) {
                 domElements.loginModal.classList.add('hidden');
             }
@@ -1684,22 +1769,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (manual12kInput) manual12kInput.value = (g24 * 0.5).toFixed(2);
         }
     });
-
-    // تهيئة محرر Quill
-    if (document.getElementById('editor-container')) {
-        quill = new Quill('#editor-container', {
-            theme: 'snow',
-            placeholder: 'اكتب محتوى المقال هنا...',
-            modules: {
-                toolbar: [
-                    [{ 'header': [2, 3, false] }], // إضافة العناوين الفرعية للـ SEO
-                    ['bold', 'italic', 'underline'],
-                    ['link', 'image'],
-                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                    [{ 'direction': 'rtl' }]]
-            }
-        });
-    }
 
     // معالجة تسجيل الدخول للمدير
     document.getElementById('loginForm')?.addEventListener('submit', async (e) => {

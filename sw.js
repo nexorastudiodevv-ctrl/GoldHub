@@ -25,7 +25,7 @@ try {
     console.error("⚠️ Failed to initialize Firebase Messaging in SW:", err);
 }
 
-const CACHE_NAME = 'gold-hub-v6';
+const CACHE_NAME = 'gold-hub-v8';
 const ASSETS = [
     'index.html',
     'manifest.json',
@@ -33,11 +33,7 @@ const ASSETS = [
     'dist/output.css',
     'icon.png',
     'icon.webp',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    'https://cdn.jsdelivr.net/npm/chart.js',
-    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-    'https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css'
+    'styles.css'
 ];
 
 // تثبيت الـ Service Worker وتخزين الملفات الأساسية
@@ -70,6 +66,22 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
     // تجاهل الطلبات التي ليست من نوع GET (مثل رفع الصور عبر POST) لأن التخزين المؤقت لا يدعمها
     if (e.request.method !== 'GET' || e.request.url.includes('firebaseio.com')) return;
+
+    // صفحات HTML يجب أن تصل من الشبكة أولاً كي يرى الزائر آخر تحديثات المحتوى والتواصل.
+    const requestUrl = new URL(e.request.url);
+    if (e.request.mode === 'navigate' || requestUrl.pathname.endsWith('.html')) {
+        e.respondWith(
+            fetch(e.request)
+                .then((response) => {
+                    if (response && response.status === 200) {
+                        caches.open(CACHE_NAME).then((cache) => cache.put(e.request, response.clone()));
+                    }
+                    return response;
+                })
+                .catch(() => caches.match(e.request).then((cached) => cached || caches.match('index.html')))
+        );
+        return;
+    }
 
     e.respondWith(
         caches.match(e.request).then((cachedResponse) => {
