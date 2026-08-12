@@ -25,7 +25,7 @@ try {
     console.error("⚠️ Failed to initialize Firebase Messaging in SW:", err);
 }
 
-const CACHE_NAME = 'gold-hub-v8';
+const CACHE_NAME = 'gold-hub-v9';
 const ASSETS = [
     'index.html',
     'manifest.json',
@@ -79,6 +79,21 @@ self.addEventListener('fetch', (e) => {
                     return response;
                 })
                 .catch(() => caches.match(e.request).then((cached) => cached || caches.match('index.html')))
+        );
+        return;
+    }
+
+    // لا نستخدم نسخة قديمة من ملفات الواجهة؛ اختلاف HTML وapp.js يعطّل الأزرار.
+    if (requestUrl.pathname.endsWith('.js') || requestUrl.pathname.endsWith('.css')) {
+        e.respondWith(
+            fetch(e.request)
+                .then((response) => {
+                    if (response && response.status === 200) {
+                        caches.open(CACHE_NAME).then((cache) => cache.put(e.request, response.clone()));
+                    }
+                    return response;
+                })
+                .catch(() => caches.match(e.request))
         );
         return;
     }

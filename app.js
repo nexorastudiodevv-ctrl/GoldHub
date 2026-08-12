@@ -1347,8 +1347,10 @@ async function initMap() {
     addApiLog("🗺️ جاري تهيئة الخريطة...");
     try {
         await loadLeafletResources();
+        if (!window.L) throw new Error('Leaflet لم يكتمل تحميله');
     } catch (error) {
         addApiLog("❌ تعذر تحميل الخريطة.");
+        console.error('تعذر تحميل Leaflet:', error);
         return;
     }
 
@@ -1371,6 +1373,11 @@ async function initMap() {
 }
 
 function setupMap(lat, lon, zoom = 14) {
+    const L = window.L;
+    if (!L) {
+        console.error('تم طلب تهيئة الخريطة قبل تحميل Leaflet.');
+        return;
+    }
     exchangeIcon = L.divIcon({
         className: 'custom-exchange-icon',
         html: '<div class="bg-cyan-500/80 border border-cyan-500 rounded-full w-8 h-8 flex items-center justify-center text-white text-sm shadow-lg"><i class="fa-solid fa-money-bill-transfer"></i></div>',
