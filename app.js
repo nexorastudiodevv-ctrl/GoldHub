@@ -453,6 +453,8 @@ async function initQuillEditor() {
             ]
         }
     });
+    quill.on('text-change', updateLivePreview);
+    updateLivePreview();
 }
 let previousGoldPrice = goldPrice;
 let previousCaratPrices = { k24: 0, k21: 0, k18: 0, k14: 0, k12: 0 };
@@ -1624,6 +1626,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.market-tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchMarketTab(btn.dataset.marketTab));
     });
+    document.getElementById('articleTitle')?.addEventListener('input', updateLivePreview);
+    document.getElementById('articleImage')?.addEventListener('input', updateLivePreview);
 
     // تسجيل الـ Service Worker وطلب إذن الإشعارات
     if ('serviceWorker' in navigator) {
@@ -2112,6 +2116,45 @@ function renderAdminArticles(filter = "") {
             </div>
         </div>
     `).join('') || '<p class="text-slate-500 text-center text-xs py-2">لا توجد نتائج</p>';
+}
+
+function updateLivePreview() {
+    const container = domElements.articlePreviewContainer;
+    if (!container) return;
+
+    const title = document.getElementById('articleTitle')?.value.trim() || '';
+    const image = document.getElementById('articleImage')?.value.trim() || '';
+    const summary = quill?.getText().trim() || '';
+
+    if (!title && !image && !summary) {
+        container.innerHTML = '<p class="text-sm text-slate-500 text-center py-6">اكتب بيانات المقال لتظهر المعاينة هنا.</p>';
+        return;
+    }
+
+    container.replaceChildren();
+    const card = document.createElement('article');
+    card.className = 'overflow-hidden rounded-xl border border-slate-800 bg-slate-900/40';
+
+    if (image) {
+        const previewImage = document.createElement('img');
+        previewImage.src = image;
+        previewImage.alt = title || 'صورة المقال';
+        previewImage.className = 'h-32 w-full object-cover';
+        previewImage.loading = 'lazy';
+        card.appendChild(previewImage);
+    }
+
+    const body = document.createElement('div');
+    body.className = 'p-4';
+    const heading = document.createElement('h5');
+    heading.className = 'font-bold text-white';
+    heading.textContent = title || 'عنوان المقال';
+    const text = document.createElement('p');
+    text.className = 'mt-2 text-xs text-slate-400 line-clamp-3';
+    text.textContent = summary || 'محتوى المقال سيظهر هنا.';
+    body.append(heading, text);
+    card.appendChild(body);
+    container.appendChild(card);
 }
 
 window.editArticle = (id) => {
