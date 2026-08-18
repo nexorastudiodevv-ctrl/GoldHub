@@ -1,0 +1,50 @@
+/* ***SITE INFORMATION*** */
+Site Name: GoldHub
+Site Description: منصة متخصصة لمتابعة أسعار الذهب والفضة والعملات لحظة بلحظة
+Site Language: ar-EG, en
+URL: https://nexorastudio-eg.com/
+
+/* ***TEAM INFORMATION*** */
+Developer: GoldHub Development Team
+Frontend Technology: Vanilla JavaScript, Tailwind CSS v4.3.0
+Backend Service: Firebase (Authentication, Database, Analytics)
+Design: Responsive Web Design (RWD)
+
+/* ***TECHNOLOGY*** */
+HTML: HTML5
+CSS: Tailwind CSS v4.3.0
+JavaScript: ES6+
+Package Manager: NPM
+Build Tool: Tailwind CSS
+Development Server: serve
+Progressive Web App: Yes
+
+/* ***API & SERVICES*** */
+Price API: Open Exchange Rates API (er-api.com)
+Backend: Firebase Realtime Database
+Authentication: Firebase Authentication
+Analytics: Google Analytics via Firebase
+Messaging: Firebase Cloud Messaging (FCM)
+Ads: Google AdSense
+
+/* ***CONTACT INFORMATION*** */
+Contact Email: support@goldhub.com
+Support Channels: Contact Form available on website
+
+/* ***STANDARDS & COMPLIANCE*** */
+Accessibility: WCAG 2.1 Level AA
+Mobile Friendly: Yes (Mobile-First Design)
+Security: HTTPS, CSP Headers, Firebase Security
+PWA: Yes (Service Worker Enabled)
+SEO: Schema.org Structured Data, Open Graph, Twitter Cards
+
+/* ***BROWSER SUPPORT*** */
+Chrome: Latest
+Firefox: Latest
+Safari: Latest
+Edge: Latest
+Mobile Browsers: All modern browsers
+
+/* ***LAST UPDATED*** */
+Last Update: 2026-08-18
+Version: 1.0.0

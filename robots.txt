@@ -1,6 +1,52 @@
+# ملف روبوتس.تكست - يوجه محركات البحث على كيفية فهرسة الموقع
+# GoldHub - أسعار الذهب والعملات
+
+# السماح لجميع محركات البحث
 User-agent: *
 Allow: /
+Allow: *.js
+Allow: *.css
+Allow: *.json
 Disallow: /admin/
 Disallow: /temp/
+Disallow: /private/
+Disallow: /test/
+Disallow: /.git/
+Disallow: /node_modules/
+Disallow: /*.js$
+Disallow: /*.css$
 
+# تجنب فهرسة المعاملات والجلسات
+Disallow: /*?*sessionid*
+Disallow: /*?*trackingid*
+
+# تعطيل facebookexternalhit من بعض المهام الثقيلة
+User-agent: facebookexternalhit
+Disallow: /
+
+# السماح بالوصول إلى أيقونات الموقع والملفات الثابتة
+User-agent: *
+Allow: /icon.png
+Allow: /manifest.json
+Allow: /styles.css
+Allow: /sw.js
+
+# وقت التأخير بين طلبات محركات البحث (بالثواني)
+Crawl-delay: 1
+
+# الخريطة الموقع الرئيسية
 Sitemap: https://nexorastudio-eg.com/sitemap.xml
+
+# معايير إضافية للفهرسة الذكية
+# تعطيل آلية facebookexternalhit/1.1
+User-agent: facebookexternalhit/1.1
+Disallow: /
+
+# السماح للبحث الذكي من Bing و Google
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0

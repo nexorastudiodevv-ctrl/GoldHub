@@ -50,11 +50,32 @@
       content="أسعار الذهب، أسعار الفضة، سعر الذهب اليوم، سعر الفضة اليوم، أسعار العملات، سعر الدولار، عيار 21، بورصة الذهب، تحويل عملات، Gold prices, Silver prices, Gold rate today"
     />
     <meta name="author" content="GoldHub" />
-    <meta name="robots" content="index, follow" />
-    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <link rel="canonical" href="https://nexorastudio-eg.com/" />
+    
+    <!-- تحسينات الأداء والمرونة -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="GoldHub" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- تحسينات الفهرسة والترتيب -->
+    <meta name="revisit-after" content="7" />
+    <meta name="language" content="ar-EG" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="distribution" content="global" />
+    <meta name="rating" content="general" />
+    
+    <!-- Preconnect وPrefetch لتسريع تحميل الموارد -->
+    <link rel="preconnect" href="https://open.er-api.com" />
+    <link rel="preconnect" href="https://www.gstatic.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
 
-    <!-- بيانات منظمة تساعد Google على تعريف الموقع واسمه وشعاره في نتائج البحث. -->
+    <!-- بيانات منظمة محسّنة (Schema.org) لتحسين الظهور في نتائج البحث -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -65,8 +86,16 @@
             "url": "https://nexorastudio-eg.com/",
             "name": "GoldHub",
             "alternateName": "جولد هب",
-            "description": "منصة لمتابعة أسعار الذهب والفضة والعملات لحظة بلحظة.",
+            "description": "أدق موقع لمتابعة أسعار الذهب والفضة والعملات اليوم مع تحديث لحظي",
             "inLanguage": "ar-EG",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://nexorastudio-eg.com/?search={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            },
             "publisher": { "@id": "https://nexorastudio-eg.com/#organization" }
           },
           {
@@ -76,8 +105,53 @@
             "url": "https://nexorastudio-eg.com/",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://nexorastudio-eg.com/icon.png"
+              "url": "https://nexorastudio-eg.com/icon.png",
+              "width": 512,
+              "height": 512
+            },
+            "sameAs": [
+              "https://www.facebook.com/GoldHub",
+              "https://www.twitter.com/GoldHub",
+              "https://www.instagram.com/GoldHub"
+            ],
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "contactType": "Customer Service",
+              "email": "support@goldhub.com",
+              "availableLanguage": ["ar", "en"]
             }
+          },
+          {
+            "@type": "LocalBusiness",
+            "@id": "https://nexorastudio-eg.com/#localbusiness",
+            "name": "GoldHub",
+            "description": "منصة متخصصة في معلومات أسعار الذهب والعملات والفضة",
+            "url": "https://nexorastudio-eg.com/",
+            "areaServed": ["EG", "SA", "AE", "KW", "QA"],
+            "serviceType": "Price Tracking Service"
+          },
+          {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "الرئيسية",
+                "item": "https://nexorastudio-eg.com/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "الاتصال بنا",
+                "item": "https://nexorastudio-eg.com/contact.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "سياسة الخصوصية",
+                "item": "https://nexorastudio-eg.com/privacy.html"
+              }
+            ]
           }
         ]
       }

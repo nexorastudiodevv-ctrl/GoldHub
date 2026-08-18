@@ -1,24 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0">
+  <!-- الصفحة الرئيسية - أعلى أولوية -->
   <url>
     <loc>https://nexorastudio-eg.com/</loc>
-    <lastmod>2026-08-11</lastmod>
-    <changefreq>daily</changefreq>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>hourly</changefreq>
     <priority>1.0</priority>
+    <mobile:mobile/>
     <image:image>
       <image:loc>https://nexorastudio-eg.com/icon.png</image:loc>
+      <image:title>شعار GoldHub - أسعار الذهب والعملات الحية</image:title>
     </image:image>
   </url>
+  
+  <!-- صفحة الاتصال -->
   <url>
     <loc>https://nexorastudio-eg.com/contact.html</loc>
-    <lastmod>2026-08-11</lastmod>
+    <lastmod>2026-08-18</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.7</priority>
+    <mobile:mobile/>
   </url>
+  
+  <!-- سياسة الخصوصية -->
   <url>
     <loc>https://nexorastudio-eg.com/privacy.html</loc>
-    <lastmod>2026-08-11</lastmod>
+    <lastmod>2026-08-18</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.5</priority>
+    <mobile:mobile/>
   </url>
+  
+  <!-- صفحات إضافية قد تكون موجودة -->
+  <!-- يمكن إضافة المزيد من الصفحات حسب الحاجة -->
 </urlset>

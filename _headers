@@ -1,0 +1,55 @@
+/* 
+  تحسينات HTTP Headers لـ SEO والأمان والأداء
+  هذا الملف يعمل مع Netlify, Vercel, وخوادم أخرى تدعم _headers
+*/
+
+# Header افتراضي لجميع الملفات
+/*
+  # تحسينات الأداء
+  Cache-Control: public, max-age=3600, must-revalidate
+  
+  # أمان HTTP Headers
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+  
+  # محسنات SEO
+  X-UA-Compatible: IE=Edge
+  
+  # CORS
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, OPTIONS
+
+# Cache للملفات الثابتة (الصور، الخطوط، الأيقونات)
+/icon.png
+/manifest.json
+/styles.css
+/sw.js
+  Cache-Control: public, max-age=31536000, immutable
+  ETag: W/"asset"
+
+# تقليل Caching للملفات الديناميكية
+/index.html
+  Cache-Control: public, max-age=3600, must-revalidate
+  Content-Type: text/html; charset=utf-8
+
+# ملفات CSS
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: text/css; charset=utf-8
+
+# ملفات JavaScript
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: application/javascript; charset=utf-8
+
+# ملفات الخطوط
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# API والملفات الديناميكية
+/api/*
+  Cache-Control: no-cache, must-revalidate
+  Access-Control-Allow-Origin: *
