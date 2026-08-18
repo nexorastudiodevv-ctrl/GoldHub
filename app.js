@@ -637,6 +637,32 @@ async function initPushNotifications(registration) {
     }
 }
 
+domElements.manualRefreshBtn?.addEventListener('click', async () => {
+    if (!domElements.manualRefreshBtn) return;
+
+    const btn = domElements.manualRefreshBtn;
+    btn.disabled = true;
+    btn.classList.add('animate-spin');
+    btn.setAttribute('title', 'جارٍ تحديث الأسعار...');
+
+    try {
+        isManualMode = false;
+        manualLastUpdate = 0;
+        localStorage.removeItem('manual_last_update');
+        await fetchApiPrices();
+        showToast('تم تحديث الأسعار مباشرة من المصادر الحية');
+        addApiLog('✅ تم التحديث اليدوي المباشر بنجاح.');
+    } catch (error) {
+        console.error('❌ فشل التحديث اليدوي:', error);
+        showToast('فشل تحديث الأسعار، حاول مرة أخرى');
+        addApiLog(`❌ فشل التحديث اليدوي: ${error?.message || 'خطأ غير معروف'}`);
+    } finally {
+        btn.disabled = false;
+        btn.classList.remove('animate-spin');
+        btn.setAttribute('title', 'تحديث الأسعار الآن');
+    }
+});
+
 async function fetchApiPrices() {
     if (isManualMode) return;
     addApiLog("📡 جاري جلب البيانات من API...");
