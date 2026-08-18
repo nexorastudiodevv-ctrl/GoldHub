@@ -968,6 +968,8 @@ onValue(pricesRef, (snapshot) => {
 
     // تحديث سعر الفضة من Firebase فقط إذا كان موجوداً، وإلا فسيتم الاحتفاظ بآخر قيمة من API أو القيمة الافتراضية
     if (data.silver !== undefined) { previousSilverPrice = silverPrice; silverPrice = data.silver; }
+    if (data.copper !== undefined) { previousCopperPrice = copperPrice; copperPrice = data.copper; localStorage.setItem('last_copper_price', copperPrice); }
+    if (data.platinum !== undefined) { previousPlatinumPrice = platinumPrice; platinumPrice = data.platinum; localStorage.setItem('last_platinum_price', platinumPrice); }
     if (data.ironEzz) { previousIronEzzPrice = ironEzzPrice; ironEzzPrice = data.ironEzz; }
     if (data.ironEgyptians) { previousIronEgyptiansPrice = ironEgyptiansPrice; ironEgyptiansPrice = data.ironEgyptians; }
     if (data.ironGarhy) { previousIronGarhyPrice = ironGarhyPrice; ironGarhyPrice = data.ironGarhy; }
@@ -1744,6 +1746,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // تعبئة القيم الحالية في المدخلات اليدوية عند الفتح
             document.getElementById('manualGoldPrice').value = goldPrice;
             document.getElementById('manualSilverPrice').value = silverPrice;
+            document.getElementById('manualCopperPrice').value = copperPrice;
+            document.getElementById('manualPlatinumPrice').value = platinumPrice;
             document.getElementById('manualIronEzzPrice').value = ironEzzPrice;
             document.getElementById('manualIronEgyptiansPrice').value = ironEgyptiansPrice;
             document.getElementById('manualIronGarhyPrice').value = ironGarhyPrice;
@@ -1978,6 +1982,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const newPrices = {
             gold: parseFloat(document.getElementById('manualGoldPrice').value) || goldPrice,
             silver: parseFloat(document.getElementById('manualSilverPrice').value) || silverPrice,
+            copper: parseFloat(document.getElementById('manualCopperPrice').value) || copperPrice,
+            platinum: parseFloat(document.getElementById('manualPlatinumPrice').value) || platinumPrice,
             ironEzz: parseFloat(document.getElementById('manualIronEzzPrice').value) || ironEzzPrice,
             ironEgyptians: parseFloat(document.getElementById('manualIronEgyptiansPrice').value) || ironEgyptiansPrice,
             ironGarhy: parseFloat(document.getElementById('manualIronGarhyPrice').value) || ironGarhyPrice,
