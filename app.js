@@ -1270,21 +1270,25 @@ window.showSection = (sectionName) => {
     // العودة للأعلى تلقائياً عند تغيير القسم
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-const sections = ['goldSection', 'currencySection', 'articlesSection', 'aboutSection', 'contactSection', 'privacySection', 'faqSection', 'nearbySection'];
+   const sections = ['goldSection', 'currencySection', 'aboutSection', 'contactSection', 'privacySection', 'faqSection', 'nearbySection'];
     sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
 
     if (sectionName === 'home') {
-        document.getElementById('goldSection').classList.remove('hidden');
-        document.getElementById('currencySection').classList.remove('hidden');
-        document.getElementById('latestArticlesHome')?.classList.remove('hidden');
-    } else {
-        document.getElementById(sectionName + 'Section')?.classList.remove('hidden');
-        document.getElementById('latestArticlesHome')?.classList.add('hidden');
+       document.getElementById('goldSection')?.classList.remove('hidden');
+       document.getElementById('currencySection')?.classList.remove('hidden');
+       document.getElementById('articlesSection')?.classList.remove('hidden');
+       document.getElementById('latestArticlesHome')?.classList.remove('hidden');
+   } else {
+       document.getElementById(sectionName + 'Section')?.classList.remove('hidden');
+       document.getElementById('latestArticlesHome')?.classList.toggle('hidden', sectionName !== 'home');
+       if (sectionName !== 'articles') {
+           document.getElementById('articlesSection')?.classList.add('hidden');
+       }
     }
 
-    if (sectionName === 'nearby') {
-        initMap();
-    }
+   if (sectionName === 'nearby') {
+       initMap();
+   }
 
     // تحديث الحالة النشطة في أزرار التنقل للهواتف
     const primaryMobileSections = ['home', 'gold', 'currency', 'about', 'contact'];
