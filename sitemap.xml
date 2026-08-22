@@ -32,6 +32,15 @@
     <priority>0.5</priority>
     <mobile:mobile/>
   </url>
+
+  <!-- شروط الاستخدام -->
+  <url>
+    <loc>https://nexorastudio-eg.com/terms.html</loc>
+    <lastmod>2026-08-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <mobile:mobile/>
+  </url>
   
   <!-- صفحات إضافية قد تكون موجودة -->
   <!-- يمكن إضافة المزيد من الصفحات حسب الحاجة -->
