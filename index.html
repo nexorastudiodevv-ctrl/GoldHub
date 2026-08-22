@@ -422,6 +422,32 @@
       }
       .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
       /* تحسينات إضافية للهواتف الصغيرة جداً */
+      @media (max-width: 767px) {
+        body {
+          overflow-x: hidden;
+          padding-bottom: 4.5rem;
+          flex-direction: column;
+        }
+        #sidebar {
+          display: none !important;
+        }
+        main {
+          width: 100%;
+          overflow-x: hidden;
+        }
+        .max-w-screen-2xl {
+          padding-left: 0.75rem !important;
+          padding-right: 0.75rem !important;
+        }
+        .glass-panel {
+          border-radius: 18px;
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+        .mobile-nav-text {
+          font-size: 8px !important;
+        }
+      }
       @media (max-width: 380px) {
         .mobile-nav-text {
           display: none;
@@ -928,13 +954,13 @@
               تحديثات فورية لأسعار الذهب العالمية والمعادن مقابل العملات
             </p>
           </div>
-          <div class="flex items-center gap-4 w-full sm:w-auto">
+          <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-4 w-full sm:w-auto">
             <!-- اختيار عملة العرض والتحديد التلقائي -->
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap justify-end">
               <!-- زر تبديل اللغة -->
               <button
                 id="langToggle"
-                class="bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3 text-xs text-cyan-400 font-bold hover:bg-slate-800 transition"
+                class="bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3 text-xs text-cyan-400 font-bold hover:bg-slate-800 transition shrink-0"
                 aria-label="تبديل اللغة"
               >
                 <span id="langBtnText">English</span>
@@ -943,7 +969,7 @@
               <label for="displayCurrency" class="sr-only">عرض العملة</label>
               <select
                 id="displayCurrency"
-                class="bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3 text-xs text-cyan-400 focus:outline-none focus:border-cyan-500/50 appearance-none cursor-pointer"
+                class="bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3 text-xs text-cyan-400 focus:outline-none focus:border-cyan-500/50 appearance-none cursor-pointer w-[150px] sm:w-auto shrink-0"
                 aria-label="اختر عملة العرض"
               >
                 <option value="EGP" selected>عرض بالجنيه (EGP)</option>
@@ -953,7 +979,7 @@
               <button
                 id="autoDetectBtn"
                 title="تحديد تلقائي حسب بلدك"
-                class="p-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-cyan-400 hover:text-white hover:border-cyan-500/40 hover:bg-cyan-500/10 transition group shadow-[0_0_18px_rgba(6,182,212,0.08)]"
+                class="p-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-cyan-400 hover:text-white hover:border-cyan-500/40 hover:bg-cyan-500/10 transition group shadow-[0_0_18px_rgba(6,182,212,0.08)] shrink-0"
                 aria-label="تحديد العملة تلقائياً حسب الموقع"
               >
                 <i
@@ -966,14 +992,14 @@
             <button
                 id="manualRefreshBtn"
                 title="تحديث الأسعار الآن"
-                class="p-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-cyan-400 hover:text-white transition group"
+                class="p-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-cyan-400 hover:text-white transition group shrink-0"
                 aria-label="تحديث الأسعار يدوياً"
               >
                 <i class="fa-solid fa-rotate text-sm group-hover:rotate-180 transition-transform duration-500"></i>
             </button>
 
             <!-- شريط بحث مالي -->
-            <div class="relative w-full sm:w-64">
+            <div class="relative w-full min-w-[140px] sm:w-64 flex-1">
               <label for="searchInput" class="sr-only"
                 >ابحث عن عملة أو عيار</label
               >
@@ -990,7 +1016,7 @@
               />
             </div>
             <!-- جرس التنبيهات المضيء -->
-            <div class="relative">
+            <div class="relative shrink-0">
               <button
                 id="notificationsBell"
                 class="p-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-slate-400 hover:text-white hover:border-cyan-500/40 hover:bg-cyan-500/10 transition relative shadow-[0_0_18px_rgba(6,182,212,0.08)]"

@@ -295,8 +295,21 @@ function debounce(func, timeout = 300) {
     };
 }
 
+// دالة لإظهار إشعار حقيقي في المتصفح باستخدام شعار GoldHub
+function triggerBrandNotification(title, body, type = 'article') {
+    const iconPath = './icon.webp';
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+            body,
+            icon: iconPath,
+            badge: iconPath,
+            tag: `${type}-${Date.now()}`
+        });
+    }
+}
+
 // وظيفة لإضافة إشعار جديد إلى القائمة
-window.addInternalNotification = (title, id, type = 'article') => {
+window.addInternalNotification = (title, id, type = 'article', body = '') => {
     const list = domElements.notificationsList;
     const dot = domElements.bellDot;
     if (!list || !dot) return;
@@ -309,27 +322,31 @@ window.addInternalNotification = (title, id, type = 'article') => {
     if (emptyMsg) emptyMsg.remove();
 
     // منع التكرار
-    if (document.getElementById(`noti-${id}`)) return;
+    const uniqueId = `noti-${id}`;
+    if (document.getElementById(uniqueId)) return;
 
     const entry = document.createElement('div');
-    entry.id = `noti-${id}`;
+    entry.id = uniqueId;
     entry.className = "p-3 bg-slate-900/60 border border-slate-800/50 rounded-xl hover:border-cyan-500/30 transition cursor-pointer flex gap-3 items-center text-right";
     entry.onclick = () => {
         if (type === 'article') window.openArticleModal(id);
-        domElements.notificationsDropdown.classList.add('hidden');
+        if (domElements.notificationsDropdown) domElements.notificationsDropdown.classList.add('hidden');
     };
 
     const icon = type === 'article' ? 'fa-newspaper' : 'fa-chart-line';
+    const subtitle = type === 'article' ? (body || 'مقال جديد متاح الآن') : (body || 'تحديث جديد في الأسعار');
     entry.innerHTML = `
         <div class="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 shrink-0">
             <i class="fa-solid ${icon} text-xs"></i>
         </div>
         <div class="overflow-hidden">
             <p class="text-[11px] font-bold text-slate-200 truncate">${title}</p>
-            <p class="text-[9px] text-slate-500 mt-0.5">${type === 'article' ? 'مقال جديد متاح الآن' : 'تحديث جديد في الأسعار'}</p>
+            <p class="text-[9px] text-slate-500 mt-0.5">${subtitle}</p>
         </div>
     `;
     list.prepend(entry);
+
+    triggerBrandNotification(type === 'article' ? 'إعلان GoldHub' : 'تحديث سعر GoldHub', title, type);
 };
 
 // دالة مساعدة للحصول على رابط العلم بشكل آمن لتجنب أخطاء 404
@@ -1033,8 +1050,18 @@ onValue(articlesRef, (snapshot) => {
     allArticlesData = data;
     const articlesArray = Object.entries(data).reverse();
 
-    // إضافة آخر 3 مقالات كإشعارات تلقائية
-    articlesArray.slice(0, 3).forEach(([id, art]) => addInternalNotification(art.title, id));
+    const seenArticles = JSON.parse(localStorage.getItem('goldhub_seen_articles') || '[]');
+    const newArticleEntries = articlesArray.filter(([id]) => !seenArticles.includes(id));
+
+    // إضافة فقط المقالات الجديدة كإشعارات تلقائية
+    newArticleEntries.slice(0, 3).forEach(([id, art]) => {
+        addInternalNotification(art.title, id, 'article', art.summary || 'مقال جديد متاح الآن');
+    });
+
+    if (newArticleEntries.length) {
+        const latestIds = [...seenArticles, ...newArticleEntries.map(([id]) => id)].slice(-50);
+        localStorage.setItem('goldhub_seen_articles', JSON.stringify(latestIds));
+    }
 
     const articleHTML = (id, art) => `
         <div class="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden hover:border-cyan-500/50 transition-all cursor-pointer group" onclick="openArticleModal('${id}')">
@@ -1095,10 +1122,20 @@ function calculateConversion() {
 }
 
 function updateUI() {
+    const previousGoldSnapshot = previousGoldPrice || goldPrice;
+
     // جلب العملة المختارة للعرض (EGP, USD, SAR, etc.)
     const selectedDisplayCurrency = domElements.displayCurrency?.value || "EGP";
     const displayRate = exchangeRates[selectedDisplayCurrency] || 1;
     const currencySymbol = selectedDisplayCurrency;
+
+    if (previousGoldSnapshot && goldPrice && Math.abs(goldPrice - previousGoldSnapshot) > 0.05 && Date.now() - (Number(localStorage.getItem('goldhub_last_price_notification')) || 0) > 60000) {
+        const trendText = goldPrice > previousGoldSnapshot ? 'ارتفع' : 'انخفض';
+        const headline = `سعر الذهب ${trendText} إلى ${formatters.usd.format(goldPrice)}`;
+        addInternalNotification(headline, `price-${Date.now()}`, 'price', `${trendText} السعر خلال آخر تحديث`);
+        triggerBrandNotification('GoldHub | تحديث السعر', headline, 'price');
+        localStorage.setItem('goldhub_last_price_notification', Date.now().toString());
+    }
 
     // تحديث وقت آخر تحديث للسعر في الواجهة
     if (domElements.lastUpdateTime) {
@@ -1235,7 +1272,8 @@ function simulateMarket() {
         if (Notification.permission === "granted") {
             new Notification("تنبيه الذهب | GoldHub", {
                 body: `وصل سعر الذهب الآن إلى $${goldPrice}`,
-                icon: './icon.png'
+                icon: './icon.webp',
+                badge: './icon.webp'
             });
         }
 
@@ -1640,6 +1678,27 @@ document.addEventListener('DOMContentLoaded', () => {
         domElements.bellDot?.classList.add('hidden');
     });
 
+    document.getElementById('enableNotificationsBtn')?.addEventListener('click', async () => {
+        if (!('Notification' in window)) {
+            showToast('متصفحك لا يدعم الإشعارات');
+            return;
+        }
+
+        const permission = await Notification.requestPermission();
+        const prompt = document.getElementById('notificationPrompt');
+        if (prompt) prompt.classList.add('hidden');
+
+        if (permission === 'granted') {
+            showToast('تم تفعيل إشعارات GoldHub بنجاح ✅');
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js').then(reg => initPushNotifications(reg)).catch(() => {});
+            }
+            triggerBrandNotification('GoldHub', 'تم تفعيل إشعارات أسعار الذهب والمقالات بنجاح', 'article');
+        } else {
+            showToast('تم رفض الإشعارات، يمكنك تفعيلها لاحقاً من إعدادات المتصفح');
+        }
+    });
+
     // إظهار القسم الرئيسي افتراضياً
     showSection('home');
 
@@ -1864,6 +1923,11 @@ document.addEventListener('DOMContentLoaded', () => {
             date: new Date().toLocaleDateString('ar-EG'),
             timestamp: Date.now()
         });
+
+        if (!editArticleId) {
+            window.addInternalNotification(title, id, 'article', summary || 'تم نشر مقال جديد على GoldHub');
+            triggerBrandNotification('GoldHub | مقال جديد', title, 'article');
+        }
 
         showToast(editArticleId ? "تم تعديل المقال" : "تم نشر المقال");
         resetArticleForm();
