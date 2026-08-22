@@ -41,6 +41,38 @@
     <priority>0.5</priority>
     <mobile:mobile/>
   </url>
+
+  <!-- صفحة المقالات -->
+  <url>
+    <loc>https://nexorastudio-eg.com/articles/</loc>
+    <lastmod>2026-08-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+  </url>
+
+  <!-- مقالات SEO -->
+  <url>
+    <loc>https://nexorastudio-eg.com/articles/gold-price-today-egypt.html</loc>
+    <lastmod>2026-08-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+  </url>
+  <url>
+    <loc>https://nexorastudio-eg.com/articles/silver-vs-gold.html</loc>
+    <lastmod>2026-08-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+  </url>
+  <url>
+    <loc>https://nexorastudio-eg.com/articles/currency-impact-on-gold.html</loc>
+    <lastmod>2026-08-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+  </url>
   
   <!-- صفحات إضافية قد تكون موجودة -->
   <!-- يمكن إضافة المزيد من الصفحات حسب الحاجة -->
